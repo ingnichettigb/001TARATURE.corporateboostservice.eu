@@ -60,6 +60,10 @@ const fmt = (n: number): string =>
 const fmtL = (n: number): string =>
   !isFinite(n) ? '—' : n.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+// capacità nei riquadri: numero intero, senza decimali
+const fmtL0 = (n: number): string =>
+  !isFinite(n) ? '—' : Math.round(n).toLocaleString('it-IT', { maximumFractionDigits: 0 });
+
 /* ---------- sub components ---------- */
 
 const editableDimStyle: React.CSSProperties = {
@@ -354,17 +358,19 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
 
   const boxW = 208;
   const box1H = 176;
+  // spazio bianco uniforme fra tutti i riquadri verdi
+  const BOX_GAP = 12;
   // riquadro 3 (fondo conico): allineato in basso, in linea con il riquadro "Inclin. cono"
   const box3H = 155;
   const box3Y = drawH - box3H - 6;
-  // riquadro 2 (sezione cilindrica): più basso e più compatto
-  const box2H = 76;
-  const box2Y = box3Y - 12 - box2H;
-  // riquadro somma cilindrica + conica: occupa lo spazio liberato sopra il riquadro 2
+  // riquadro 2 (sezione cilindrica): include lo spessore virola
+  const box2H = 96;
+  const box2Y = box3Y - BOX_GAP - box2H;
+  // riquadro somma cilindrica + conica
   const boxSumH = 76;
-  const boxSumY = box2Y - 10 - boxSumH;
-  // riquadro 1 (coperchio): alzato di ~10 px
-  const box1Y = Math.max(4, Math.min(callout1Y - 50, boxSumY - box1H - 8));
+  const boxSumY = box2Y - BOX_GAP - boxSumH;
+  // riquadro 1 (coperchio)
+  const box1Y = Math.max(4, Math.min(callout1Y - 50, boxSumY - box1H - BOX_GAP));
   // ancoraggio del callout 2 alla quota del riquadro 2
   const callout2Y = Math.min(Math.max(box2Y + box2H / 2, yCilTop + 18), yCilBot - 18);
 
@@ -468,7 +474,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
               Coperchio bombato — litri
             </text>
             <text x={6 + boxW / 2} y={box1Y + 166} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
-              {result ? fmtL(result.volumeCoperchio) : '—'}
+              {result ? fmtL0(result.volumeCoperchio) : '—'}
             </text>
           </g>
 
@@ -482,7 +488,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
               Capacità in litri
             </text>
             <text x={6 + boxW / 2} y={boxSumY + 62} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
-              {result ? fmtL(result.volumeCilindro + result.volumeFondo) : '—'}
+              {result ? fmtL0(result.volumeCilindro + result.volumeFondo) : '—'}
             </text>
           </g>
 
@@ -498,15 +504,25 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
               strokeWidth="1"
               strokeDasharray="3,3"
             />
-            <text x={6 + boxW / 2} y={box2Y + 18} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+            <text x={6 + boxW / 2} y={box2Y + 16} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
               Sezione cilindrica
             </text>
-            <text x={6 + boxW / 2} y={box2Y + 40} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+            <text x={6 + boxW / 2} y={box2Y + 34} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
               Capacità in litri
             </text>
-            <text x={6 + boxW / 2} y={box2Y + 62} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
-              {result ? fmtL(result.volumeCilindro) : '—'}
+            <text x={6 + boxW / 2} y={box2Y + 54} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
+              {result ? fmtL0(result.volumeCilindro) : '—'}
             </text>
+            <foreignObject x={12} y={box2Y + 64} width={boxW - 18} height="26">
+              <MiniField
+                label="Sp. virola"
+                value={input.spVirola ?? 0}
+                onChange={(v) => patch({ spVirola: v })}
+                labelWidth="66px"
+                width="78px"
+              />
+            </foreignObject>
+
           </g>
 
 
@@ -556,7 +572,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
               Fondo conico — litri
             </text>
             <text x={6 + boxW / 2} y={box3Y + 142} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
-              {result ? fmtL(result.volumeFondo) : '—'}
+              {result ? fmtL0(result.volumeFondo) : '—'}
             </text>
 
           </g>

@@ -31,6 +31,7 @@ export interface ReportMeta {
 export interface TankInput {
   dInt: number;       // diametro interno serbatoio (mm)
   lCil: number;       // lunghezza/altezza parte cilindrica (mm)
+  spVirola?: number;  // spessore lamiera virola (mm) — informativo
   rho: number;        // peso specifico contenuto (kg/dm3)
   fondo: HeadConfig;
   coperchio: HeadConfig;
