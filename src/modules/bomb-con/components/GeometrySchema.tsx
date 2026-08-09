@@ -354,16 +354,25 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
 
   const boxW = 208;
   const box1H = 176;
-  const box1Y = Math.max(4, Math.min(callout1Y - 40, drawH - box1H - 4));
+  // riquadro 3 (fondo conico): allineato in basso, in linea con il riquadro "Inclin. cono"
   const box3H = 155;
-  const box3Y = Math.max(4, Math.min(drawH - box3H - 6, callout3Y - box3H / 2));
-  const box2H = 86;
-  const box2Y = Math.max(4, Math.min(yCilMid - box2H / 2, drawH - box2H - 4));
+  const box3Y = drawH - box3H - 6;
+  // riquadro 2 (sezione cilindrica): più basso e più compatto
+  const box2H = 76;
+  const box2Y = box3Y - 12 - box2H;
+  // riquadro somma cilindrica + conica: occupa lo spazio liberato sopra il riquadro 2
+  const boxSumH = 76;
+  const boxSumY = box2Y - 10 - boxSumH;
+  // riquadro 1 (coperchio): alzato di ~10 px
+  const box1Y = Math.max(4, Math.min(callout1Y - 50, boxSumY - box1H - 8));
+  // ancoraggio del callout 2 alla quota del riquadro 2
+  const callout2Y = Math.min(Math.max(box2Y + box2H / 2, yCilTop + 18), yCilBot - 18);
 
   const boxCapTotW = Math.max(150, Math.min(230, (rightX - leftX) * 0.86));
   const boxCapTotH = 60;
   const boxCapTotX = cx - boxCapTotW / 2;
   const boxCapTotY = yCilMid - 20 - boxCapTotH;
+
 
 
   return (
@@ -463,14 +472,28 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             </text>
           </g>
 
+          {/* RIQUADRO SOMMA — SEZIONE CILINDRICA + CONICA */}
+          <g>
+            <rect x={6} y={boxSumY} width={boxW} height={boxSumH} rx="5" fill="#ffffff" stroke="#0f766e" strokeWidth="1.2" />
+            <text x={6 + boxW / 2} y={boxSumY + 18} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+              Sezione cilindrica + conica
+            </text>
+            <text x={6 + boxW / 2} y={boxSumY + 40} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+              Capacità in litri
+            </text>
+            <text x={6 + boxW / 2} y={boxSumY + 62} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
+              {result ? fmtL(result.volumeCilindro + result.volumeFondo) : '—'}
+            </text>
+          </g>
+
           {/* RIQUADRO 2 — VIROLA */}
           <g>
             <rect x={6} y={box2Y} width={boxW} height={box2H} rx="5" fill="#ffffff" stroke="#0f766e" strokeWidth="1.2" />
             <line
               x1={6 + boxW}
-              y1={Math.min(Math.max(yCilMid, box2Y + 16), box2Y + box2H - 10)}
+              y1={Math.min(Math.max(callout2Y, box2Y + 16), box2Y + box2H - 10)}
               x2={leftX - 28}
-              y2={yCilMid}
+              y2={callout2Y}
               stroke="#0f766e"
               strokeWidth="1"
               strokeDasharray="3,3"
@@ -478,13 +501,14 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             <text x={6 + boxW / 2} y={box2Y + 18} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
               Sezione cilindrica
             </text>
-            <text x={6 + boxW / 2} y={box2Y + 43} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+            <text x={6 + boxW / 2} y={box2Y + 40} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
               Capacità in litri
             </text>
-            <text x={6 + boxW / 2} y={box2Y + 65} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
+            <text x={6 + boxW / 2} y={box2Y + 62} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
               {result ? fmtL(result.volumeCilindro) : '—'}
             </text>
           </g>
+
 
           {/* RIQUADRO 3 — FONDO CONICO */}
           <g>
@@ -548,8 +572,8 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             <text x={callout1X} y={callout1Y + 5} textAnchor="middle" fontSize="13" fontWeight="700" fill="#0f766e">1</text>
           </g>
           <g>
-            <circle cx={leftX - 15} cy={yCilMid} r="13" fill="#ffffff" stroke="#0f766e" strokeWidth="1.4" />
-            <text x={leftX - 15} y={yCilMid + 5} textAnchor="middle" fontSize="13" fontWeight="700" fill="#0f766e">2</text>
+            <circle cx={leftX - 15} cy={callout2Y} r="13" fill="#ffffff" stroke="#0f766e" strokeWidth="1.4" />
+            <text x={leftX - 15} y={callout2Y + 5} textAnchor="middle" fontSize="13" fontWeight="700" fill="#0f766e">2</text>
           </g>
           <g>
             <circle cx={callout3X} cy={callout3Y} r="13" fill="#ffffff" stroke="#0f766e" strokeWidth="1.4" />
