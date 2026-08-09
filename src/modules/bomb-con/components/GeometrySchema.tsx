@@ -60,6 +60,10 @@ const fmt = (n: number): string =>
 const fmtL = (n: number): string =>
   !isFinite(n) ? '—' : n.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+// capacità nei riquadri: numero intero, senza decimali
+const fmtL0 = (n: number): string =>
+  !isFinite(n) ? '—' : Math.round(n).toLocaleString('it-IT', { maximumFractionDigits: 0 });
+
 /* ---------- sub components ---------- */
 
 const editableDimStyle: React.CSSProperties = {
