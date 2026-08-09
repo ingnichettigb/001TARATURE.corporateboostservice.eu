@@ -472,14 +472,28 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             </text>
           </g>
 
+          {/* RIQUADRO SOMMA — SEZIONE CILINDRICA + CONICA */}
+          <g>
+            <rect x={6} y={boxSumY} width={boxW} height={boxSumH} rx="5" fill="#ffffff" stroke="#0f766e" strokeWidth="1.2" />
+            <text x={6 + boxW / 2} y={boxSumY + 18} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+              Sezione cilindrica + conica
+            </text>
+            <text x={6 + boxW / 2} y={boxSumY + 40} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+              Capacità in litri
+            </text>
+            <text x={6 + boxW / 2} y={boxSumY + 62} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
+              {result ? fmtL(result.volumeCilindro + result.volumeFondo) : '—'}
+            </text>
+          </g>
+
           {/* RIQUADRO 2 — VIROLA */}
           <g>
             <rect x={6} y={box2Y} width={boxW} height={box2H} rx="5" fill="#ffffff" stroke="#0f766e" strokeWidth="1.2" />
             <line
               x1={6 + boxW}
-              y1={Math.min(Math.max(yCilMid, box2Y + 16), box2Y + box2H - 10)}
+              y1={Math.min(Math.max(callout2Y, box2Y + 16), box2Y + box2H - 10)}
               x2={leftX - 28}
-              y2={yCilMid}
+              y2={callout2Y}
               stroke="#0f766e"
               strokeWidth="1"
               strokeDasharray="3,3"
@@ -487,13 +501,14 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             <text x={6 + boxW / 2} y={box2Y + 18} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
               Sezione cilindrica
             </text>
-            <text x={6 + boxW / 2} y={box2Y + 43} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+            <text x={6 + boxW / 2} y={box2Y + 40} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
               Capacità in litri
             </text>
-            <text x={6 + boxW / 2} y={box2Y + 65} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
+            <text x={6 + boxW / 2} y={box2Y + 62} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
               {result ? fmtL(result.volumeCilindro) : '—'}
             </text>
           </g>
+
 
           {/* RIQUADRO 3 — FONDO CONICO */}
           <g>
