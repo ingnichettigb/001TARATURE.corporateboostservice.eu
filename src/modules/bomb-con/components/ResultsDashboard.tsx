@@ -4,8 +4,8 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { CalculationResult } from '../types';
-import { Language, translations } from '../utils/translations';
+import { CalculationResult } from '../core/types';
+import { Language, translations } from '../core/translations';
 import { Layers, Activity, Scale, Info, ChevronRight, HelpCircle, ChevronUp, ChevronDown } from 'lucide-react';
 
 interface ResultsDashboardProps {

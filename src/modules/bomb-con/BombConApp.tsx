@@ -4,15 +4,15 @@
  */
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { TankInput, CalculationResult, CompilerInfo } from './types';
-import { calculateTank } from './utils/calculations';
+import { TankInput, CalculationResult, CompilerInfo } from './core/types';
+import { calculateTank } from './core/logic';
 import GeometrySchema from './components/GeometrySchema';
 import ResultsDashboard from './components/ResultsDashboard';
 import CalibrationTable from './components/CalibrationTable';
 import SavedTanksList from './components/SavedTanksList';
 import CompilerConfigModal from './components/CompilerConfigModal';
 import InfoModal from './components/InfoModal';
-import { Language, translations } from './utils/translations';
+import { Language, translations } from './core/translations';
 import { 
   Cylinder, 
   FileText, 
@@ -34,7 +34,7 @@ import {
   ChevronRight,
   ChevronDown
 } from 'lucide-react';
-import { generateCalibrationPDF } from './utils/pdfGenerator';
+import { generateCalibrationPDF } from './core/pdf';
 
 export default function App() {
   const [lang, setLang] = useState<Language>('it');

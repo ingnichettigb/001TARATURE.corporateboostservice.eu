@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { TankInput, HeadConfig, HeadCalculated, CalculationResult } from '../types';
+import { TankInput, HeadConfig, HeadCalculated, CalculationResult } from './types';
 
 /**
  * Calculates geometry and volumes for a single head (coperchio or fondo)

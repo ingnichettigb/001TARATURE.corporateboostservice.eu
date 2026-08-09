@@ -4,8 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { CompilerInfo } from '../types';
-import { Language, translations } from '../utils/translations';
+import { CompilerInfo } from '../core/types';
+import { Language, translations } from '../core/translations';
 import { 
   X, 
   Building2, 

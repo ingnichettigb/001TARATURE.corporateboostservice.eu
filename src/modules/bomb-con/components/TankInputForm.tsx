@@ -4,11 +4,11 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { TankInput, HeadType, HeadConfig, ReportMeta } from '../types';
+import { TankInput, HeadType, HeadConfig, ReportMeta } from '../core/types';
 import { Settings2, ShieldCheck, HelpCircle, Layers, Check, RefreshCw, RotateCcw, Info, AlertTriangle } from 'lucide-react';
 import { motion } from 'motion/react';
-import { Language, translations } from '../utils/translations';
-import { calculateHead } from '../utils/calculations';
+import { Language, translations } from '../core/translations';
+import { calculateHead } from '../core/logic';
 
 
 interface TankInputFormProps {

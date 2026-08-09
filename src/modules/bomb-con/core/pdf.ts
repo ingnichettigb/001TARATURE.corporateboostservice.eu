@@ -6,7 +6,7 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Language, translations } from './translations';
-import { CalculationResult, CompilerInfo } from '../types';
+import { CalculationResult, CompilerInfo } from './types';
 
 export async function generateCalibrationPDF(
   result: CalculationResult,
