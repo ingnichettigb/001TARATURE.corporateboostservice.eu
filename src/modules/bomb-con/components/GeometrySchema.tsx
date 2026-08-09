@@ -354,17 +354,19 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
 
   const boxW = 208;
   const box1H = 176;
+  // spazio bianco uniforme fra tutti i riquadri verdi
+  const BOX_GAP = 12;
   // riquadro 3 (fondo conico): allineato in basso, in linea con il riquadro "Inclin. cono"
   const box3H = 155;
   const box3Y = drawH - box3H - 6;
-  // riquadro 2 (sezione cilindrica): più basso e più compatto
-  const box2H = 76;
-  const box2Y = box3Y - 12 - box2H;
-  // riquadro somma cilindrica + conica: occupa lo spazio liberato sopra il riquadro 2
+  // riquadro 2 (sezione cilindrica): include lo spessore virola
+  const box2H = 96;
+  const box2Y = box3Y - BOX_GAP - box2H;
+  // riquadro somma cilindrica + conica
   const boxSumH = 76;
-  const boxSumY = box2Y - 10 - boxSumH;
-  // riquadro 1 (coperchio): alzato di ~10 px
-  const box1Y = Math.max(4, Math.min(callout1Y - 50, boxSumY - box1H - 8));
+  const boxSumY = box2Y - BOX_GAP - boxSumH;
+  // riquadro 1 (coperchio)
+  const box1Y = Math.max(4, Math.min(callout1Y - 50, boxSumY - box1H - BOX_GAP));
   // ancoraggio del callout 2 alla quota del riquadro 2
   const callout2Y = Math.min(Math.max(box2Y + box2H / 2, yCilTop + 18), yCilBot - 18);
 
