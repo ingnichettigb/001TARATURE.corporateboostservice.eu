@@ -1,14 +1,84 @@
-# Welcome to your Lovable project
+# Matryoshka Modules
+
+TARATURA serbatoi Crea un’app strutturata come una matrioska modulare.
+
+1. Homepage (livello 1):
+
+Genera una homepage che funge da menu principale.
+
+Mostra 4–6 card/bottoni, ognuno rappresenta un sottoprogramma.
+
+Ogni card deve avere: titolo, icona, descrizione breve.
+
+La homepage deve essere responsive, pulita, stile dashboard.
+
+La lista dei moduli deve essere caricata da una configurazione (es. modules.json) così posso aggiungere nuovi moduli senza modificare la homepage.
+
+2. Struttura dei sottoprogrammi (livello 2):
+
+Ogni bottone deve aprire un modulo autonomo.
+
+Ogni modulo deve avere la stessa struttura estetica e funzionale, identica per tutti.
+
+Ogni modulo deve essere contenuto in una cartella dedicata:
+/src/modules/<nome-modulo>/
+
+Ogni modulo deve avere:
+
+una pagina principale
+
+una sezione di input
+
+una sezione di calcolo
+
+una sezione di output
+
+una sezione per generare PDF
+
+La struttura deve essere identica per tutti i moduli, così posso duplicarla facilmente.
+
+3. Cuore del programma (livello 3):
+
+All’interno di ogni modulo, crea un file dedicato alla logica:
+/src/modules/<nome-modulo>/core/logic.js
+
+Questo file deve contenere funzioni vuote o placeholder, perché verrà sostituito con il codice importato da ZIP.
+
+Ogni modulo deve poter funzionare autonomamente con la sua logica.
+
+4. Obiettivo finale:
+
+Voglio un’app dove la homepage è solo un menu.
+
+Ogni bottone apre un sottoprogramma con la stessa struttura.
+
+Ogni sottoprogramma ha un cuore logico diverso.
+
+Ogni sottoprogramma consuma token separati.
+
+La struttura deve essere scalabile e duplicabile.
+
+Devo poter importare il codice ZIP dentro il cuore del modulo senza modificare la struttura generale.
+
+5. Tecnologie:
+
+Usa React e routing standard di Lovable.
+
+Organizza il codice in cartelle modulari.
+
+Prepara un file di configurazione per i moduli.
+
+Prepara componenti riutilizzabili per input, output e PDF.
 
 This project was built with [Lovable](https://lovable.dev).
 
 ## Build with Lovable
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/b5b3125c-0322-4e31-9fc5-99f9fbf07484).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
@@ -20,10 +90,3 @@ cd <repository-name>
 npm i
 npm run dev
 ```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
