@@ -504,15 +504,25 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
               strokeWidth="1"
               strokeDasharray="3,3"
             />
-            <text x={6 + boxW / 2} y={box2Y + 18} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+            <text x={6 + boxW / 2} y={box2Y + 16} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
               Sezione cilindrica
             </text>
-            <text x={6 + boxW / 2} y={box2Y + 40} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+            <text x={6 + boxW / 2} y={box2Y + 34} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
               Capacità in litri
             </text>
-            <text x={6 + boxW / 2} y={box2Y + 62} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
-              {result ? fmtL(result.volumeCilindro) : '—'}
+            <text x={6 + boxW / 2} y={box2Y + 54} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
+              {result ? fmtL0(result.volumeCilindro) : '—'}
             </text>
+            <foreignObject x={12} y={box2Y + 64} width={boxW - 18} height="26">
+              <MiniField
+                label="Sp. virola"
+                value={input.spVirola ?? 0}
+                onChange={(v) => patch({ spVirola: v })}
+                labelWidth="66px"
+                width="78px"
+              />
+            </foreignObject>
+
           </g>
 
 
