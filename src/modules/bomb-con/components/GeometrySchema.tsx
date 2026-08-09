@@ -474,7 +474,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
               Coperchio bombato — litri
             </text>
             <text x={6 + boxW / 2} y={box1Y + 166} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
-              {result ? fmtL(result.volumeCoperchio) : '—'}
+              {result ? fmtL0(result.volumeCoperchio) : '—'}
             </text>
           </g>
 
@@ -488,7 +488,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
               Capacità in litri
             </text>
             <text x={6 + boxW / 2} y={boxSumY + 62} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
-              {result ? fmtL(result.volumeCilindro + result.volumeFondo) : '—'}
+              {result ? fmtL0(result.volumeCilindro + result.volumeFondo) : '—'}
             </text>
           </g>
 
@@ -572,7 +572,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
               Fondo conico — litri
             </text>
             <text x={6 + boxW / 2} y={box3Y + 142} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
-              {result ? fmtL(result.volumeFondo) : '—'}
+              {result ? fmtL0(result.volumeFondo) : '—'}
             </text>
 
           </g>
