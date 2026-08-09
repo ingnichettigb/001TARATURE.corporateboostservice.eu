@@ -1,0 +1,50 @@
+[
+  {
+    "id": "bomb-con",
+    "title": "BOMB-CON",
+    "subtitle": "Fondo bombato / Coperchio conico",
+    "description": "Taratura completa: geometria, tabella di calibrazione e certificato PDF.",
+    "icon": "Cylinder",
+    "status": "active"
+  },
+  {
+    "id": "bomb-bomb",
+    "title": "BOMB-BOMB",
+    "subtitle": "Fondo e coperchio bombati",
+    "description": "Serbatoio con entrambe le testate bombate. Cuore logico da importare.",
+    "icon": "CircleDot",
+    "status": "draft"
+  },
+  {
+    "id": "coc-con",
+    "title": "COC-CON",
+    "subtitle": "Testata cocca / conica",
+    "description": "Configurazione mista cocca-conica. Cuore logico da importare.",
+    "icon": "Triangle",
+    "status": "draft"
+  },
+  {
+    "id": "con-biom",
+    "title": "CON-BIOM",
+    "subtitle": "Conico / biomassa",
+    "description": "Serbatoi conici per biomassa e liquidi densi. Cuore logico da importare.",
+    "icon": "Leaf",
+    "status": "draft"
+  },
+  {
+    "id": "piano-bomb",
+    "title": "PIANO-BOMB",
+    "subtitle": "Fondo piano / coperchio bombato",
+    "description": "Fondo piano con testata superiore bombata. Cuore logico da importare.",
+    "icon": "Layers",
+    "status": "draft"
+  },
+  {
+    "id": "piano-con",
+    "title": "PIANO-CON",
+    "subtitle": "Fondo piano / coperchio conico",
+    "description": "Fondo piano con testata superiore conica. Cuore logico da importare.",
+    "icon": "Square",
+    "status": "draft"
+  }
+]
