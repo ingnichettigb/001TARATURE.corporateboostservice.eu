@@ -572,8 +572,8 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             <text x={callout1X} y={callout1Y + 5} textAnchor="middle" fontSize="13" fontWeight="700" fill="#0f766e">1</text>
           </g>
           <g>
-            <circle cx={leftX - 15} cy={yCilMid} r="13" fill="#ffffff" stroke="#0f766e" strokeWidth="1.4" />
-            <text x={leftX - 15} y={yCilMid + 5} textAnchor="middle" fontSize="13" fontWeight="700" fill="#0f766e">2</text>
+            <circle cx={leftX - 15} cy={callout2Y} r="13" fill="#ffffff" stroke="#0f766e" strokeWidth="1.4" />
+            <text x={leftX - 15} y={callout2Y + 5} textAnchor="middle" fontSize="13" fontWeight="700" fill="#0f766e">2</text>
           </g>
           <g>
             <circle cx={callout3X} cy={callout3Y} r="13" fill="#ffffff" stroke="#0f766e" strokeWidth="1.4" />
