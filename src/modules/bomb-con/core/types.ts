@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import type { ReportHeader } from '@/shared/report-header/types';
+
+
 export type HeadType = 'decinormale' | 'pseudoellittico' | 'custom' | 'conico';
 
 export interface HeadConfig {
