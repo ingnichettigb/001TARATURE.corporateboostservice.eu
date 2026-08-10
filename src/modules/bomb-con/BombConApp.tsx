@@ -567,14 +567,16 @@ export default function App() {
                 </span>
               </div>
               
-              <button
-                type="button"
-                onClick={() => setIsCompilerModalOpen(true)}
+              <Link
+                to="/dati-comuni"
                 className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-2 px-3 rounded-lg text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <PenTool className="w-3.5 h-3.5" />
                 {t.compilerBtn}
-              </button>
+              </Link>
+              <p className="mt-1.5 text-[10px] text-emerald-800/80 font-semibold text-center">
+                Dati comuni: si compilano una volta sola per tutti i moduli.
+              </p>
             </div>
             )}
 
