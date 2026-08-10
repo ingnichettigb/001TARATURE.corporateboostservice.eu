@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Boxes } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Boxes, FileSignature } from "lucide-react";
 import modules from "@/config/modules.json";
 import type { ModuleDefinition } from "@/lib/module-types";
 import ModuleCard from "@/components/module/ModuleCard";
@@ -46,6 +46,33 @@ function Home() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-8">
+        <section className="mb-8">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Dati Comuni
+          </h2>
+          <Link
+            to="/dati-comuni"
+            className="flex items-start gap-4 rounded-2xl border border-dashed border-primary/40 bg-primary/5 p-5 transition-colors hover:bg-primary/10"
+          >
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+              <FileSignature className="h-5 w-5" />
+            </span>
+            <span>
+              <span className="block text-base font-semibold text-foreground">
+                Intestazione Report
+              </span>
+              <span className="block text-sm text-muted-foreground">
+                Ragione sociale, P.IVA, contatti, logo e note: si compilano una sola volta e valgono
+                per tutti i moduli.
+              </span>
+            </span>
+          </Link>
+        </section>
+
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Moduli di calcolo
+        </h2>
+
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {definitions.map((m) => (
             <ModuleCard key={m.id} module={m} />

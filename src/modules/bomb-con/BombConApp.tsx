@@ -4,13 +4,15 @@
  */
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Link } from '@tanstack/react-router';
+import { useReportHeader } from '@/shared/report-header/useReportHeader';
 import { TankInput, CalculationResult, CompilerInfo } from './core/types';
 import { calculateTank } from './core/logic';
 import GeometrySchema from './components/GeometrySchema';
 import ResultsDashboard from './components/ResultsDashboard';
 import CalibrationTable from './components/CalibrationTable';
 import SavedTanksList from './components/SavedTanksList';
-import CompilerConfigModal from './components/CompilerConfigModal';
+
 import InfoModal from './components/InfoModal';
 import { Language, translations } from './core/translations';
 import { 
@@ -39,7 +41,7 @@ import { generateCalibrationPDF } from './core/pdf';
 export default function App() {
   const [lang, setLang] = useState<Language>('it');
   const t = translations[lang];
-  const [isCompilerModalOpen, setIsCompilerModalOpen] = useState(false);
+  
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const wizardCardRef = useRef<HTMLDivElement>(null);
@@ -51,30 +53,9 @@ export default function App() {
     { code: 'es', flag: '🇪🇸' },
     { code: 'de', flag: '🇩🇪' }
   ];
-  const [compilerInfo, setCompilerInfo] = useState<CompilerInfo>(() => {
-    const saved = localStorage.getItem('bomb_bomb_compiler_info');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Error parsing compiler info', e);
-      }
-    }
-    return {
-      ditta: 'BOMB-CON Engineering S.r.l.',
-      partitaIva: 'IT09876543210',
-      telefono: '+39 0373 123456',
-      email: 'collaudi@bombbomb-engineering.it',
-      indirizzo: 'Via delle Industrie 42, Crema (CR)',
-      logoType: 'standard',
-      customNote: 'Socio Unico - Capitale Sociale €50.000 i.v.'
-    };
-  });
+  // Intestazione report: DATO COMUNE condiviso da tutti i moduli (src/shared/report-header)
+  const { header: compilerInfo, update: handleSaveCompilerInfo } = useReportHeader();
 
-  const handleSaveCompilerInfo = (info: CompilerInfo) => {
-    localStorage.setItem('bomb_bomb_compiler_info', JSON.stringify(info));
-    setCompilerInfo(info);
-  };
 
   const renderCompilerLogo = (type: CompilerInfo['logoType'], sizeClass: string = "w-6 h-6") => {
     switch (type) {
@@ -222,8 +203,7 @@ export default function App() {
   const handleLoadTank = (loadedInput: TankInput, loadedCompilerInfo?: CompilerInfo, tankId?: string) => {
     setInput(loadedInput);
     if (loadedCompilerInfo) {
-      setCompilerInfo(loadedCompilerInfo);
-      localStorage.setItem('bomb_bomb_compiler_info', JSON.stringify(loadedCompilerInfo));
+      handleSaveCompilerInfo(loadedCompilerInfo);
     }
     if (tankId) {
       setActiveTankId(tankId);
@@ -587,14 +567,16 @@ export default function App() {
                 </span>
               </div>
               
-              <button
-                type="button"
-                onClick={() => setIsCompilerModalOpen(true)}
+              <Link
+                to="/dati-comuni"
                 className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-2 px-3 rounded-lg text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <PenTool className="w-3.5 h-3.5" />
                 {t.compilerBtn}
-              </button>
+              </Link>
+              <p className="mt-1.5 text-[10px] text-emerald-800/80 font-semibold text-center">
+                Dati comuni: si compilano una volta sola per tutti i moduli.
+              </p>
             </div>
             )}
 
@@ -1359,14 +1341,9 @@ export default function App() {
 
       </div>
 
-      {/* Compiler Config Modal Overlay */}
-      <CompilerConfigModal
-        isOpen={isCompilerModalOpen}
-        onClose={() => setIsCompilerModalOpen(false)}
-        info={compilerInfo}
-        onSave={handleSaveCompilerInfo}
-        lang={lang}
-      />
+      {/* L'intestazione report si modifica nella pagina Dati Comuni (/dati-comuni) */}
+
+
 
       {/* Manual / Information Modal */}
       <InfoModal
