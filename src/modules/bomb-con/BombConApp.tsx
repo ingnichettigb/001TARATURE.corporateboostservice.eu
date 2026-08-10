@@ -41,7 +41,7 @@ import { generateCalibrationPDF } from './core/pdf';
 export default function App() {
   const [lang, setLang] = useState<Language>('it');
   const t = translations[lang];
-  const [isCompilerModalOpen, setIsCompilerModalOpen] = useState(false);
+  
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const wizardCardRef = useRef<HTMLDivElement>(null);
