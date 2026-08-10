@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Boxes } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Boxes, FileSignature } from "lucide-react";
 import modules from "@/config/modules.json";
 import type { ModuleDefinition } from "@/lib/module-types";
 import ModuleCard from "@/components/module/ModuleCard";
