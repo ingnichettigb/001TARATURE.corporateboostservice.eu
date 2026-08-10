@@ -51,30 +51,9 @@ export default function App() {
     { code: 'es', flag: '🇪🇸' },
     { code: 'de', flag: '🇩🇪' }
   ];
-  const [compilerInfo, setCompilerInfo] = useState<CompilerInfo>(() => {
-    const saved = localStorage.getItem('bomb_bomb_compiler_info');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Error parsing compiler info', e);
-      }
-    }
-    return {
-      ditta: 'BOMB-CON Engineering S.r.l.',
-      partitaIva: 'IT09876543210',
-      telefono: '+39 0373 123456',
-      email: 'collaudi@bombbomb-engineering.it',
-      indirizzo: 'Via delle Industrie 42, Crema (CR)',
-      logoType: 'standard',
-      customNote: 'Socio Unico - Capitale Sociale €50.000 i.v.'
-    };
-  });
+  // Intestazione report: DATO COMUNE condiviso da tutti i moduli (src/shared/report-header)
+  const { header: compilerInfo, update: handleSaveCompilerInfo } = useReportHeader();
 
-  const handleSaveCompilerInfo = (info: CompilerInfo) => {
-    localStorage.setItem('bomb_bomb_compiler_info', JSON.stringify(info));
-    setCompilerInfo(info);
-  };
 
   const renderCompilerLogo = (type: CompilerInfo['logoType'], sizeClass: string = "w-6 h-6") => {
     switch (type) {
