@@ -4,6 +4,8 @@
  */
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Link } from '@tanstack/react-router';
+import { useReportHeader } from '@/shared/report-header/useReportHeader';
 import { TankInput, CalculationResult, CompilerInfo } from './core/types';
 import { calculateTank } from './core/logic';
 import GeometrySchema from './components/GeometrySchema';
