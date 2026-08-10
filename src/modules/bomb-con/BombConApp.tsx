@@ -12,7 +12,7 @@ import GeometrySchema from './components/GeometrySchema';
 import ResultsDashboard from './components/ResultsDashboard';
 import CalibrationTable from './components/CalibrationTable';
 import SavedTanksList from './components/SavedTanksList';
-import CompilerConfigModal from './components/CompilerConfigModal';
+
 import InfoModal from './components/InfoModal';
 import { Language, translations } from './core/translations';
 import { 
