@@ -201,8 +201,7 @@ export default function App() {
   const handleLoadTank = (loadedInput: TankInput, loadedCompilerInfo?: CompilerInfo, tankId?: string) => {
     setInput(loadedInput);
     if (loadedCompilerInfo) {
-      setCompilerInfo(loadedCompilerInfo);
-      localStorage.setItem('bomb_bomb_compiler_info', JSON.stringify(loadedCompilerInfo));
+      handleSaveCompilerInfo(loadedCompilerInfo);
     }
     if (tankId) {
       setActiveTankId(tankId);
