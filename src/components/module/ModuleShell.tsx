@@ -34,6 +34,13 @@ export function ModuleShell({ title, subtitle, badge, children, actions }: Modul
               <p className="truncate text-sm text-muted-foreground">{subtitle}</p>
             ) : null}
           </div>
+          <Link
+            to="/dati-comuni"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <FileSignature className="h-4 w-4" />
+            Intestazione report
+          </Link>
           {badge ? (
             <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-secondary-foreground">
               {badge}
