@@ -1341,14 +1341,9 @@ export default function App() {
 
       </div>
 
-      {/* Compiler Config Modal Overlay */}
-      <CompilerConfigModal
-        isOpen={isCompilerModalOpen}
-        onClose={() => setIsCompilerModalOpen(false)}
-        info={compilerInfo}
-        onSave={handleSaveCompilerInfo}
-        lang={lang}
-      />
+      {/* L'intestazione report si modifica nella pagina Dati Comuni (/dati-comuni) */}
+
+
 
       {/* Manual / Information Modal */}
       <InfoModal
