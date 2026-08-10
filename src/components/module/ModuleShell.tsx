@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileSignature } from "lucide-react";
 
 interface ModuleShellProps {
   title: string;
