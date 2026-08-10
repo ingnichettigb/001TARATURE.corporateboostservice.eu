@@ -103,16 +103,6 @@ export interface SavedTank {
   compilerInfo?: CompilerInfo;
 }
 
-export interface CompilerInfo {
-  ditta: string;
-  partitaIva: string;
-  telefono: string;
-  email: string;
-  emailPec?: string;
-  iscrizioneRegistro?: string;
-  indirizzo: string;
-  logoType: 'standard' | 'building' | 'wrench' | 'gauge' | 'shield' | 'custom' | 'none';
-  customLogoData?: string; // base64 string
-  customNote: string;
-}
+// L'intestazione report è un DATO COMUNE: vive in src/shared/report-header.
+export type CompilerInfo = ReportHeader;
 

@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DatiComuniRouteImport } from './routes/dati-comuni'
 import { Route as ModuliModuleIdRouteImport } from './routes/moduli.$moduleId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DatiComuniRoute = DatiComuniRouteImport.update({
+  id: '/dati-comuni',
+  path: '/dati-comuni',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ModuliModuleIdRoute = ModuliModuleIdRouteImport.update({
@@ -25,27 +31,31 @@ const ModuliModuleIdRoute = ModuliModuleIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dati-comuni': typeof DatiComuniRoute
   '/moduli/$moduleId': typeof ModuliModuleIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dati-comuni': typeof DatiComuniRoute
   '/moduli/$moduleId': typeof ModuliModuleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dati-comuni': typeof DatiComuniRoute
   '/moduli/$moduleId': typeof ModuliModuleIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/moduli/$moduleId'
+  fullPaths: '/' | '/dati-comuni' | '/moduli/$moduleId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/moduli/$moduleId'
-  id: '__root__' | '/' | '/moduli/$moduleId'
+  to: '/' | '/dati-comuni' | '/moduli/$moduleId'
+  id: '__root__' | '/' | '/dati-comuni' | '/moduli/$moduleId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DatiComuniRoute: typeof DatiComuniRoute
   ModuliModuleIdRoute: typeof ModuliModuleIdRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dati-comuni': {
+      id: '/dati-comuni'
+      path: '/dati-comuni'
+      fullPath: '/dati-comuni'
+      preLoaderRoute: typeof DatiComuniRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/moduli/$moduleId': {
@@ -70,18 +87,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DatiComuniRoute: DatiComuniRoute,
   ModuliModuleIdRoute: ModuliModuleIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
