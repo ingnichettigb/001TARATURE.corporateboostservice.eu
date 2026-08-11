@@ -748,7 +748,11 @@ export async function generateCalibrationPDF(
       doc.text(compilerInfo.customNote, 105, footerY + 28, { align: 'center' });
     }
 
-    // Page 2+: Calibration List Table
+    // Torna sull'ultima pagina prima di aggiungere le tabelle di taratura
+    doc.setPage(doc.getNumberOfPages());
+
+    // Pagine successive: tabella di taratura
+
     if (condensed) {
       const blockHeader = [
         labels[lang].colCm,
