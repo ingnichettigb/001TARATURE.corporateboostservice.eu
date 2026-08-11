@@ -12,11 +12,11 @@ function resolveIcon(name: string): IconComponent {
 function ModuleIcon({ module }: { module: ModuleDefinition }) {
   if (module.image) {
     return (
-      <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-lg bg-primary/10">
+      <span className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-lg">
         <img
           src={module.image}
           alt={`Icona ${module.title}`}
-          className="h-full w-full object-contain p-1"
+          className="h-full w-full object-contain"
         />
       </span>
     );
