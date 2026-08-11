@@ -37,6 +37,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { generateCalibrationPDF } from './core/pdf';
+import { captureGeometryImage } from './core/captureGeometry';
 
 export default function App() {
   const [lang, setLang] = useState<Language>('it');
@@ -362,7 +363,7 @@ export default function App() {
           <div className="flex items-center gap-1.5 flex-nowrap justify-end">
             <button
               type="button"
-              onClick={() => generateCalibrationPDF(result, lang, compilerInfo, false, reportNumber)}
+              onClick={async () => generateCalibrationPDF(result, lang, compilerInfo, false, reportNumber, await captureGeometryImage(input))}
               className="bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-emerald-950"
             >
               <Printer className="w-3.5 h-3.5 text-emerald-100" />
@@ -370,7 +371,7 @@ export default function App() {
             </button>
             <button
               type="button"
-              onClick={() => generateCalibrationPDF(result, lang, compilerInfo, true, reportNumber)}
+              onClick={async () => generateCalibrationPDF(result, lang, compilerInfo, true, reportNumber, await captureGeometryImage(input))}
               className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-teal-900"
             >
               <Printer className="w-3.5 h-3.5 text-teal-100" />
