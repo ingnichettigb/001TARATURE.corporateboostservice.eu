@@ -12,39 +12,39 @@
     "title": "BOMB-BOMB",
     "subtitle": "Fondo e Coperchio Bombati",
     "description": "Serbatoio con entrambe le testate bombate. Cuore logico da importare.",
-    "icon": "CircleDot",
-    "status": "draft"
+    "status": "draft",
+    "image": "/__l5e/assets-v1/192b55a8-6a14-4eb3-897e-1f91ca9ba039/icona-bomb-bomb.png"
   },
   {
     "id": "coc-con",
     "title": "CON-CON",
     "subtitle": "Fondo e Coperchio Conico",
     "description": "Configurazione mista cocca-conica. Cuore logico da importare.",
-    "icon": "Triangle",
-    "status": "draft"
+    "status": "draft",
+    "image": "/__l5e/assets-v1/36f8e6a2-fbba-4d14-ba3a-2c8ebcf476e7/icona-con-con.png"
   },
   {
     "id": "con-biom",
     "title": "CON-BOMB",
     "subtitle": "Coperchio Conico / Fondo Bombato",
     "description": "Serbatoi conici per biomassa e liquidi densi. Cuore logico da importare.",
-    "icon": "Leaf",
-    "status": "draft"
+    "status": "draft",
+    "image": "/__l5e/assets-v1/75795f05-0e6f-421b-8e03-5b17a7e8b01e/icona-con-bomb.png"
   },
   {
     "id": "piano-bomb",
     "title": "PIANO-BOMB",
     "subtitle": "Coperchio Piano / Fondo Bombato",
     "description": "Fondo piano con testata superiore bombata. Cuore logico da importare.",
-    "icon": "Layers",
-    "status": "draft"
+    "status": "draft",
+    "image": "/__l5e/assets-v1/bb9f1c7e-4f2c-47d3-b0f9-4129cdbc185d/icona-piano-bomb.png"
   },
   {
     "id": "piano-con",
     "title": "PIANO-CON",
     "subtitle": "Coperchio Piano / Fondo Conico",
     "description": "Fondo piano con testata superiore conica. Cuore logico da importare.",
-    "icon": "Square",
-    "status": "draft"
+    "status": "draft",
+    "image": "/__l5e/assets-v1/4740b56b-d56e-4be6-82e1-f540a02d7ff5/icona-piano-con.png"
   }
 ]
