@@ -105,6 +105,7 @@ export async function captureGeometryImage(input: TankInput): Promise<GeometryIm
     const svg = svgs.sort(
       (a, b) => (b.viewBox?.baseVal?.width ?? 0) - (a.viewBox?.baseVal?.width ?? 0),
     )[0];
+    console.log('GEO svgs', svgs.map((x) => x.getAttribute('viewBox')));
     if (!svg) return null;
     return await rasterize(svg);
   } catch (e) {
