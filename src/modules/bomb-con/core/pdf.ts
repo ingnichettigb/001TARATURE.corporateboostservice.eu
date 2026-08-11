@@ -13,8 +13,10 @@ export async function generateCalibrationPDF(
   lang: Language = 'it',
   compilerInfo?: CompilerInfo,
   condensed: boolean = false,
-  reportNumberInput?: string
+  reportNumberInput?: string,
+  geometryImage?: { dataUrl: string; width: number; height: number } | null
 ) {
+
   try {
     const t = translations[lang];
     const maxCm = Math.ceil(result.H_tot / 10);
