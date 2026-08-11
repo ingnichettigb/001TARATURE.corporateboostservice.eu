@@ -9,8 +9,28 @@ function resolveIcon(name: string): IconComponent {
   return registry[name] ?? (Icons.Box as unknown as IconComponent);
 }
 
+function ModuleIcon({ module }: { module: ModuleDefinition }) {
+  if (module.image) {
+    return (
+      <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-lg bg-primary/10">
+        <img
+          src={module.image}
+          alt={`Icona ${module.title}`}
+          className="h-full w-full object-contain p-1"
+        />
+      </span>
+    );
+  }
+
+  const Icon = resolveIcon(module.icon ?? "Box");
+  return (
+    <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+      <Icon className="h-6 w-6" />
+    </span>
+  );
+}
+
 export function ModuleCard({ module }: { module: ModuleDefinition }) {
-  const Icon = resolveIcon(module.icon);
   const isActive = module.status === "active";
 
   return (
@@ -20,9 +40,7 @@ export function ModuleCard({ module }: { module: ModuleDefinition }) {
       className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"
     >
       <div className="flex items-start justify-between gap-3">
-        <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <Icon className="h-6 w-6" />
-        </span>
+        <ModuleIcon module={module} />
         <span
           className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${
             isActive

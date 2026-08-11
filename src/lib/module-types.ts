@@ -53,6 +53,9 @@ export interface ModuleDefinition {
   title: string;
   subtitle: string;
   description: string;
-  icon: string;
+  /** Icona Lucide (es. "Cylinder"). */
+  icon?: string;
+  /** URL immagine personalizzata; ha la precedenza su `icon`. */
+  image?: string;
   status: "active" | "draft";
 }
