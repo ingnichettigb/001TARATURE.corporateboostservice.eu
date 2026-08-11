@@ -533,13 +533,47 @@ export async function generateCalibrationPDF(
       currentY += 4.5;
     }
 
-    // Dati Geometrici e Strutturali (misure interne) — tabella unica raggruppata
+    // ---- Pagina 1: Configurazione geometrica (schema in scala) ----
+    if (geometryImage) {
+      const geoTitle = lang === 'en' ? 'Geometric Configuration' : lang === 'es' ? 'Configuración Geométrica' : lang === 'de' ? 'Geometrische Konfiguration' : 'Configurazione Geometrica';
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(6, 78, 59);
+      doc.text(geoTitle, 15, currentY);
+
+      const areaTop = currentY + 3;
+      const areaBottom = 226; // sopra il blocco firme (footerY = 232)
+      const maxW = 180;
+      const maxH = areaBottom - areaTop;
+      const ratio = geometryImage.height / geometryImage.width;
+      let imgW = maxW;
+      let imgH = imgW * ratio;
+      if (imgH > maxH) {
+        imgH = maxH;
+        imgW = imgH / ratio;
+      }
+      const imgX = 15 + (maxW - imgW) / 2;
+      const imgY = areaTop + (maxH - imgH) / 2;
+      try {
+        doc.addImage(geometryImage.dataUrl, 'PNG', imgX, imgY, imgW, imgH);
+        doc.setDrawColor(6, 78, 59);
+        doc.setLineWidth(0.3);
+        doc.rect(imgX - 1.5, imgY - 1.5, imgW + 3, imgH + 3, 'S');
+      } catch (e) {
+        console.error('Impossibile inserire lo schema geometrico nel PDF', e);
+      }
+    }
+
+    // ---- Pagina 2: Dati Geometrici e Strutturali (misure interne) ----
+    doc.addPage();
+    let techY = 20;
     const techTitleFull = labels[lang].techTitle + (lang === 'en' ? ' (internal measurements)' : lang === 'es' ? ' (medidas internas)' : lang === 'de' ? ' (Innenmaße)' : ' (misure interne)');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
     doc.setTextColor(6, 78, 59);
-    doc.text(techTitleFull, 15, currentY);
-    currentY += 3;
+    doc.text(techTitleFull, 15, techY);
+    techY += 3;
+
 
     const grpTop = lang === 'en' ? 'top head' : lang === 'es' ? 'cúpula sup.' : lang === 'de' ? 'obere Kuppe' : 'coperchio bombato';
     const grpCyl = lang === 'en' ? 'cylindrical section' : lang === 'es' ? 'sección cilíndrica' : lang === 'de' ? 'Zylinderteil' : 'sezione cilindrica';
