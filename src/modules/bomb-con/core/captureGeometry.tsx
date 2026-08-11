@@ -100,9 +100,13 @@ export async function captureGeometryImage(input: TankInput): Promise<GeometryIm
   try {
     root.render(<GeometrySchema input={input} onChange={() => {}} />);
     await new Promise((r) => setTimeout(r, 150));
-    const svg = host.querySelector('svg');
+    // Il primo <svg> è l'icona di avviso: scelgo quello con il viewBox più grande.
+    const svgs = Array.from(host.querySelectorAll('svg')) as SVGSVGElement[];
+    const svg = svgs.sort(
+      (a, b) => (b.viewBox?.baseVal?.width ?? 0) - (a.viewBox?.baseVal?.width ?? 0),
+    )[0];
     if (!svg) return null;
-    return await rasterize(svg as SVGSVGElement);
+    return await rasterize(svg);
   } catch (e) {
     console.error('Cattura schema geometrico fallita', e);
     return null;
