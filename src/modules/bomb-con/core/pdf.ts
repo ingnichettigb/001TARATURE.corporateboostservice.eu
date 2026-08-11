@@ -699,8 +699,10 @@ export async function generateCalibrationPDF(
     });
 
 
-    // Signature/Stamp blocks
-    const footerY = 230;
+    // Signature/Stamp blocks — sempre in fondo alla PRIMA pagina
+    doc.setPage(1);
+    const footerY = 232;
+
     doc.setDrawColor(209, 213, 219);
     doc.setLineWidth(0.3);
 
