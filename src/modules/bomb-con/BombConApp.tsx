@@ -396,7 +396,7 @@ export default function App() {
           <div className="flex items-center gap-1.5 flex-nowrap justify-end">
             <button
               type="button"
-              onClick={async () => generateCalibrationPDF(result, lang, compilerInfo, false, reportNumber, await captureGeometryImage(input))}
+              onClick={() => handleExportPdf(false)}
               className="bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-emerald-950"
             >
               <Printer className="w-3.5 h-3.5 text-emerald-100" />
