@@ -106,6 +106,38 @@ export default function App() {
   };
 
   const [input, setInput] = useState<TankInput>(defaultInput);
+  const [newExtendedNumber, setNewExtendedNumber] = useState<string>('');
+
+  // Elenco numeri di fabbrica (validità estesa) + modalità di stampa
+  const extendedNumbers = getExtendedNumbers(input.report);
+  const printMode: 'unico' | 'multiplo' = input.report.modalitaStampa || 'unico';
+
+  const setExtendedNumbers = (list: { numero: string; incluso: boolean }[]) =>
+    setInput(prev => ({
+      ...prev,
+      report: {
+        ...prev.report,
+        numeriFabbricaEstesi: list,
+        validitaEstesa: list.filter(n => n.incluso).map(n => n.numero).join(', '),
+      },
+    }));
+
+  const addExtendedNumber = () => {
+    const value = newExtendedNumber.trim();
+    if (!value) return;
+    setExtendedNumbers([...extendedNumbers, { numero: value, incluso: true }]);
+    setNewExtendedNumber('');
+  };
+
+  const toggleExtendedNumber = (idx: number) =>
+    setExtendedNumbers(extendedNumbers.map((n, i) => (i === idx ? { ...n, incluso: !n.incluso } : n)));
+
+  const removeExtendedNumber = (idx: number) =>
+    setExtendedNumbers(extendedNumbers.filter((_, i) => i !== idx));
+
+  const setPrintMode = (mode: 'unico' | 'multiplo') =>
+    setInput(prev => ({ ...prev, report: { ...prev.report, modalitaStampa: mode } }));
+
   const [formKey, setFormKey] = useState<number>(0);
   const [step, setStep] = useState<number>(1);
   const stepStripRef = useRef<HTMLDivElement>(null);
