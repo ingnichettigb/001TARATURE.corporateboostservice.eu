@@ -1011,9 +1011,9 @@ export default function App() {
               <div className="space-y-1.5">
                 <div><strong>{t.metaFabbrica.toUpperCase()}:</strong> <span className="font-semibold">{result.input.report.numeroFabbrica || '-'}</span></div>
                 <div><strong>{t.metaTag.toUpperCase()}:</strong> <span className="font-semibold">{result.input.report.tagNumber || '-'}</span></div>
-                {result.input.report.validitaEstesa && (
+                {getExtendedValidityText(result.input.report) && (
                   <div className="text-[10px] leading-tight">
-                    <strong>{lang === 'en' ? 'EXTENDED TO S/N' : lang === 'es' ? 'EXTENDIDO A FABR.' : lang === 'de' ? 'ERWEITERT AUF FABR.' : 'ESTESO A FABBR.'}:</strong> <span className="font-semibold text-neutral-700">{result.input.report.validitaEstesa}</span>
+                    <strong>{lang === 'en' ? 'EXTENDED TO S/N' : lang === 'es' ? 'EXTENDIDO A FABR.' : lang === 'de' ? 'ERWEITERT AUF FABR.' : 'ESTESO A FABBR.'}:</strong> <span className="font-semibold text-neutral-700">{getExtendedValidityText(result.input.report)}</span>
                   </div>
                 )}
               </div>
