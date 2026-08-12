@@ -1099,6 +1099,9 @@ export async function generateCalibrationPDF(
     const sanitizedDesc = sanitizeName(partDesc);
     const sanitizedDisegno = sanitizeName(rawDwg);
     let nomeFileProposto = `${sanitizedDesc}${sanitizedDisegno}`.trim();
+    if (isMultiPrint(result.input.report) && result.input.report.numeroFabbrica) {
+      nomeFileProposto += `-${sanitizeName(result.input.report.numeroFabbrica)}`;
+    }
     if (!nomeFileProposto.toLowerCase().endsWith('.pdf')) {
       nomeFileProposto += '.pdf';
     }
