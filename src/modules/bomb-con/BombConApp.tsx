@@ -139,6 +139,35 @@ export default function App() {
   const setPrintMode = (mode: 'unico' | 'multiplo') =>
     setInput(prev => ({ ...prev, report: { ...prev.report, modalitaStampa: mode } }));
 
+  /**
+   * Esporta il PDF: uno solo (con l'elenco dei numeri spuntati) oppure
+   * uno per ogni numero di fabbrica spuntato (validità estesa = UNICO).
+   */
+  const handleExportPdf = async (condensed: boolean) => {
+    const geometryImage = await captureGeometryImage(input);
+
+    if (printMode !== 'multiplo') {
+      await generateCalibrationPDF(result, lang, compilerInfo, condensed, reportNumber, geometryImage);
+      return;
+    }
+
+    const numeri = getSelectedExtendedNumbers(input.report);
+    const lista = numeri.length > 0 ? numeri : [input.report.numeroFabbrica || ''];
+
+    for (const numero of lista) {
+      const singleResult = {
+        ...result,
+        input: {
+          ...result.input,
+          report: { ...result.input.report, numeroFabbrica: numero },
+        },
+      };
+      await generateCalibrationPDF(singleResult, lang, compilerInfo, condensed, reportNumber, geometryImage);
+      await new Promise((r) => setTimeout(r, 400));
+    }
+  };
+
+
   const [formKey, setFormKey] = useState<number>(0);
   const [step, setStep] = useState<number>(1);
   const stepStripRef = useRef<HTMLDivElement>(null);
