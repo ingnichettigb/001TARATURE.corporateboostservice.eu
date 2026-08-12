@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 import { generateCalibrationPDF } from './core/pdf';
 import { captureGeometryImage } from './core/captureGeometry';
+import { getExtendedNumbers, getSelectedExtendedNumbers, getExtendedValidityText } from './core/extended-validity';
 
 export default function App() {
   const [lang, setLang] = useState<Language>('it');
@@ -106,6 +107,67 @@ export default function App() {
   };
 
   const [input, setInput] = useState<TankInput>(defaultInput);
+  const [newExtendedNumber, setNewExtendedNumber] = useState<string>('');
+
+  // Elenco numeri di fabbrica (validità estesa) + modalità di stampa
+  const extendedNumbers = getExtendedNumbers(input.report);
+  const printMode: 'unico' | 'multiplo' = input.report.modalitaStampa || 'unico';
+
+  const setExtendedNumbers = (list: { numero: string; incluso: boolean }[]) =>
+    setInput(prev => ({
+      ...prev,
+      report: {
+        ...prev.report,
+        numeriFabbricaEstesi: list,
+        validitaEstesa: list.filter(n => n.incluso).map(n => n.numero).join(', '),
+      },
+    }));
+
+  const addExtendedNumber = () => {
+    const value = newExtendedNumber.trim();
+    if (!value) return;
+    setExtendedNumbers([...extendedNumbers, { numero: value, incluso: true }]);
+    setNewExtendedNumber('');
+  };
+
+  const toggleExtendedNumber = (idx: number) =>
+    setExtendedNumbers(extendedNumbers.map((n, i) => (i === idx ? { ...n, incluso: !n.incluso } : n)));
+
+  const removeExtendedNumber = (idx: number) =>
+    setExtendedNumbers(extendedNumbers.filter((_, i) => i !== idx));
+
+  const setPrintMode = (mode: 'unico' | 'multiplo') =>
+    setInput(prev => ({ ...prev, report: { ...prev.report, modalitaStampa: mode } }));
+
+  /**
+   * Esporta il PDF: uno solo (con l'elenco dei numeri spuntati) oppure
+   * uno per ogni numero di fabbrica spuntato (validità estesa = UNICO).
+   */
+  const handleExportPdf = async (condensed: boolean) => {
+    const geometryImage = await captureGeometryImage(input);
+
+    if (printMode !== 'multiplo') {
+      await generateCalibrationPDF(result, lang, compilerInfo, condensed, reportNumber, geometryImage);
+      return;
+    }
+
+    const numeri = getSelectedExtendedNumbers(input.report);
+    const lista = numeri.length > 0 ? numeri : [input.report.numeroFabbrica || ''];
+
+    for (const numero of lista) {
+      const singleResult = {
+        ...result,
+        input: {
+          ...result.input,
+          report: { ...result.input.report, numeroFabbrica: numero },
+        },
+      };
+      await generateCalibrationPDF(singleResult, lang, compilerInfo, condensed, reportNumber, geometryImage);
+      await new Promise((r) => setTimeout(r, 400));
+    }
+  };
+
+
   const [formKey, setFormKey] = useState<number>(0);
   const [step, setStep] = useState<number>(1);
   const stepStripRef = useRef<HTMLDivElement>(null);
@@ -363,7 +425,7 @@ export default function App() {
           <div className="flex items-center gap-1.5 flex-nowrap justify-end">
             <button
               type="button"
-              onClick={async () => generateCalibrationPDF(result, lang, compilerInfo, false, reportNumber, await captureGeometryImage(input))}
+              onClick={() => handleExportPdf(false)}
               className="bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-emerald-950"
             >
               <Printer className="w-3.5 h-3.5 text-emerald-100" />
@@ -371,7 +433,7 @@ export default function App() {
             </button>
             <button
               type="button"
-              onClick={async () => generateCalibrationPDF(result, lang, compilerInfo, true, reportNumber, await captureGeometryImage(input))}
+              onClick={() => handleExportPdf(true)}
               className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-teal-900"
             >
               <Printer className="w-3.5 h-3.5 text-teal-100" />
@@ -747,17 +809,87 @@ export default function App() {
                   <label className="block text-[10px] font-extrabold uppercase text-neutral-800 mb-1">
                     {t.metaExtended}
                   </label>
-                  <textarea
-                    rows={2}
-                    value={input.report.validitaEstesa || ''}
-                    onChange={(e) => setInput(prev => ({
-                      ...prev,
-                      report: { ...prev.report, validitaEstesa: e.target.value }
-                    }))}
-                    placeholder={t.metaExtendedPlaceholder}
-                    className="w-full text-xs bg-emerald-50/20 border border-emerald-300 rounded-lg px-2.5 py-1.5 font-bold text-neutral-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-800 resize-none"
-                  />
+
+                  <div className="rounded-lg border border-emerald-300 bg-emerald-50/20 p-2 space-y-2">
+                    {/* Elenco numeri */}
+                    {extendedNumbers.length === 0 ? (
+                      <p className="text-[11px] font-semibold text-neutral-500">
+                        Nessun numero di fabbrica aggiuntivo.
+                      </p>
+                    ) : (
+                      <ul className="space-y-1">
+                        {extendedNumbers.map((n, idx) => (
+                          <li key={idx} className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={n.incluso}
+                              onChange={() => toggleExtendedNumber(idx)}
+                              className="h-3.5 w-3.5 accent-emerald-700 cursor-pointer"
+                            />
+                            <span className="text-xs font-bold text-neutral-900 flex-1 truncate">{n.numero}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeExtendedNumber(idx)}
+                              className="text-[10px] font-extrabold uppercase text-rose-700 hover:text-rose-900 cursor-pointer"
+                            >
+                              Elimina
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {/* Aggiunta nuovo numero */}
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={newExtendedNumber}
+                        onChange={(e) => setNewExtendedNumber(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addExtendedNumber();
+                          }
+                        }}
+                        placeholder={t.metaExtendedPlaceholder}
+                        className="flex-1 text-xs bg-white border border-emerald-300 rounded-lg px-2.5 py-1.5 font-bold text-neutral-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-800"
+                      />
+                      <button
+                        type="button"
+                        onClick={addExtendedNumber}
+                        className="bg-emerald-800 hover:bg-emerald-900 text-white text-[10px] font-extrabold uppercase px-2.5 py-1.5 rounded-lg cursor-pointer"
+                      >
+                        Aggiungi
+                      </button>
+                    </div>
+
+                    {/* Modalità di stampa */}
+                    <div className="pt-1 border-t border-emerald-200 space-y-1">
+                      <span className="block text-[10px] font-extrabold uppercase text-neutral-800">
+                        Modalità di stampa PDF
+                      </span>
+                      <label className="flex items-center gap-2 text-[11px] font-bold text-neutral-800 cursor-pointer">
+                        <input
+                          type="radio"
+                          className="accent-emerald-700"
+                          checked={printMode === 'unico'}
+                          onChange={() => setPrintMode('unico')}
+                        />
+                        PDF unico con tutti i numeri di fabbrica
+                      </label>
+                      <label className="flex items-center gap-2 text-[11px] font-bold text-neutral-800 cursor-pointer">
+                        <input
+                          type="radio"
+                          className="accent-emerald-700"
+                          checked={printMode === 'multiplo'}
+                          onChange={() => setPrintMode('multiplo')}
+                        />
+                        Un PDF per ogni numero di fabbrica (validità estesa: UNICO)
+                      </label>
+                    </div>
+                  </div>
                 </div>
+
               </div>
             </div>
             )}
@@ -879,9 +1011,9 @@ export default function App() {
               <div className="space-y-1.5">
                 <div><strong>{t.metaFabbrica.toUpperCase()}:</strong> <span className="font-semibold">{result.input.report.numeroFabbrica || '-'}</span></div>
                 <div><strong>{t.metaTag.toUpperCase()}:</strong> <span className="font-semibold">{result.input.report.tagNumber || '-'}</span></div>
-                {result.input.report.validitaEstesa && (
+                {getExtendedValidityText(result.input.report) && (
                   <div className="text-[10px] leading-tight">
-                    <strong>{lang === 'en' ? 'EXTENDED TO S/N' : lang === 'es' ? 'EXTENDIDO A FABR.' : lang === 'de' ? 'ERWEITERT AUF FABR.' : 'ESTESO A FABBR.'}:</strong> <span className="font-semibold text-neutral-700">{result.input.report.validitaEstesa}</span>
+                    <strong>{lang === 'en' ? 'EXTENDED TO S/N' : lang === 'es' ? 'EXTENDIDO A FABR.' : lang === 'de' ? 'ERWEITERT AUF FABR.' : 'ESTESO A FABBR.'}:</strong> <span className="font-semibold text-neutral-700">{getExtendedValidityText(result.input.report)}</span>
                   </div>
                 )}
               </div>

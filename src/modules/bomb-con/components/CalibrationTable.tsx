@@ -8,6 +8,7 @@ import { CalculationResult, CompilerInfo } from '../core/types';
 import { Search, Download, Printer, Grid, List } from 'lucide-react';
 import { Language, translations } from '../core/translations';
 import { generateCalibrationPDF } from '../core/pdf';
+import { getExtendedValidityText } from '../core/extended-validity';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -592,8 +593,9 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo }: 
       if (result.input.report.commessa) {
         commValLine += `${labels[lang].job} ${result.input.report.commessa}  `;
       }
-      if (result.input.report.validitaEstesa) {
-        commValLine += `  •  ${labels[lang].extValidity} ${result.input.report.validitaEstesa}`;
+      const extValText = getExtendedValidityText(result.input.report);
+      if (extValText) {
+        commValLine += `  •  ${labels[lang].extValidity} ${extValText}`;
       }
       if (commValLine) {
         doc.setFont('helvetica', 'bold');

@@ -7,6 +7,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Language, translations } from './translations';
 import { CalculationResult, CompilerInfo } from './types';
+import { getSelectedExtendedNumbers, isMultiPrint } from './extended-validity';
 
 export async function generateCalibrationPDF(
   result: CalculationResult,
@@ -526,14 +527,44 @@ export async function generateCalibrationPDF(
     let currentY = (doc as any).lastAutoTable.finalY + 6;
 
     // Optional Extended validity note
-    if (result.input.report.validitaEstesa) {
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.5);
-      doc.setTextColor(107, 114, 128);
-      const validityText = `${labels[lang].extValidity.toUpperCase()} ${result.input.report.validitaEstesa}`;
-      doc.text(validityText, 15, currentY);
-      currentY += 4.5;
+    {
+      const multi = isMultiPrint(result.input.report);
+      const numeri = getSelectedExtendedNumbers(result.input.report);
+      if (multi || numeri.length > 0) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.setTextColor(107, 114, 128);
+        const labelTxt = labels[lang].extValidity.toUpperCase();
+        doc.text(labelTxt, 15, currentY);
+        const labelW = doc.getTextWidth(labelTxt) + 2;
+        doc.setFont('helvetica', 'normal');
+
+        if (multi) {
+          doc.text('UNICO', 15 + labelW, currentY);
+          currentY += 4.5;
+        } else {
+          let x = 15 + labelW;
+          for (const numero of numeri) {
+            const w = doc.getTextWidth(numero) + 9;
+            if (x + w > 195) {
+              x = 15 + labelW;
+              currentY += 4.5;
+            }
+            // quadratino spuntato
+            doc.setDrawColor(107, 114, 128);
+            doc.setLineWidth(0.2);
+            doc.rect(x, currentY - 2.6, 2.6, 2.6, 'S');
+            doc.setLineWidth(0.35);
+            doc.line(x + 0.5, currentY - 1.4, x + 1.1, currentY - 0.5);
+            doc.line(x + 1.1, currentY - 0.5, x + 2.2, currentY - 2.3);
+            doc.text(numero, x + 4, currentY);
+            x += w;
+          }
+          currentY += 4.5;
+        }
+      }
     }
+
 
     // ---- Pagina 1: Configurazione geometrica (schema in scala) ----
     if (geometryImage) {
@@ -1068,6 +1099,9 @@ export async function generateCalibrationPDF(
     const sanitizedDesc = sanitizeName(partDesc);
     const sanitizedDisegno = sanitizeName(rawDwg);
     let nomeFileProposto = `${sanitizedDesc}${sanitizedDisegno}`.trim();
+    if (isMultiPrint(result.input.report) && result.input.report.numeroFabbrica) {
+      nomeFileProposto += `-${sanitizeName(result.input.report.numeroFabbrica)}`;
+    }
     if (!nomeFileProposto.toLowerCase().endsWith('.pdf')) {
       nomeFileProposto += '.pdf';
     }
