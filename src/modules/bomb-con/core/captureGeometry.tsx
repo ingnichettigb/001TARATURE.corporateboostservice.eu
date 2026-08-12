@@ -30,16 +30,20 @@ const rasterize = async (svg: SVGSVGElement): Promise<GeometryImage | null> => {
   clones.forEach((fo, i) => {
     const src = originals[i];
     const inputEl = src?.querySelector('input') as HTMLInputElement | null;
-    const unit = src?.querySelector('span')?.textContent?.trim() ?? '';
-    const value = inputEl?.value ?? '';
+    const selectEl = src?.querySelector('select') as HTMLSelectElement | null;
+    const unit = selectEl ? '' : (src?.querySelector('span')?.textContent?.trim() ?? '');
+    const value = selectEl
+      ? (selectEl.selectedOptions[0]?.textContent ?? selectEl.value ?? '')
+      : (inputEl?.value ?? '');
     const x = Number(fo.getAttribute('x') ?? 0);
     const y = Number(fo.getAttribute('y') ?? 0);
+    const foW = Number(fo.getAttribute('width') ?? 86) || 86;
 
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     rect.setAttribute('x', String(x + 1));
     rect.setAttribute('y', String(y + 1));
-    rect.setAttribute('width', '84');
+    rect.setAttribute('width', String(foW - 2));
     rect.setAttribute('height', '17');
     rect.setAttribute('rx', '3');
     rect.setAttribute('fill', '#ffffff');
@@ -48,11 +52,15 @@ const rasterize = async (svg: SVGSVGElement): Promise<GeometryImage | null> => {
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     text.setAttribute('x', String(x + 5));
     text.setAttribute('y', String(y + 13.5));
-    text.setAttribute('font-size', '11');
+    const label = unit ? `${value} ${unit}` : value;
+    // riduce il corpo del testo se l'etichetta e' troppo lunga per il riquadro
+    const maxChars = Math.max(6, Math.floor((foW - 10) / 5.4));
+    const fontSize = label.length > maxChars ? Math.max(6.5, (11 * maxChars) / label.length) : 11;
+    text.setAttribute('font-size', String(Math.round(fontSize * 10) / 10));
     text.setAttribute('font-weight', '700');
     text.setAttribute('font-family', 'Helvetica, Arial, sans-serif');
     text.setAttribute('fill', '#0f172a');
-    text.textContent = unit ? `${value} ${unit}` : value;
+    text.textContent = label;
     g.appendChild(rect);
     g.appendChild(text);
     fo.replaceWith(g);
