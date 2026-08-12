@@ -404,7 +404,7 @@ export default function App() {
             </button>
             <button
               type="button"
-              onClick={async () => generateCalibrationPDF(result, lang, compilerInfo, true, reportNumber, await captureGeometryImage(input))}
+              onClick={() => handleExportPdf(true)}
               className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-teal-900"
             >
               <Printer className="w-3.5 h-3.5 text-teal-100" />
