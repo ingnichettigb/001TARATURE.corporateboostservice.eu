@@ -653,7 +653,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
               Capacità totale lt.
             </text>
             <text x={boxCapTotX + boxCapTotW / 2} y={boxCapTotY + 45} textAnchor="middle" fontSize="15" fontWeight="700" fill="#0f766e">
-              {result ? fmtL(result.volumeTotale) : '—'}
+              {result ? fmtL0(result.volumeTotale) : '—'}
             </text>
           </g>
 
