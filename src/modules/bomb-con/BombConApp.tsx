@@ -38,7 +38,7 @@ import {
 } from 'lucide-react';
 import { generateCalibrationPDF } from './core/pdf';
 import { captureGeometryImage } from './core/captureGeometry';
-import { getExtendedNumbers, getSelectedExtendedNumbers } from './core/extended-validity';
+import { getExtendedNumbers, getSelectedExtendedNumbers, getExtendedValidityText } from './core/extended-validity';
 
 export default function App() {
   const [lang, setLang] = useState<Language>('it');
