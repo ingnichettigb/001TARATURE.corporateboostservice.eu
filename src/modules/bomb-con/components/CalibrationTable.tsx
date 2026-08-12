@@ -8,6 +8,7 @@ import { CalculationResult, CompilerInfo } from '../core/types';
 import { Search, Download, Printer, Grid, List } from 'lucide-react';
 import { Language, translations } from '../core/translations';
 import { generateCalibrationPDF } from '../core/pdf';
+import { getExtendedValidityText } from '../core/extended-validity';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
