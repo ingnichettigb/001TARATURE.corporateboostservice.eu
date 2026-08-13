@@ -1,22 +1,40 @@
-# Moduli (struttura matrioska)
+# Moduli — struttura a carte autonome
 
-Livello 1: `src/routes/index.tsx` (menu) legge `src/config/modules.json`.
-Livello 2: ogni modulo vive in `src/modules/<id>/` con la stessa struttura.
-Livello 3: il cuore logico è in `src/modules/<id>/core/logic.ts`.
+Il core (`src/routes/`, `src/common/`) non contiene logica di modulo.
+Ogni carta è una cartella autonoma che può essere aggiunta o rimossa senza
+toccare il core.
 
-## Aggiungere un nuovo modulo
+```text
+src/modules/<NOME-MODULO>/
+  index.ts                 export run<NomeModulo>() → { id, definition, Page }
+  src/
+    controllers/           pagina principale e componenti UI del modulo
+    services/              logica di calcolo, PDF, esportazioni
+    utils/                 formattazioni, traduzioni
+    models/                tipi e strutture dati
+  assets/
+    images/                icona della carta
+    data/module.json       id, titolo, sottotitolo, descrizione, immagine, stato
+```
 
-1. Copia una cartella scheletro, es. `cp -r src/modules/bomb-bomb src/modules/nuovo-id`.
-2. In `src/modules/nuovo-id/config.ts` cambia `MODULE_ID` con il nuovo id.
-3. Aggiungi la voce in `src/config/modules.json` (id, title, subtitle, description, icon, status).
-4. Registra la pagina in `src/routes/moduli.$moduleId.tsx` nella mappa `pages`.
-5. Incolla il codice importato da ZIP dentro `core/logic.ts` mantenendo le funzioni
-   esportate `getInputSchema()` e `calculate()`.
+File condivisi: `src/common/` (config, logger, helpers, tipi comuni, UI
+riutilizzabile, dati comuni dell'intestazione report).
 
-La UI (Input → Calcolo → Output → PDF) resta identica: viene da
-`src/components/module/ModuleTemplatePage.tsx`.
+## Aggiungere una carta in 3 passi
 
-## Modulo con UI dedicata
+1. `cp -r src/modules/BOMB-BOMB src/modules/NUOVO-MODULO`
+2. Aggiorna `assets/data/module.json` (id univoco, titolo, descrizione, icona)
+   e rinomina la funzione esportata in `index.ts` (es. `runNuovoModulo`).
+3. Aggiungi la riga in `src/modules/registry.ts`.
 
-`bomb-con` è l'esempio di modulo completo: il codice importato vive in
-`BombConApp.tsx` + `components/`, con logica in `core/logic.ts` e PDF in `core/pdf.ts`.
+La carta compare subito in homepage e su `/moduli/<id>`.
+
+## Sostituire il cuore logico (codice da ZIP)
+
+Il calcolo vive in `src/services/logic.ts` e mantiene sempre le stesse firme
+(`getInputSchema`, `calculate`, `getPdfFooterNote`): puoi sostituire il file con
+il codice importato senza modificare la struttura del modulo né il core.
+
+`BOMB-CON` è l'esempio di carta completa: controller in `src/controllers/`,
+calcoli e PDF in `src/services/`, tipi in `src/models/`, traduzioni in
+`src/utils/`.
