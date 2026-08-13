@@ -7,7 +7,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Language, translations } from '../utils/translations';
 import { CalculationResult, CompilerInfo } from '../models/types';
-import { getSelectedExtendedNumbers, isMultiPrint } from './extended-validity';
+import { getSelectedExtendedEntries, formatExtendedEntry, isMultiPrint } from './extended-validity';
 
 export async function generateCalibrationPDF(
   result: CalculationResult,
@@ -529,7 +529,7 @@ export async function generateCalibrationPDF(
     // Optional Extended validity note
     {
       const multi = isMultiPrint(result.input.report);
-      const numeri = getSelectedExtendedNumbers(result.input.report);
+      const numeri = getSelectedExtendedEntries(result.input.report).map(formatExtendedEntry);
       if (multi || numeri.length > 0) {
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(7.5);
