@@ -38,7 +38,7 @@ import {
 } from 'lucide-react';
 import { generateCalibrationPDF } from '../services/pdf';
 import { captureGeometryImage } from '../services/captureGeometry';
-import { getExtendedNumbers, getSelectedExtendedNumbers, getExtendedValidityText } from '../services/extended-validity';
+import { getExtendedNumbers, getSelectedExtendedEntries, getExtendedValidityText, formatExtendedEntry } from '../services/extended-validity';
 
 export default function App() {
   const [lang, setLang] = useState<Language>('it');
@@ -108,27 +108,32 @@ export default function App() {
 
   const [input, setInput] = useState<TankInput>(defaultInput);
   const [newExtendedNumber, setNewExtendedNumber] = useState<string>('');
+  const [newExtendedTag, setNewExtendedTag] = useState<string>('');
 
   // Elenco numeri di fabbrica (validità estesa) + modalità di stampa
   const extendedNumbers = getExtendedNumbers(input.report);
   const printMode: 'unico' | 'multiplo' = input.report.modalitaStampa || 'unico';
 
-  const setExtendedNumbers = (list: { numero: string; incluso: boolean }[]) =>
+  const setExtendedNumbers = (list: { numero: string; tag?: string; incluso: boolean }[]) =>
     setInput(prev => ({
       ...prev,
       report: {
         ...prev.report,
         numeriFabbricaEstesi: list,
-        validitaEstesa: list.filter(n => n.incluso).map(n => n.numero).join(', '),
+        validitaEstesa: list.filter(n => n.incluso).map(n => formatExtendedEntry(n)).join(', '),
       },
     }));
 
   const addExtendedNumber = () => {
     const value = newExtendedNumber.trim();
     if (!value) return;
-    setExtendedNumbers([...extendedNumbers, { numero: value, incluso: true }]);
+    setExtendedNumbers([...extendedNumbers, { numero: value, tag: newExtendedTag.trim(), incluso: true }]);
     setNewExtendedNumber('');
+    setNewExtendedTag('');
   };
+
+  const updateExtendedEntry = (idx: number, patch: { numero?: string; tag?: string }) =>
+    setExtendedNumbers(extendedNumbers.map((n, i) => (i === idx ? { ...n, ...patch } : n)));
 
   const toggleExtendedNumber = (idx: number) =>
     setExtendedNumbers(extendedNumbers.map((n, i) => (i === idx ? { ...n, incluso: !n.incluso } : n)));
@@ -151,15 +156,21 @@ export default function App() {
       return;
     }
 
-    const numeri = getSelectedExtendedNumbers(input.report);
-    const lista = numeri.length > 0 ? numeri : [input.report.numeroFabbrica || ''];
+    const entries = getSelectedExtendedEntries(input.report);
+    const lista = entries.length > 0
+      ? entries
+      : [{ numero: input.report.numeroFabbrica || '', tag: input.report.tagNumber || '', incluso: true }];
 
-    for (const numero of lista) {
+    for (const entry of lista) {
       const singleResult = {
         ...result,
         input: {
           ...result.input,
-          report: { ...result.input.report, numeroFabbrica: numero },
+          report: {
+            ...result.input.report,
+            numeroFabbrica: entry.numero,
+            tagNumber: entry.tag || result.input.report.tagNumber,
+          },
         },
       };
       await generateCalibrationPDF(singleResult, lang, compilerInfo, condensed, reportNumber, geometryImage);
@@ -826,7 +837,20 @@ export default function App() {
                               onChange={() => toggleExtendedNumber(idx)}
                               className="h-3.5 w-3.5 accent-emerald-700 cursor-pointer"
                             />
-                            <span className="text-xs font-bold text-neutral-900 flex-1 truncate">{n.numero}</span>
+                            <input
+                              type="text"
+                              value={n.numero}
+                              onChange={(e) => updateExtendedEntry(idx, { numero: e.target.value })}
+                              placeholder="N. fabbrica"
+                              className="flex-1 min-w-0 text-xs bg-white border border-emerald-300 rounded-lg px-2 py-1 font-bold text-neutral-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-800"
+                            />
+                            <input
+                              type="text"
+                              value={n.tag || ''}
+                              onChange={(e) => updateExtendedEntry(idx, { tag: e.target.value })}
+                              placeholder="Tag number"
+                              className="flex-1 min-w-0 text-xs bg-white border border-emerald-300 rounded-lg px-2 py-1 font-bold text-neutral-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-800"
+                            />
                             <button
                               type="button"
                               onClick={() => removeExtendedNumber(idx)}
@@ -840,7 +864,7 @@ export default function App() {
                     )}
 
                     {/* Aggiunta nuovo numero */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <input
                         type="text"
                         value={newExtendedNumber}
@@ -852,7 +876,20 @@ export default function App() {
                           }
                         }}
                         placeholder={t.metaExtendedPlaceholder}
-                        className="flex-1 text-xs bg-white border border-emerald-300 rounded-lg px-2.5 py-1.5 font-bold text-neutral-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-800"
+                        className="flex-1 min-w-0 text-xs bg-white border border-emerald-300 rounded-lg px-2.5 py-1.5 font-bold text-neutral-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-800"
+                      />
+                      <input
+                        type="text"
+                        value={newExtendedTag}
+                        onChange={(e) => setNewExtendedTag(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addExtendedNumber();
+                          }
+                        }}
+                        placeholder="Tag number"
+                        className="flex-1 min-w-0 text-xs bg-white border border-emerald-300 rounded-lg px-2.5 py-1.5 font-bold text-neutral-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-800"
                       />
                       <button
                         type="button"
