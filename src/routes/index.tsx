@@ -79,8 +79,8 @@ function Home() {
           ))}
         </div>
         <p className="mt-8 text-xs text-muted-foreground">
-          I moduli sono definiti in <code>src/config/modules.json</code>: aggiungendo una voce e la
-          cartella <code>src/modules/&lt;id&gt;/</code> compare automaticamente una nuova card.
+          I moduli sono definiti in <code>src/modules/registry.ts</code>: aggiungendo una riga e la
+          cartella <code>src/modules/&lt;NOME&gt;/</code> compare automaticamente una nuova card.
         </p>
       </main>
     </div>
