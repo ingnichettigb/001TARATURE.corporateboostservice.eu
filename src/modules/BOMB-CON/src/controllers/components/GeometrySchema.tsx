@@ -4,8 +4,8 @@
  */
 
 import React, { useMemo } from 'react';
-import { TankInput, HeadType } from '../core/types';
-import { calculateTank } from '../core/logic';
+import { TankInput, HeadType } from '../../models/types';
+import { calculateTank } from '../../services/logic';
 import { AlertTriangle, Info } from 'lucide-react';
 
 interface GeometrySchemaProps {

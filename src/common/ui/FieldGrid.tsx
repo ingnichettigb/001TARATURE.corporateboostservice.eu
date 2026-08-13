@@ -1,4 +1,4 @@
-import type { FieldDef, ModuleValues } from "@/lib/module-types";
+import type { FieldDef, ModuleValues } from "@/common/module-types";
 
 interface FieldGridProps {
   fields: FieldDef[];

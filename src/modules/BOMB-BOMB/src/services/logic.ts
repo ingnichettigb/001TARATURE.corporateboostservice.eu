@@ -1,4 +1,4 @@
-import type { FieldDef, ModuleCalcOutput, ModuleLogic, ModuleValues } from "@/lib/module-types";
+import type { FieldDef, ModuleCalcOutput, ModuleLogic, ModuleValues } from "@/common/module-types";
 
 /**
  * CUORE LOGICO DEL MODULO BOMB-BOMB (livello 3).

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import * as Icons from "lucide-react";
-import type { ModuleDefinition } from "@/lib/module-types";
+import type { ModuleDefinition } from "@/common/module-types";
 
 type IconComponent = (props: { className?: string }) => React.ReactNode;
 

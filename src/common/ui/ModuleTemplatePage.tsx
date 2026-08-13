@@ -5,7 +5,7 @@ import SectionCard from "./SectionCard";
 import FieldGrid from "./FieldGrid";
 import ResultView from "./ResultView";
 import PdfExportButton from "./PdfExportButton";
-import type { ModuleCalcOutput, ModuleDefinition, ModuleLogic, ModuleValues } from "@/lib/module-types";
+import type { ModuleCalcOutput, ModuleDefinition, ModuleLogic, ModuleValues } from "@/common/module-types";
 
 interface ModuleTemplatePageProps {
   definition: ModuleDefinition;

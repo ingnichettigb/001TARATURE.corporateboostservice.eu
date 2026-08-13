@@ -1,4 +1,4 @@
-import type { ModuleCalcOutput } from "@/lib/module-types";
+import type { ModuleCalcOutput } from "@/common/module-types";
 
 /** Riepilogo + tabella risultati, identici in ogni modulo. */
 export function ResultView({ output }: { output: ModuleCalcOutput | null }) {

@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Language } from '../core/translations';
+import { Language } from '../../utils/translations';
 import { X, Info, Cylinder, BookOpen, Layers, Settings, FileText } from 'lucide-react';
 
 interface InfoModalProps {

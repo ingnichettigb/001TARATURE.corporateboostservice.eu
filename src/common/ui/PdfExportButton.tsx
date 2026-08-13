@@ -1,6 +1,6 @@
 import { FileDown } from "lucide-react";
-import type { ModuleCalcOutput, ModuleValues, FieldDef } from "@/lib/module-types";
-import { exportModulePdf } from "@/lib/module-pdf";
+import type { ModuleCalcOutput, ModuleValues, FieldDef } from "@/common/module-types";
+import { exportModulePdf } from "@/common/module-pdf";
 
 interface PdfExportButtonProps {
   title: string;

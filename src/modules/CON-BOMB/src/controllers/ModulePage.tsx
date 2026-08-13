@@ -1,4 +1,4 @@
-import ModuleTemplatePage from "@/components/module/ModuleTemplatePage";
+import ModuleTemplatePage from "@/common/ui/ModuleTemplatePage";
 import definition from "./config";
 import logic from "./core/logic";
 

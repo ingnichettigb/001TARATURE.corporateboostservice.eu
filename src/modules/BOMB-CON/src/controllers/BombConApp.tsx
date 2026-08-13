@@ -5,16 +5,16 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from '@tanstack/react-router';
-import { useReportHeader } from '@/shared/report-header/useReportHeader';
-import { TankInput, CalculationResult, CompilerInfo } from './core/types';
-import { calculateTank } from './core/logic';
+import { useReportHeader } from '@/common/report-header/useReportHeader';
+import { TankInput, CalculationResult, CompilerInfo } from '../models/types';
+import { calculateTank } from '../services/logic';
 import GeometrySchema from './components/GeometrySchema';
 import ResultsDashboard from './components/ResultsDashboard';
 import CalibrationTable from './components/CalibrationTable';
 import SavedTanksList from './components/SavedTanksList';
 
 import InfoModal from './components/InfoModal';
-import { Language, translations } from './core/translations';
+import { Language, translations } from '../utils/translations';
 import { 
   Cylinder, 
   FileText, 
@@ -36,9 +36,9 @@ import {
   ChevronRight,
   ChevronDown
 } from 'lucide-react';
-import { generateCalibrationPDF } from './core/pdf';
-import { captureGeometryImage } from './core/captureGeometry';
-import { getExtendedNumbers, getSelectedExtendedNumbers, getExtendedValidityText } from './core/extended-validity';
+import { generateCalibrationPDF } from '../services/pdf';
+import { captureGeometryImage } from '../services/captureGeometry';
+import { getExtendedNumbers, getSelectedExtendedNumbers, getExtendedValidityText } from '../services/extended-validity';
 
 export default function App() {
   const [lang, setLang] = useState<Language>('it');

@@ -3,8 +3,8 @@
  * renderizzandolo offscreen (funziona anche se lo step 3 non è a video).
  */
 import { createRoot } from 'react-dom/client';
-import GeometrySchema from '../components/GeometrySchema';
-import type { TankInput } from './types';
+import GeometrySchema from '../controllers/components/GeometrySchema';
+import type { TankInput } from '../models/types';
 
 export interface GeometryImage {
   dataUrl: string;

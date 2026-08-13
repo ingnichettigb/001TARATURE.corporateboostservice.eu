@@ -4,9 +4,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { SavedTank, TankInput, CompilerInfo } from '../core/types';
+import { SavedTank, TankInput, CompilerInfo } from '../../models/types';
 import { Save, Trash2, FolderOpen, AlertCircle, Pencil, Copy, Printer, Check, X, Download, Upload } from 'lucide-react';
-import { Language, translations } from '../core/translations';
+import { Language, translations } from '../../utils/translations';
 
 interface SavedTanksListProps {
   currentInput: TankInput;

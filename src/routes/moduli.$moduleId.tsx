@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { Suspense, lazy, useEffect, useState } from "react";
 import modules from "@/config/modules.json";
-import type { ModuleDefinition } from "@/lib/module-types";
+import type { ModuleDefinition } from "@/common/module-types";
 
 const definitions = modules as ModuleDefinition[];
 

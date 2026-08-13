@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, FileSignature } from "lucide-react";
-import ReportHeaderForm from "@/shared/report-header/ReportHeaderForm";
-import { useReportHeader } from "@/shared/report-header/useReportHeader";
+import ReportHeaderForm from "@/common/report-header/ReportHeaderForm";
+import { useReportHeader } from "@/common/report-header/useReportHeader";
 
 export const Route = createFileRoute("/dati-comuni")({
   head: () => ({
