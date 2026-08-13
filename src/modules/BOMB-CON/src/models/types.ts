@@ -29,7 +29,7 @@ export interface ReportMeta {
   tagNumber?: string;
   validitaEstesa?: string;
   /** Elenco gestito dei numeri di fabbrica a cui è estesa la validità. */
-  numeriFabbricaEstesi?: { numero: string; incluso: boolean }[];
+  numeriFabbricaEstesi?: { numero: string; tag?: string; incluso: boolean }[];
   /** 'unico' = un solo PDF con tutti i numeri; 'multiplo' = un PDF per numero. */
   modalitaStampa?: 'unico' | 'multiplo';
   commessa?: string;
