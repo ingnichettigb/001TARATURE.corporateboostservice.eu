@@ -1,8 +1,9 @@
 import ModuleTemplatePage from "@/common/ui/ModuleTemplatePage";
-import definition from "./config";
-import logic from "./core/logic";
+import type {{ ModuleDefinition }} from "@/common/module-types";
+import definition from "../../assets/data/module.json";
+import logic from "../services/logic";
 
-/** Pagina principale del modulo (struttura identica in tutti i moduli). */
-export default function ModulePage() {
-  return <ModuleTemplatePage definition={definition} logic={logic} />;
-}
+/** Controller principale del modulo (struttura identica in tutti i moduli). */
+export default function ModulePage() {{
+  return <ModuleTemplatePage definition={{definition as ModuleDefinition}} logic={{logic}} />;
+}}
