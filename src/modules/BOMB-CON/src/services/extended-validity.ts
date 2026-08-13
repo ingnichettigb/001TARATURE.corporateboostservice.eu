@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { ReportMeta } from './types';
+import type { ReportMeta } from '../models/types';
 
 export interface ExtendedFactoryNumber {
   numero: string;

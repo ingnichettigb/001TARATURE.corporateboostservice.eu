@@ -5,8 +5,8 @@
 
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Language, translations } from './translations';
-import { CalculationResult, CompilerInfo } from './types';
+import { Language, translations } from '../utils/translations';
+import { CalculationResult, CompilerInfo } from '../models/types';
 import { getSelectedExtendedNumbers, isMultiPrint } from './extended-validity';
 
 export async function generateCalibrationPDF(
