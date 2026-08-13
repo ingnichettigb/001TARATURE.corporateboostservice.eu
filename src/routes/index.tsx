@@ -1,10 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Boxes, FileSignature } from "lucide-react";
-import modules from "@/config/modules.json";
-import type { ModuleDefinition } from "@/common/module-types";
+import { moduleDefinitions } from "@/modules/registry";
 import ModuleCard from "@/common/ui/ModuleCard";
 
-const definitions = modules as ModuleDefinition[];
+const definitions = moduleDefinitions;
 
 export const Route = createFileRoute("/")({
   head: () => ({
