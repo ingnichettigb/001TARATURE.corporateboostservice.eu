@@ -1,29 +1,24 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { Suspense, lazy, useEffect, useState } from "react";
-import modules from "@/config/modules.json";
-import type { ModuleDefinition } from "@/lib/module-types";
+import { Suspense, useEffect, useState } from "react";
+import { getModuleEntry, moduleDefinitions } from "@/modules/registry";
 
-const definitions = modules as ModuleDefinition[];
-
-const pages: Record<string, ReturnType<typeof lazy>> = {
-  "bomb-con": lazy(() => import("@/modules/bomb-con/ModulePage")),
-  "bomb-bomb": lazy(() => import("@/modules/bomb-bomb/ModulePage")),
-  "coc-con": lazy(() => import("@/modules/coc-con/ModulePage")),
-  "con-biom": lazy(() => import("@/modules/con-biom/ModulePage")),
-  "piano-bomb": lazy(() => import("@/modules/piano-bomb/ModulePage")),
-  "piano-con": lazy(() => import("@/modules/piano-con/ModulePage")),
-};
-
+/**
+ * Router delle carte: non contiene logica specifica di modulo.
+ * Risolve l'id nel registro e monta il controller principale del modulo.
+ */
 export const Route = createFileRoute("/moduli/$moduleId")({
   loader: ({ params }) => {
-    const definition = definitions.find((m) => m.id === params.moduleId);
+    const definition = moduleDefinitions.find((m) => m.id === params.moduleId);
     if (!definition) throw notFound();
     return { definition };
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
       return {
-        meta: [{ title: "Modulo non disponibile — Taratura Serbatoi" }, { name: "robots", content: "noindex" }],
+        meta: [
+          { title: "Modulo non disponibile — Taratura Serbatoi" },
+          { name: "robots", content: "noindex" },
+        ],
       };
     }
     const { definition } = loaderData;
@@ -45,15 +40,16 @@ function ModuleRoute() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const Page = pages[definition.id];
+  const entry = getModuleEntry(definition.id);
   const fallback = (
     <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
       Caricamento {definition.title}…
     </div>
   );
 
-  if (!mounted || !Page) return fallback;
+  if (!mounted || !entry) return fallback;
 
+  const Page = entry.Page;
   return (
     <Suspense fallback={fallback}>
       <Page />
