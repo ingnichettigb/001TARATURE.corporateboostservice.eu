@@ -1,3 +1,5 @@
+import type * as React from "react";
+
 /**
  * Contratto comune a tutti i moduli (livello 3 — "cuore logico").
  *
@@ -59,3 +61,15 @@ export interface ModuleDefinition {
   image?: string;
   status: "active" | "draft";
 }
+
+/**
+ * Voce del registro: quanto il core deve sapere di una carta.
+ * `Page` è il controller principale del modulo, caricato in lazy.
+ */
+export interface ModuleEntry {
+  id: string;
+  definition: ModuleDefinition;
+  Page: LazyPage;
+}
+
+export type LazyPage = React.LazyExoticComponent<() => React.ReactNode>;
