@@ -12,6 +12,11 @@ import runConTroncocon from "./CON-TRONCOCON";
 import runPianoTroncocon from "./PIANO-TRONCOCON";
 import runOrizzCon from "./ORIZZ-CON";
 import runOrizzBomb from "./ORIZZ-BOMB";
+import runBombPiano from "./BOMB-PIANO";
+import runConPiano from "./CON-PIANO";
+import runBombConBocc from "./BOMB-CON-BOCC";
+import runConConBocc from "./CON-CON-BOCC";
+import runPianoConBocc from "./PIANO-CON-BOCC";
 import type { ModuleEntry } from "@/common/module-types";
 
 /**
@@ -34,6 +39,11 @@ const runners = [
   runPianoTroncocon,
   runOrizzCon,
   runOrizzBomb,
+  runBombPiano,
+  runConPiano,
+  runBombConBocc,
+  runConConBocc,
+  runPianoConBocc,
 ];
 
 export const moduleEntries: ModuleEntry[] = runners.map((run) => run());
