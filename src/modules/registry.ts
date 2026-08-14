@@ -4,6 +4,14 @@ import runConBomb from "./CON-BOMB";
 import runConCon from "./CON-CON";
 import runPianoBomb from "./PIANO-BOMB";
 import runPianoCon from "./PIANO-CON";
+import runBombIncl from "./BOMB-INCL";
+import runBombTroncocon from "./BOMB-TRONCOCON";
+import runConIncl from "./CON-INCL";
+import runPianoIncl from "./PIANO-INCL";
+import runConTroncocon from "./CON-TRONCOCON";
+import runPianoTroncocon from "./PIANO-TRONCOCON";
+import runOrizzCon from "./ORIZZ-CON";
+import runOrizzBomb from "./ORIZZ-BOMB";
 import type { ModuleEntry } from "@/common/module-types";
 
 /**
@@ -11,7 +19,22 @@ import type { ModuleEntry } from "@/common/module-types";
  * Aggiungere/togliere una carta = aggiungere/togliere una riga qui
  * (più la sua cartella). Nessuna logica di modulo in questo file.
  */
-const runners = [runBombCon, runBombBomb, runConBomb, runConCon, runPianoBomb, runPianoCon];
+const runners = [
+  runBombCon,
+  runBombBomb,
+  runConBomb,
+  runConCon,
+  runPianoBomb,
+  runPianoCon,
+  runBombIncl,
+  runBombTroncocon,
+  runConIncl,
+  runPianoIncl,
+  runConTroncocon,
+  runPianoTroncocon,
+  runOrizzCon,
+  runOrizzBomb,
+];
 
 export const moduleEntries: ModuleEntry[] = runners.map((run) => run());
 
