@@ -25,7 +25,7 @@ Per ognuna: caricamento su CDN, pointer in `src/modules/<CARTA>/assets/images/`,
 | CON-CON+BOCC.png | CON-CON-BOCC | Coperchio Conico / Fondo Conico con Bocchello |
 | PIANO-CON+BOCC.png | PIANO-CON-BOCC | Coperchio Piano / Fondo Conico con Bocchello |
 
-Nota: il file `COMB-CON+BOCC.png` lo interpreto come `BOMB-CON+BOCC` (refuso). Se invece è un'altra tipologia, dimmelo e cambio.
+Nota: il file `COMB-CON+BOCC.png` rappresenta la tipologia **BOMB-CON+BOCC** (coperchio bombato / fondo conico con bocchello), una variante distinta da BOMB-CON. Il nome file contiene il refuso visivo "COMB", ma la carta da creare è `BOMB-CON-BOCC`.
 
 Ogni nuova cartella avrà la struttura autonoma standard (identica a BOMB-INCL):
 
