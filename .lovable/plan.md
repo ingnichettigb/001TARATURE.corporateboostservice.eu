@@ -23,7 +23,7 @@ Per ognuna: caricamento su CDN, pointer in `src/modules/<CARTA>/assets/images/`,
 | CON-PIANO.png | CON-PIANO | Coperchio Conico / Fondo Piano |
 | COMB-CON+BOCC.png | BOMB-CON-BOCC | Coperchio Bombato / Fondo Conico con Bocchello |
 | CON-CON+BOCC.png | CON-CON-BOCC | Coperchio Conico / Fondo Conico con Bocchello |
-| PIANO-CON+BOCC.png | PIANO-CON-BOCC | Coperchio Piano / Fondo Conico con Boccaporto |
+| PIANO-CON+BOCC.png | PIANO-CON-BOCC | Coperchio Piano / Fondo Conico con Bocchello |
 
 Nota: il file `COMB-CON+BOCC.png` lo interpreto come `BOMB-CON+BOCC` (refuso). Se invece è un'altra tipologia, dimmelo e cambio.
 
