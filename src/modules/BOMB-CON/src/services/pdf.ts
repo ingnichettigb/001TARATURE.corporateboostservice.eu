@@ -517,9 +517,10 @@ export async function generateCalibrationPDF(
           labels[lang].factoryNo.toUpperCase(), result.input.report.numeroFabbrica || '-'
         ],
         [
-          labels[lang].tagNo.toUpperCase(), result.input.report.tagNumber || '-',
-          labels[lang].dwg.toUpperCase(), result.input.report.numeroDisegno || '-'
+          labels[lang].dwg.toUpperCase(), result.input.report.numeroDisegno || '-',
+          labels[lang].tagNo.toUpperCase(), result.input.report.tagNumber || '-'
         ]
+
       ]
     });
 
