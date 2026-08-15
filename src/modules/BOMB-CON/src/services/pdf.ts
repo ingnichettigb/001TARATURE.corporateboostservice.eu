@@ -942,15 +942,11 @@ export async function generateCalibrationPDF(
     } else {
       doc.addPage();
 
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.setTextColor(6, 78, 59);
-      doc.text(labels[lang].tableTitle, 15, 18);
-
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
       doc.setTextColor(75, 85, 99);
       doc.text(`${labels[lang].tank} ${result.input.report.nomeSerbatoio || '-'}   •   ${labels[lang].dwg} ${result.input.report.numeroDisegno || '-'}   •   ${labels[lang].capacityMax} ${formatNumPDF(result.volumeTotale, 1)} l`, 15, 23);
+
 
       const tableHeaders = [
         [
