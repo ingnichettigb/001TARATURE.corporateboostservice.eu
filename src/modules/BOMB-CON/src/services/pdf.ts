@@ -502,10 +502,10 @@ export async function generateCalibrationPDF(
         lineWidth: 0.1,
       },
       columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 25 },
-        1: { cellWidth: 75 },
-        2: { fontStyle: 'bold', cellWidth: 30 },
-        3: { cellWidth: 50 },
+        0: { fontStyle: 'bold', cellWidth: 35 },
+        1: { cellWidth: 70 },
+        2: { fontStyle: 'bold', cellWidth: 22 },
+        3: { cellWidth: 53 },
       },
       body: [
         [
