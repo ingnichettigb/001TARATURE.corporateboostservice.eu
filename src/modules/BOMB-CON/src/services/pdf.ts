@@ -1069,13 +1069,40 @@ export async function generateCalibrationPDF(
       });
     }
 
-    // Second pass: Page numbering and consistent footer
+    // Second pass: header (from page 2 onward), page numbering and consistent footer
     const totalPagesCount = doc.getNumberOfPages();
     for (let i = 1; i <= totalPagesCount; i++) {
       doc.setPage(i);
+
+      if (i > 1) {
+        // Intestazione comune a tutte le pagine successive alla prima
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.setTextColor(6, 78, 59);
+        doc.text(labels[lang].tableTitle, 15, 14);
+
+        const hBoxW = 52;
+        const hBoxX = 195 - hBoxW;
+        const hBoxY = 8;
+        const hBoxH = 8;
+        doc.setDrawColor(16, 185, 129);
+        doc.setLineWidth(0.15);
+        doc.roundedRect(hBoxX, hBoxY, hBoxW, hBoxH, 1, 1, 'D');
+        doc.roundedRect(hBoxX + 0.4, hBoxY + 0.4, hBoxW - 0.8, hBoxH - 0.8, 0.8, 0.8, 'D');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(6, 78, 59);
+        doc.text(`${reportLabelText}: ${reportNumber}`, hBoxX + hBoxW / 2, hBoxY + 5.5, { align: 'center' });
+
+        doc.setDrawColor(6, 78, 59);
+        doc.setLineWidth(0.4);
+        doc.line(15, 19, 195, 19);
+      }
+
       doc.setDrawColor(229, 231, 235);
       doc.setLineWidth(0.4);
       doc.line(15, 282, 195, 282);
+
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7.5);
