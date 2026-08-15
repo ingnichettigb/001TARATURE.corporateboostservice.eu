@@ -1041,21 +1041,7 @@ export async function generateCalibrationPDF(
           }
         },
         didDrawPage: (data) => {
-          if (data.pageNumber > 1) {
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(10);
-            doc.setTextColor(6, 78, 59);
-            doc.text(labels[lang].tableTitle, 15, 13);
-            
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(7.5);
-            doc.setTextColor(107, 114, 128);
-            doc.text(`${labels[lang].tank} ${result.input.report.nomeSerbatoio || '-'}   •   ${labels[lang].dwg} ${result.input.report.numeroDisegno || '-'}`, 15, 17);
-            
-            doc.setDrawColor(229, 231, 235);
-            doc.setLineWidth(0.3);
-            doc.line(15, 19, 195, 19);
-          }
+
 
           // Double bottom horizontal line for the page
           const finalY = data.cursor?.y || data.table?.finalY;
