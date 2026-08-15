@@ -600,7 +600,7 @@ export async function generateCalibrationPDF(
 
     // ---- Pagina 2: Dati Geometrici e Strutturali (misure interne) ----
     doc.addPage();
-    let techY = 20;
+    let techY = 26;
     const techTitleFull = labels[lang].techTitle + (lang === 'en' ? ' (internal measurements)' : lang === 'es' ? ' (medidas internas)' : lang === 'de' ? ' (Innenmaße)' : ' (misure interne)');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
