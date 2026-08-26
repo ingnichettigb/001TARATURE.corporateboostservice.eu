@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AttivazioneRouteImport } from './routes/attivazione'
 import { Route as DatiComuniRouteImport } from './routes/dati-comuni'
+import { Route as LicenzaScadutaRouteImport } from './routes/licenza-scaduta'
 import { Route as ModuliModuleIdRouteImport } from './routes/moduli.$moduleId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -18,9 +20,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AttivazioneRoute = AttivazioneRouteImport.update({
+  id: '/attivazione',
+  path: '/attivazione',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DatiComuniRoute = DatiComuniRouteImport.update({
   id: '/dati-comuni',
   path: '/dati-comuni',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LicenzaScadutaRoute = LicenzaScadutaRouteImport.update({
+  id: '/licenza-scaduta',
+  path: '/licenza-scaduta',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ModuliModuleIdRoute = ModuliModuleIdRouteImport.update({
@@ -31,31 +43,55 @@ const ModuliModuleIdRoute = ModuliModuleIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/attivazione': typeof AttivazioneRoute
   '/dati-comuni': typeof DatiComuniRoute
+  '/licenza-scaduta': typeof LicenzaScadutaRoute
   '/moduli/$moduleId': typeof ModuliModuleIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/attivazione': typeof AttivazioneRoute
   '/dati-comuni': typeof DatiComuniRoute
+  '/licenza-scaduta': typeof LicenzaScadutaRoute
   '/moduli/$moduleId': typeof ModuliModuleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/attivazione': typeof AttivazioneRoute
   '/dati-comuni': typeof DatiComuniRoute
+  '/licenza-scaduta': typeof LicenzaScadutaRoute
   '/moduli/$moduleId': typeof ModuliModuleIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dati-comuni' | '/moduli/$moduleId'
+  fullPaths:
+    | '/'
+    | '/attivazione'
+    | '/dati-comuni'
+    | '/licenza-scaduta'
+    | '/moduli/$moduleId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dati-comuni' | '/moduli/$moduleId'
-  id: '__root__' | '/' | '/dati-comuni' | '/moduli/$moduleId'
+  to:
+    | '/'
+    | '/attivazione'
+    | '/dati-comuni'
+    | '/licenza-scaduta'
+    | '/moduli/$moduleId'
+  id:
+    | '__root__'
+    | '/'
+    | '/attivazione'
+    | '/dati-comuni'
+    | '/licenza-scaduta'
+    | '/moduli/$moduleId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AttivazioneRoute: typeof AttivazioneRoute
   DatiComuniRoute: typeof DatiComuniRoute
+  LicenzaScadutaRoute: typeof LicenzaScadutaRoute
   ModuliModuleIdRoute: typeof ModuliModuleIdRoute
 }
 
@@ -68,11 +104,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/attivazione': {
+      id: '/attivazione'
+      path: '/attivazione'
+      fullPath: '/attivazione'
+      preLoaderRoute: typeof AttivazioneRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dati-comuni': {
       id: '/dati-comuni'
       path: '/dati-comuni'
       fullPath: '/dati-comuni'
       preLoaderRoute: typeof DatiComuniRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/licenza-scaduta': {
+      id: '/licenza-scaduta'
+      path: '/licenza-scaduta'
+      fullPath: '/licenza-scaduta'
+      preLoaderRoute: typeof LicenzaScadutaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/moduli/$moduleId': {
@@ -87,7 +137,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AttivazioneRoute: AttivazioneRoute,
   DatiComuniRoute: DatiComuniRoute,
+  LicenzaScadutaRoute: LicenzaScadutaRoute,
   ModuliModuleIdRoute: ModuliModuleIdRoute,
 }
 export const routeTree = rootRouteImport

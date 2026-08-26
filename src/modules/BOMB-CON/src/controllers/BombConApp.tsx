@@ -40,6 +40,9 @@ import { generateCalibrationPDF } from '../services/pdf';
 import { captureGeometryImage } from '../services/captureGeometry';
 import { getExtendedNumbers, getSelectedExtendedEntries, getExtendedValidityText, formatExtendedEntry } from '../services/extended-validity';
 import { loadLanguage, saveLanguage } from '@/common/language/storage';
+import { useServerFn } from '@tanstack/react-start';
+import { getPdfExportsStatus, decrementPdfExports } from '@/lib/license.functions';
+import { LICENSE_ID_KEY } from '@/lib/app-config';
 
 export default function App() {
   // Lingua persistente e condivisa con il menu principale e gli altri moduli
@@ -50,6 +53,26 @@ export default function App() {
     setLang(loadLanguage() as Language);
   }, []);
   const t = translations[lang];
+
+  // Contatore export PDF rimanenti, legato alla licenza attivata
+  // (src/lib/license.functions.ts + gate in src/routes/__root.tsx).
+  // null = nessuna licenza / illimitato → badge non mostrato.
+  const [pdfExportsBadge, setPdfExportsBadge] = useState<number | null>(null);
+  const fetchPdfExportsStatus = useServerFn(getPdfExportsStatus);
+  const decrementExports = useServerFn(decrementPdfExports);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const licenseId = window.localStorage.getItem(LICENSE_ID_KEY);
+    if (!licenseId) return;
+    fetchPdfExportsStatus({ data: { licenseId } })
+      .then(({ remaining }) => {
+        setPdfExportsBadge(remaining);
+      })
+      .catch((err) => {
+        console.error('getPdfExportsStatus call failed:', err);
+      });
+  }, [fetchPdfExportsStatus]);
   
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
@@ -160,6 +183,7 @@ export default function App() {
 
     if (printMode !== 'multiplo') {
       await generateCalibrationPDF(result, lang, compilerInfo, condensed, reportNumber, geometryImage);
+      decrementPdfExportsIfLicensed();
       return;
     }
 
@@ -183,6 +207,23 @@ export default function App() {
       await generateCalibrationPDF(singleResult, lang, compilerInfo, condensed, reportNumber, geometryImage);
       await new Promise((r) => setTimeout(r, 400));
     }
+    decrementPdfExportsIfLicensed();
+  };
+
+  // Scala il contatore export PDF della licenza (no-op se nessuna licenza
+  // attivata o se illimitata). Fail-open: il PDF è già stato consegnato
+  // in ogni caso, questo aggiorna solo badge/quota lato server.
+  const decrementPdfExportsIfLicensed = () => {
+    if (typeof window === 'undefined') return;
+    const licenseId = window.localStorage.getItem(LICENSE_ID_KEY);
+    if (!licenseId) return;
+    decrementExports({ data: { licenseId } })
+      .then(({ remaining }) => {
+        setPdfExportsBadge(remaining);
+      })
+      .catch((err) => {
+        console.error('decrementPdfExports call failed:', err);
+      });
   };
 
 
@@ -441,14 +482,29 @@ export default function App() {
 
           {/* Header actions: PDF, Condensed PDF, Language, Info, Close */}
           <div className="flex items-center gap-1.5 flex-nowrap justify-end">
-            <button
-              type="button"
-              onClick={() => handleExportPdf(false)}
-              className="bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-emerald-950"
-            >
-              <Printer className="w-3.5 h-3.5 text-emerald-100" />
-              {lang === 'en' ? 'Print PDF' : lang === 'es' ? 'Imprimir PDF' : lang === 'de' ? 'PDF Drucken' : 'Stampa PDF'}
-            </button>
+            <div className="relative inline-flex">
+              {pdfExportsBadge !== null && (
+                <span
+                  className="absolute -right-1.5 -top-1.5 z-10 flex h-4 w-4 items-center justify-center rounded-full bg-green-600 text-[9px] font-bold text-white shadow"
+                  title={
+                    lang === 'en' ? 'PDF exports remaining' :
+                    lang === 'es' ? 'Exportaciones PDF restantes' :
+                    lang === 'de' ? 'Verbleibende PDF-Exporte' :
+                    'Export PDF rimanenti'
+                  }
+                >
+                  {pdfExportsBadge}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => handleExportPdf(false)}
+                className="bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-emerald-950"
+              >
+                <Printer className="w-3.5 h-3.5 text-emerald-100" />
+                {lang === 'en' ? 'Print PDF' : lang === 'es' ? 'Imprimir PDF' : lang === 'de' ? 'PDF Drucken' : 'Stampa PDF'}
+              </button>
+            </div>
             <button
               type="button"
               onClick={() => handleExportPdf(true)}

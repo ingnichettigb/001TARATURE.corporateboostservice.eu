@@ -4,13 +4,29 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { useServerFn } from "@tanstack/react-start";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { checkLicenseStatus } from "@/lib/license.functions";
+import {
+  LICENSE_ID_KEY,
+  ACTIVATED_KEY,
+  LAST_LICENSE_CHECK_KEY,
+  LICENSE_INVALID_REASON_KEY,
+  clearGateKeys,
+  isUuid,
+} from "@/lib/app-config";
+
+const ACTIVATION_PATH = "/attivazione";
+const EXPIRED_PATH = "/licenza-scaduta";
+const PUBLIC_PATHS = new Set([ACTIVATION_PATH, EXPIRED_PATH]);
 
 function NotFoundComponent() {
   return (
@@ -119,8 +135,75 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <AuthGate>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+      </AuthGate>
     </QueryClientProvider>
   );
+}
+
+function AuthGate({ children }: { children: ReactNode }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const statusFn = useServerFn(checkLicenseStatus);
+  const [checked, setChecked] = useState(false);
+  const [allowed, setAllowed] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let cancelled = false;
+    const isPublic = PUBLIC_PATHS.has(pathname);
+    const activated = window.localStorage.getItem(ACTIVATED_KEY);
+    const storedLicenseId = window.localStorage.getItem(LICENSE_ID_KEY);
+
+    // Un valore non-UUID in localStorage (residuo/legacy) va scartato.
+    if (storedLicenseId && !isUuid(storedLicenseId)) {
+      clearGateKeys();
+    }
+    const licenseId = isUuid(storedLicenseId) ? storedLicenseId : null;
+    const activatedOk = licenseId ? activated : null;
+
+    const settle = (value: boolean) => {
+      if (cancelled) return;
+      setAllowed(value);
+      setChecked(true);
+    };
+
+    if (isPublic) {
+      settle(true);
+    } else if (!activatedOk) {
+      navigate({ to: ACTIVATION_PATH, replace: true });
+      settle(false);
+    } else {
+      // Rivalidazione della licenza a OGNI caricamento di pagina protetta.
+      setChecked(false);
+      void (async () => {
+        try {
+          const res = await statusFn({ data: { licenseId } });
+          if (cancelled) return;
+          if (res.valid) {
+            window.localStorage.setItem(LAST_LICENSE_CHECK_KEY, new Date().toISOString());
+            settle(true);
+          } else {
+            window.localStorage.setItem(LICENSE_INVALID_REASON_KEY, res.reason ?? "");
+            clearGateKeys();
+            navigate({ to: EXPIRED_PATH, replace: true });
+            settle(false);
+          }
+        } catch (err) {
+          // fail-open: nessun blocco per errori tecnici
+          console.error("license revalidation error:", err);
+          settle(true);
+        }
+      })();
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname, navigate, statusFn]);
+
+  if (!checked || !allowed) return null;
+  return <>{children}</>;
 }
