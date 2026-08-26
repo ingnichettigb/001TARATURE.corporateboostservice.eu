@@ -4,6 +4,7 @@ import { Boxes, FileSignature } from "lucide-react";
 import { moduleDefinitions } from "@/modules/registry";
 import ModuleCard from "@/common/ui/ModuleCard";
 import LanguageSwitcher from "@/common/ui/LanguageSwitcher";
+import PageInfoDialog from "@/common/ui/PageInfoDialog";
 import { loadLanguage, saveLanguage, type AppLanguage } from "@/common/language/storage";
 
 const definitions = moduleDefinitions;
@@ -61,7 +62,10 @@ function Home() {
               </p>
             </div>
           </div>
-          <LanguageSwitcher value={lang} onChange={handleLanguageChange} />
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher value={lang} onChange={handleLanguageChange} />
+            <PageInfoDialog lang={lang} />
+          </div>
         </div>
       </header>
 
