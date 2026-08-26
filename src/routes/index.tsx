@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Boxes, FileSignature } from "lucide-react";
+import { Boxes, FileSignature, Info } from "lucide-react";
 import { moduleDefinitions } from "@/modules/registry";
 import ModuleCard from "@/common/ui/ModuleCard";
 import LanguageSwitcher from "@/common/ui/LanguageSwitcher";
+import HomeInfoModal from "@/common/ui/HomeInfoModal";
 import { loadLanguage, saveLanguage, type AppLanguage } from "@/common/language/storage";
 
 const definitions = moduleDefinitions;
@@ -34,6 +35,7 @@ function Home() {
   // Lingua persistente: valore iniziale neutro per l'SSR, allineato allo
   // storage condiviso subito dopo il mount per evitare mismatch di idratazione.
   const [lang, setLang] = useState<AppLanguage>("it");
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   useEffect(() => {
     setLang(loadLanguage());
@@ -61,9 +63,21 @@ function Home() {
               </p>
             </div>
           </div>
-          <LanguageSwitcher value={lang} onChange={handleLanguageChange} />
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher value={lang} onChange={handleLanguageChange} />
+            <button
+              type="button"
+              title="Informazioni su questa pagina"
+              onClick={() => setIsInfoOpen(true)}
+              className="flex items-center justify-center rounded-xl border border-border bg-card p-2 text-foreground transition-colors hover:bg-accent"
+            >
+              <Info className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </header>
+
+      <HomeInfoModal open={isInfoOpen} onOpenChange={setIsInfoOpen} lang={lang} />
 
       <main className="mx-auto max-w-6xl px-4 py-8">
         <section className="mb-8">
