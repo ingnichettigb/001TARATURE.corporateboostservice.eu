@@ -974,7 +974,7 @@ export default function App() {
               )}
               {step === 6 && (
                 <div className="print:hidden">
-                  <CalibrationTable result={result} lang={lang} compilerInfo={compilerInfo} />
+                  <CalibrationTable result={result} lang={lang} compilerInfo={compilerInfo} onExportPdf={handleExportPdf} />
                 </div>
               )}
             </div>
