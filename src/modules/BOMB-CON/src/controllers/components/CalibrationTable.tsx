@@ -16,9 +16,16 @@ interface CalibrationTableProps {
   result: CalculationResult;
   lang?: Language;
   compilerInfo?: CompilerInfo;
+  /**
+   * Esportazione PDF condivisa con l'header del modulo (BombConApp.handleExportPdf).
+   * Include cattura dello schema geometrico, numero di relazione coerente e
+   * gestione della modalità di stampa (unico / un PDF per numero di fabbrica).
+   * Se non fornita, si ricade sulla generazione diretta (senza questi arricchimenti).
+   */
+  onExportPdf?: (condensed: boolean) => Promise<void> | void;
 }
 
-export default function CalibrationTable({ result, lang = 'it', compilerInfo }: CalibrationTableProps) {
+export default function CalibrationTable({ result, lang = 'it', compilerInfo, onExportPdf }: CalibrationTableProps) {
   const t = translations[lang];
   const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -152,12 +159,24 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo }: 
     document.body.removeChild(link);
   };
 
-  // Trigger Print Dialog
+  // Trigger Print Dialog — usa la STESSA funzione dei bottoni "Stampa PDF" /
+  // "PDF condensata" nell'header (BombConApp.handleExportPdf), garantendo che
+  // schema geometrico, numero di relazione e modalità di stampa multipla
+  // vengano gestiti in modo identico. Fallback diretto solo se il modulo
+  // chiamante non passa la prop (retro-compatibilità).
   const handlePrint = async () => {
+    if (onExportPdf) {
+      await onExportPdf(false);
+      return;
+    }
     await generateCalibrationPDF(result, lang, compilerInfo, false);
   };
 
   const handlePrintCondensed = async () => {
+    if (onExportPdf) {
+      await onExportPdf(true);
+      return;
+    }
     await generateCalibrationPDF(result, lang, compilerInfo, true);
   };
 
