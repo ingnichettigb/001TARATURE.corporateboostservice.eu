@@ -39,9 +39,16 @@ import {
 import { generateCalibrationPDF } from '../services/pdf';
 import { captureGeometryImage } from '../services/captureGeometry';
 import { getExtendedNumbers, getSelectedExtendedEntries, getExtendedValidityText, formatExtendedEntry } from '../services/extended-validity';
+import { loadLanguage, saveLanguage } from '@/common/language/storage';
 
 export default function App() {
+  // Lingua persistente e condivisa con il menu principale e gli altri moduli
+  // (src/common/language/storage.ts). Valore iniziale neutro per l'SSR,
+  // allineato allo storage subito dopo il mount.
   const [lang, setLang] = useState<Language>('it');
+  useEffect(() => {
+    setLang(loadLanguage() as Language);
+  }, []);
   const t = translations[lang];
   
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
@@ -470,7 +477,7 @@ export default function App() {
                     <button
                       key={item.code}
                       type="button"
-                      onClick={() => { setLang(item.code); setIsLangMenuOpen(false); }}
+                      onClick={() => { setLang(item.code); saveLanguage(item.code); setIsLangMenuOpen(false); }}
                       className={`w-full flex items-center gap-2 px-3 py-2 text-[11px] font-bold uppercase text-left transition-all cursor-pointer ${
                         lang === item.code ? 'bg-emerald-900 text-white' : 'text-neutral-700 hover:bg-neutral-100'
                       }`}

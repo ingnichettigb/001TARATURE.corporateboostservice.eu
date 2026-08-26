@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Boxes, FileSignature } from "lucide-react";
 import { moduleDefinitions } from "@/modules/registry";
 import ModuleCard from "@/common/ui/ModuleCard";
+import LanguageSwitcher from "@/common/ui/LanguageSwitcher";
+import { loadLanguage, saveLanguage, type AppLanguage } from "@/common/language/storage";
 
 const definitions = moduleDefinitions;
 
@@ -28,19 +31,37 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  // Lingua persistente: valore iniziale neutro per l'SSR, allineato allo
+  // storage condiviso subito dopo il mount per evitare mismatch di idratazione.
+  const [lang, setLang] = useState<AppLanguage>("it");
+
+  useEffect(() => {
+    setLang(loadLanguage());
+  }, []);
+
+  const handleLanguageChange = (next: AppLanguage) => {
+    setLang(next);
+    saveLanguage(next);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
-        <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-8">
-          <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Boxes className="h-7 w-7" />
-          </span>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">TARATURA SERBATOI</h1>
-            <p className="text-sm text-muted-foreground">
-              Seleziona un modulo di calcolo. Ogni modulo è autonomo, con il proprio cuore logico.
-            </p>
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-8">
+          <div className="flex items-center gap-4">
+            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+              <Boxes className="h-7 w-7" />
+            </span>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                TARATURA SERBATOI
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Seleziona un modulo di calcolo. Ogni modulo è autonomo, con il proprio cuore logico.
+              </p>
+            </div>
           </div>
+          <LanguageSwitcher value={lang} onChange={handleLanguageChange} />
         </div>
       </header>
 
