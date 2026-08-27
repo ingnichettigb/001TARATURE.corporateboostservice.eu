@@ -1028,7 +1028,7 @@ export default function App() {
               )}
               {step === 6 && (
                 <div className="print:hidden">
-                  <CalibrationTable result={result} lang={lang} compilerInfo={compilerInfo} onExportPdf={handleExportPdf} />
+                  <CalibrationTable result={result} lang={lang} compilerInfo={compilerInfo} onExportPdf={handleExportPdf} onExportCsvGate={handleExportCsvGate} exportsBlocked={exportsBlocked} />
                 </div>
               )}
             </div>
