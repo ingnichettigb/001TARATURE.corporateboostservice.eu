@@ -18,6 +18,10 @@ async function sendOtpEmail(to: string, code: string) {
   if (!apiKey || !lovableKey) {
     throw new Error("Email service not configured");
   }
+  // Il mittente verificato su Resend per questo connector è configurabile
+  // via secret RESEND_FROM_EMAIL (presente in questo progetto Lovable);
+  // fallback all'indirizzo storico se il secret non è impostato.
+  const fromEmail = process.env.RESEND_FROM_EMAIL || "team@corporateboostservice.eu";
   const res = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
     method: "POST",
     headers: {
@@ -26,7 +30,7 @@ async function sendOtpEmail(to: string, code: string) {
       "X-Connection-Api-Key": apiKey,
     },
     body: JSON.stringify({
-      from: `${APP_CODE} <team@corporateboostservice.eu>`,
+      from: `${APP_CODE} <${fromEmail}>`,
       to: [to],
       subject: `Codice di verifica: ${code}`,
       html: `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px">
