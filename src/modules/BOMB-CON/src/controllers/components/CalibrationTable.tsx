@@ -23,9 +23,17 @@ interface CalibrationTableProps {
    * Se non fornita, si ricade sulla generazione diretta (senza questi arricchimenti).
    */
   onExportPdf?: (condensed: boolean) => Promise<void> | void;
+  /**
+   * Gate centralizzato per l'export CSV: restituisce false se la quota è
+   * esaurita (in tal caso il CSV non viene generato).
+   */
+  onExportCsvGate?: () => Promise<boolean> | boolean;
+  /** Quota esaurita: disabilita tutti i pulsanti di esportazione. */
+  exportsBlocked?: boolean;
 }
 
-export default function CalibrationTable({ result, lang = 'it', compilerInfo, onExportPdf }: CalibrationTableProps) {
+export default function CalibrationTable({ result, lang = 'it', compilerInfo, onExportPdf, onExportCsvGate, exportsBlocked = false }: CalibrationTableProps) {
+
   const t = translations[lang];
   const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
