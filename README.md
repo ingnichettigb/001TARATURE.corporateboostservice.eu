@@ -72,6 +72,27 @@ Prepara componenti riutilizzabili per input, output e PDF.
 
 This project was built with [Lovable](https://lovable.dev).
 
+## Stato del progetto (26 ago 2026)
+
+**Dominio:** `001TARATURE.corporateboostservice.eu` — sottodominio e DNS configurati.
+
+### Implementato
+
+- **Homepage/menu principale** (`src/routes/index.tsx`): card moduli, "Dati Comuni" (intestazione report condivisa), selettore lingua persistente (IT/EN/ES/DE) + bottone Info con spiegazione multilingua della pagina.
+- **Modulo BOMB-CON** (unico "Attivo"): geometria, calcolo, tabella di calibrazione, export PDF (stampa/condensata/multipla), manuale d'uso in-app, bottoni header ristilizzati (verde, ben visibili).
+- **Sistema di licensing a 3 passaggi**, replica del flusso collaudato su `002MnFAT` (vedi commit `2067d48`):
+  `/auth` (OTP email) → `/attivazione` (licenza + PUK) → `/condizioni` (accettazione ToS 4 lingue) → SaaS accessibile, con rivalidazione della licenza a ogni navigazione e contatore export PDF (badge + banner ultimo credito + dialog bloccante a esaurimento).
+  Dati su DB esterno condiviso `ruopxyprezzxoirfrjrm`, prodotto `001TARATURE` già in `product_catalog`.
+
+### Da fare (TODO)
+
+1. **Secret Lovable**: impostare `EXTERNAL_SUPABASE_URL` e `EXTERNAL_SUPABASE_SERVICE_ROLE_KEY` (stessi valori già usati dagli altri prodotti sul DB condiviso) nell'ambiente di questo progetto Lovable — senza questi il login/licensing non funziona.
+2. **Connector Resend**: collegare/attivare su questo specifico progetto Lovable e impostare `RESEND_API_KEY` + `LOVABLE_API_KEY` — necessari per l'invio dei codici OTP (passaggio 1). Senza, la richiesta OTP fallisce con `E-010`.
+3. **Licenza di test**: generare almeno una licenza + PUK per `app_code = 001TARATURE` (via SQL diretto sul DB condiviso o script PowerShell già in uso per gli altri prodotti) e fare un test end-to-end reale: attivazione nuova, riattivazione stesso utente, PUK già claimato, PUK/licenza inesistenti, licenza scaduta, ultimo credito PDF → banner, credito a zero → dialog bloccante + rivalidazione che reindirizza a `/licenza-scaduta`.
+4. **`bun.lock`**: non ancora rigenerato (aggiunta `@supabase/supabase-js` fatta con `npm` in ambiente sandbox senza `bun`) — verificare che il primo build su Lovable/Cloudflare lo risolva da solo, altrimenti rigenerarlo manualmente.
+5. **Moduli "In preparazione"**: le card oltre a BOMB-CON non hanno ancora logica/UI: da implementare quando pronte, riusando la stessa struttura di cartella (`src/modules/<NOME>/`) e lo stesso `ModulePage.tsx`/pattern del contatore PDF.
+6. **Verifica vincoli DB** (solo se non già controllati per questo prodotto): FK `puk_codes.user_id → public.users` (non `auth.users`), colonna `licenses.activated_at` presente, niente `license_key` duplicate per `001TARATURE`.
+
 ## Build with Lovable
 
 Continue developing this project in the [Lovable editor](https://lovable.dev/projects/b5b3125c-0322-4e31-9fc5-99f9fbf07484).
