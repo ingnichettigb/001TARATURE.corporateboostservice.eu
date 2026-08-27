@@ -40,10 +40,8 @@ import { generateCalibrationPDF } from '../services/pdf';
 import { captureGeometryImage } from '../services/captureGeometry';
 import { getExtendedNumbers, getSelectedExtendedEntries, getExtendedValidityText, formatExtendedEntry } from '../services/extended-validity';
 import { loadLanguage, saveLanguage } from '@/common/language/storage';
-import { useServerFn } from '@tanstack/react-start';
-import { getPdfExportsStatus, decrementPdfExports } from '@/lib/license.functions';
-import { LICENSE_ID_KEY } from '@/lib/app-config';
-import { usePdfExportsExhaustedDialog } from '@/components/pdf-exports-exhausted-dialog';
+import { useExportQuota } from '@/common/exports/useExportQuota';
+
 
 export default function App() {
   // Lingua persistente e condivisa con il menu principale e gli altri moduli
