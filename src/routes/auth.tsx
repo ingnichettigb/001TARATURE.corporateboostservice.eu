@@ -59,14 +59,20 @@ function AuthPage() {
     try {
       const res = await reqOtp({ data: { email: normalized } });
       if (!res.ok) {
-        setError(res.reason === "rate_limited" ? RATE_LIMIT_MSG : SEND_FAIL_MSG);
+        if (res.reason === "rate_limited") {
+          setError(RATE_LIMIT_MSG);
+        } else {
+          const detail = "detail" in res && res.detail ? ` — ${res.detail}` : "";
+          setError(`${SEND_FAIL_MSG}${detail}`);
+        }
         return;
       }
       setStage("otp");
       setInfo(`Abbiamo inviato il codice a ${normalized}`);
     } catch (err) {
       console.error(err);
-      setError(SEND_FAIL_MSG);
+      const detail = err instanceof Error ? ` — ${err.message}` : "";
+      setError(`${SEND_FAIL_MSG}${detail}`);
     } finally {
       setLoading(false);
     }
@@ -107,14 +113,20 @@ function AuthPage() {
       const normalized = email.trim().toLowerCase();
       const res = await reqOtp({ data: { email: normalized } });
       if (!res.ok) {
-        setError(res.reason === "rate_limited" ? RATE_LIMIT_MSG : SEND_FAIL_MSG);
+        if (res.reason === "rate_limited") {
+          setError(RATE_LIMIT_MSG);
+        } else {
+          const detail = "detail" in res && res.detail ? ` — ${res.detail}` : "";
+          setError(`${SEND_FAIL_MSG}${detail}`);
+        }
         return;
       }
       setInfo(`Nuovo codice inviato a ${normalized}`);
       setCode("");
     } catch (err) {
       console.error(err);
-      setError(SEND_FAIL_MSG);
+      const detail = err instanceof Error ? ` — ${err.message}` : "";
+      setError(`${SEND_FAIL_MSG}${detail}`);
     } finally {
       setLoading(false);
     }

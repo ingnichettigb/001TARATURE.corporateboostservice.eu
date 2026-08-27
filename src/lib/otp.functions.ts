@@ -56,72 +56,82 @@ async function sendOtpEmail(to: string, code: string) {
 export const requestOtp = createServerFn({ method: "POST" })
   .inputValidator((input: { email: string }) => z.object({ email: emailSchema }).parse(input))
   .handler(async ({ data }) => {
-    const { supabaseExternal } = await import("@/integrations/supabase/client.external");
-    const ext = supabaseExternal as unknown as { from: (t: string) => any };
-    const email = data.email;
+    try {
+      const { supabaseExternal } = await import("@/integrations/supabase/client.external");
+      const ext = supabaseExternal as unknown as { from: (t: string) => any };
+      const email = data.email;
 
-    const { data: latest, error: latestErr } = await ext
-      .from("lead_emails")
-      .select("id, is_verified, otp_attempts, otp_window_start")
-      .ilike("email", email)
-      .eq("source", APP_CODE)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (latestErr) throw new Error(latestErr.message);
-
-    const now = Date.now();
-    let attempts = latest?.otp_attempts ?? 0;
-    let windowStart = latest?.otp_window_start
-      ? new Date(latest.otp_window_start as string).getTime()
-      : 0;
-    const windowMs = OTP_WINDOW_HOURS * 3600 * 1000;
-
-    if (latest?.is_verified) {
-      attempts = 0;
-      windowStart = now;
-    } else if (!windowStart || now - windowStart > windowMs) {
-      attempts = 0;
-      windowStart = now;
-    }
-
-    if (attempts >= OTP_MAX_PER_WINDOW) {
-      return { ok: false as const, reason: "rate_limited" as const, code: "E-011" };
-    }
-
-    const code = generateOtp();
-    const nextAttempts = attempts + 1;
-    const sentAtIso = new Date(now).toISOString();
-
-    if (latest && !latest.is_verified) {
-      const { error: updErr } = await ext
+      const { data: latest, error: latestErr } = await ext
         .from("lead_emails")
-        .update({
+        .select("id, is_verified, otp_attempts, otp_window_start")
+        .ilike("email", email)
+        .eq("source", APP_CODE)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (latestErr) throw new Error(`DB select lead_emails failed: ${latestErr.message}`);
+
+      const now = Date.now();
+      let attempts = latest?.otp_attempts ?? 0;
+      let windowStart = latest?.otp_window_start
+        ? new Date(latest.otp_window_start as string).getTime()
+        : 0;
+      const windowMs = OTP_WINDOW_HOURS * 3600 * 1000;
+
+      if (latest?.is_verified) {
+        attempts = 0;
+        windowStart = now;
+      } else if (!windowStart || now - windowStart > windowMs) {
+        attempts = 0;
+        windowStart = now;
+      }
+
+      if (attempts >= OTP_MAX_PER_WINDOW) {
+        return { ok: false as const, reason: "rate_limited" as const, code: "E-011" };
+      }
+
+      const code = generateOtp();
+      const nextAttempts = attempts + 1;
+      const sentAtIso = new Date(now).toISOString();
+
+      if (latest && !latest.is_verified) {
+        const { error: updErr } = await ext
+          .from("lead_emails")
+          .update({
+            verification_code: code,
+            otp_attempts: nextAttempts,
+            otp_window_start: sentAtIso,
+          })
+          .eq("id", latest.id);
+        if (updErr) throw new Error(`DB update lead_emails failed: ${updErr.message}`);
+      } else {
+        const { error: insErr } = await ext.from("lead_emails").insert({
+          email,
           verification_code: code,
+          is_verified: false,
+          source: APP_CODE,
           otp_attempts: nextAttempts,
           otp_window_start: sentAtIso,
-        })
-        .eq("id", latest.id);
-      if (updErr) throw new Error(updErr.message);
-    } else {
-      const { error: insErr } = await ext.from("lead_emails").insert({
-        email,
-        verification_code: code,
-        is_verified: false,
-        source: APP_CODE,
-        otp_attempts: nextAttempts,
-        otp_window_start: sentAtIso,
-      });
-      if (insErr) throw new Error(insErr.message);
-    }
+        });
+        if (insErr) throw new Error(`DB insert lead_emails failed: ${insErr.message}`);
+      }
 
-    try {
-      await sendOtpEmail(email, code);
+      try {
+        await sendOtpEmail(email, code);
+      } catch (err) {
+        console.error("sendOtpEmail failed:", err);
+        const detail = err instanceof Error ? err.message : String(err);
+        return { ok: false as const, reason: "send_failed" as const, code: "E-010", detail };
+      }
+      return { ok: true as const, sent: true as const };
     } catch (err) {
-      console.error("sendOtpEmail failed:", err);
-      return { ok: false as const, reason: "send_failed" as const, code: "E-010" };
+      // Qualunque errore PRIMA dell'invio email (query DB, permessi,
+      // colonne mancanti, rete) finiva prima silenziosamente mascherato
+      // da "E-010" lato client. Ora lo distinguiamo esplicitamente.
+      console.error("requestOtp error:", err);
+      const detail = err instanceof Error ? err.message : String(err);
+      return { ok: false as const, reason: "db_error" as const, code: "E-014", detail };
     }
-    return { ok: true as const, sent: true as const };
   });
 
 export const verifyOtp = createServerFn({ method: "POST" })
