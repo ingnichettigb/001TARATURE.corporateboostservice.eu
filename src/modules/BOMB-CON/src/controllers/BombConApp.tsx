@@ -170,13 +170,17 @@ export default function App() {
   /**
    * Esporta il PDF: uno solo (con l'elenco dei numeri spuntati) oppure
    * uno per ogni numero di fabbrica spuntato (validità estesa = UNICO).
+   * La quota è gestita centralmente da useExportQuota (PDF + CSV dello stesso
+   * ciclo = 1 sola esportazione).
    */
   const handleExportPdf = async (condensed: boolean) => {
+    const allowed = await consumeExport('pdf');
+    if (!allowed) return;
+
     const geometryImage = await captureGeometryImage(input);
 
     if (printMode !== 'multiplo') {
       await generateCalibrationPDF(result, lang, compilerInfo, condensed, reportNumber, geometryImage);
-      decrementPdfExportsIfLicensed();
       return;
     }
 
@@ -200,28 +204,11 @@ export default function App() {
       await generateCalibrationPDF(singleResult, lang, compilerInfo, condensed, reportNumber, geometryImage);
       await new Promise((r) => setTimeout(r, 400));
     }
-    decrementPdfExportsIfLicensed();
   };
 
-  // Scala il contatore export PDF della licenza (no-op se nessuna licenza
-  // attivata o se illimitata). Fail-open: il PDF è già stato consegnato
-  // in ogni caso, questo aggiorna solo badge/quota/dialog lato server.
-  const decrementPdfExportsIfLicensed = () => {
-    if (typeof window === 'undefined') return;
-    const licenseId = window.localStorage.getItem(LICENSE_ID_KEY);
-    if (!licenseId) return;
-    decrementExports({ data: { licenseId } })
-      .then(({ remaining, exhausted }) => {
-        setPdfExportsBadge(remaining);
-        setShowLastExportWarning(false);
-        if (exhausted) {
-          showExhausted();
-        }
-      })
-      .catch((err) => {
-        console.error('decrementPdfExports call failed:', err);
-      });
-  };
+  /** Consuma la quota per un'esportazione CSV (gratuita se nello stesso ciclo del PDF). */
+  const handleExportCsvGate = () => consumeExport('csv');
+
 
 
   const [formKey, setFormKey] = useState<number>(0);
