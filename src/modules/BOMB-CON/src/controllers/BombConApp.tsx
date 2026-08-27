@@ -41,6 +41,8 @@ import { captureGeometryImage } from '../services/captureGeometry';
 import { getExtendedNumbers, getSelectedExtendedEntries, getExtendedValidityText, formatExtendedEntry } from '../services/extended-validity';
 import { loadLanguage, saveLanguage } from '@/common/language/storage';
 import { useExportQuota } from '@/common/exports/useExportQuota';
+import ExportCountBadge from '@/common/exports/ExportCountBadge';
+
 
 
 export default function App() {
