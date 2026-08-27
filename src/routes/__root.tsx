@@ -16,17 +16,20 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { checkLicenseStatus } from "@/lib/license.functions";
 import {
-  LICENSE_ID_KEY,
+  VERIFIED_EMAIL_KEY,
   ACTIVATED_KEY,
+  LICENSE_ID_KEY,
+  CONSENT_KEY,
   LAST_LICENSE_CHECK_KEY,
   LICENSE_INVALID_REASON_KEY,
   clearGateKeys,
+  clearLicenseKeys,
   isUuid,
 } from "@/lib/app-config";
 
+const PUBLIC_PATHS = new Set(["/auth", "/licenza-scaduta"]);
 const ACTIVATION_PATH = "/attivazione";
-const EXPIRED_PATH = "/licenza-scaduta";
-const PUBLIC_PATHS = new Set([ACTIVATION_PATH, EXPIRED_PATH]);
+const CONSENT_PATH = "/condizioni";
 
 function NotFoundComponent() {
   return (
@@ -97,7 +100,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Suite modulare per la taratura di serbatoi industriali." },
       { name: "author", content: "Taratura Serbatoi" },
       { property: "og:title", content: "TARATURA SERBATOI" },
-      { property: "og:description", content: "Suite modulare per la taratura di serbatoi industriali." },
+      {
+        property: "og:description",
+        content: "Suite modulare per la taratura di serbatoi industriali.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
@@ -154,12 +160,16 @@ function AuthGate({ children }: { children: ReactNode }) {
     if (typeof window === "undefined") return;
     let cancelled = false;
     const isPublic = PUBLIC_PATHS.has(pathname);
+    const isActivation = pathname === ACTIVATION_PATH;
+    const isConsent = pathname === CONSENT_PATH;
+    const verified = window.localStorage.getItem(VERIFIED_EMAIL_KEY);
     const activated = window.localStorage.getItem(ACTIVATED_KEY);
+    const consent = window.localStorage.getItem(CONSENT_KEY);
     const storedLicenseId = window.localStorage.getItem(LICENSE_ID_KEY);
 
     // Un valore non-UUID in localStorage (residuo/legacy) va scartato.
     if (storedLicenseId && !isUuid(storedLicenseId)) {
-      clearGateKeys();
+      clearLicenseKeys();
     }
     const licenseId = isUuid(storedLicenseId) ? storedLicenseId : null;
     const activatedOk = licenseId ? activated : null;
@@ -170,12 +180,29 @@ function AuthGate({ children }: { children: ReactNode }) {
       setChecked(true);
     };
 
+    // Sequenza a 7 passi (primo match vince) — vedi FLUSSO-INGRESSO-README.md
+    // (repo 002MnFAT, sezione 9) per la specifica completa.
     if (isPublic) {
       settle(true);
-    } else if (!activatedOk) {
+    } else if (!verified) {
+      navigate({ to: "/auth", replace: true });
+      settle(false);
+    } else if (isConsent) {
+      if (!licenseId) {
+        window.localStorage.removeItem(ACTIVATED_KEY);
+        window.localStorage.removeItem(CONSENT_KEY);
+        navigate({ to: ACTIVATION_PATH, replace: true });
+        settle(false);
+      } else {
+        settle(true);
+      }
+    } else if (licenseId && !consent && !isActivation) {
+      navigate({ to: CONSENT_PATH, replace: true });
+      settle(false);
+    } else if (!activatedOk && !isActivation) {
       navigate({ to: ACTIVATION_PATH, replace: true });
       settle(false);
-    } else {
+    } else if (!isActivation && activatedOk && licenseId) {
       // Rivalidazione della licenza a OGNI caricamento di pagina protetta.
       setChecked(false);
       void (async () => {
@@ -187,8 +214,8 @@ function AuthGate({ children }: { children: ReactNode }) {
             settle(true);
           } else {
             window.localStorage.setItem(LICENSE_INVALID_REASON_KEY, res.reason ?? "");
-            clearGateKeys();
-            navigate({ to: EXPIRED_PATH, replace: true });
+            clearLicenseKeys();
+            navigate({ to: "/licenza-scaduta", replace: true });
             settle(false);
           }
         } catch (err) {
@@ -197,6 +224,8 @@ function AuthGate({ children }: { children: ReactNode }) {
           settle(true);
         }
       })();
+    } else {
+      settle(true);
     }
 
     return () => {
@@ -205,5 +234,22 @@ function AuthGate({ children }: { children: ReactNode }) {
   }, [pathname, navigate, statusFn]);
 
   if (!checked || !allowed) return null;
-  return <>{children}</>;
+  const isPublic = PUBLIC_PATHS.has(pathname);
+  return (
+    <>
+      {!isPublic && (
+        <button
+          type="button"
+          onClick={() => {
+            clearGateKeys();
+            navigate({ to: "/auth", replace: true });
+          }}
+          className="fixed right-3 top-3 z-50 rounded-md border border-input bg-background/80 px-2.5 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur hover:bg-accent"
+        >
+          Esci
+        </button>
+      )}
+      {children}
+    </>
+  );
 }

@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AttivazioneRouteImport } from './routes/attivazione'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CondizioniRouteImport } from './routes/condizioni'
 import { Route as DatiComuniRouteImport } from './routes/dati-comuni'
 import { Route as LicenzaScadutaRouteImport } from './routes/licenza-scaduta'
 import { Route as ModuliModuleIdRouteImport } from './routes/moduli.$moduleId'
@@ -23,6 +25,16 @@ const IndexRoute = IndexRouteImport.update({
 const AttivazioneRoute = AttivazioneRouteImport.update({
   id: '/attivazione',
   path: '/attivazione',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CondizioniRoute = CondizioniRouteImport.update({
+  id: '/condizioni',
+  path: '/condizioni',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DatiComuniRoute = DatiComuniRouteImport.update({
@@ -44,6 +56,8 @@ const ModuliModuleIdRoute = ModuliModuleIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/attivazione': typeof AttivazioneRoute
+  '/auth': typeof AuthRoute
+  '/condizioni': typeof CondizioniRoute
   '/dati-comuni': typeof DatiComuniRoute
   '/licenza-scaduta': typeof LicenzaScadutaRoute
   '/moduli/$moduleId': typeof ModuliModuleIdRoute
@@ -51,6 +65,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/attivazione': typeof AttivazioneRoute
+  '/auth': typeof AuthRoute
+  '/condizioni': typeof CondizioniRoute
   '/dati-comuni': typeof DatiComuniRoute
   '/licenza-scaduta': typeof LicenzaScadutaRoute
   '/moduli/$moduleId': typeof ModuliModuleIdRoute
@@ -59,6 +75,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/attivazione': typeof AttivazioneRoute
+  '/auth': typeof AuthRoute
+  '/condizioni': typeof CondizioniRoute
   '/dati-comuni': typeof DatiComuniRoute
   '/licenza-scaduta': typeof LicenzaScadutaRoute
   '/moduli/$moduleId': typeof ModuliModuleIdRoute
@@ -68,6 +86,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/attivazione'
+    | '/auth'
+    | '/condizioni'
     | '/dati-comuni'
     | '/licenza-scaduta'
     | '/moduli/$moduleId'
@@ -75,6 +95,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/attivazione'
+    | '/auth'
+    | '/condizioni'
     | '/dati-comuni'
     | '/licenza-scaduta'
     | '/moduli/$moduleId'
@@ -82,6 +104,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/attivazione'
+    | '/auth'
+    | '/condizioni'
     | '/dati-comuni'
     | '/licenza-scaduta'
     | '/moduli/$moduleId'
@@ -90,6 +114,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AttivazioneRoute: typeof AttivazioneRoute
+  AuthRoute: typeof AuthRoute
+  CondizioniRoute: typeof CondizioniRoute
   DatiComuniRoute: typeof DatiComuniRoute
   LicenzaScadutaRoute: typeof LicenzaScadutaRoute
   ModuliModuleIdRoute: typeof ModuliModuleIdRoute
@@ -109,6 +135,20 @@ declare module '@tanstack/react-router' {
       path: '/attivazione'
       fullPath: '/attivazione'
       preLoaderRoute: typeof AttivazioneRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/condizioni': {
+      id: '/condizioni'
+      path: '/condizioni'
+      fullPath: '/condizioni'
+      preLoaderRoute: typeof CondizioniRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dati-comuni': {
@@ -138,6 +178,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AttivazioneRoute: AttivazioneRoute,
+  AuthRoute: AuthRoute,
+  CondizioniRoute: CondizioniRoute,
   DatiComuniRoute: DatiComuniRoute,
   LicenzaScadutaRoute: LicenzaScadutaRoute,
   ModuliModuleIdRoute: ModuliModuleIdRoute,

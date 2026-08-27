@@ -1,12 +1,17 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { APP_NAME, LICENSE_INVALID_REASON_KEY, clearGateKeys } from "@/lib/app-config";
+import {
+  APP_NAME,
+  VERIFIED_EMAIL_KEY,
+  LICENSE_INVALID_REASON_KEY,
+  clearLicenseKeys,
+} from "@/lib/app-config";
 import * as React from "react";
 
 export const Route = createFileRoute("/licenza-scaduta")({
   head: () => ({
-    meta: [{ title: `Licenza non valida — ${APP_NAME}` }],
+    meta: [{ title: `Licenza non valida — ${APP_NAME}` }, { name: "robots", content: "noindex" }],
   }),
   component: LicenzaScadutaPage,
 });
@@ -38,14 +43,18 @@ function LicenzaScadutaPage() {
         </CardHeader>
         <CardContent>
           <p className="mb-4 text-sm text-muted-foreground">
-            Per continuare a usare {APP_NAME}, attiva una nuova licenza oppure contatta il
-            supporto se ritieni si tratti di un errore.
+            Per continuare a usare {APP_NAME}, attiva una nuova licenza oppure contatta il supporto
+            se ritieni si tratti di un errore.
           </p>
           <Button
             className="w-full"
             onClick={() => {
-              clearGateKeys();
-              navigate({ to: "/attivazione", replace: true });
+              clearLicenseKeys();
+              const verified =
+                typeof window !== "undefined"
+                  ? window.localStorage.getItem(VERIFIED_EMAIL_KEY)
+                  : null;
+              navigate({ to: verified ? "/attivazione" : "/auth", replace: true });
             }}
           >
             Attiva un'altra licenza

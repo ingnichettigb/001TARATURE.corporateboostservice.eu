@@ -7,13 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { verifyAndActivateLicense } from "@/lib/license.functions";
-import { APP_CODE, APP_NAME, ACTIVATED_KEY, LICENSE_ID_KEY } from "@/lib/app-config";
+import {
+  APP_NAME,
+  VERIFIED_EMAIL_KEY,
+  LICENSE_ID_KEY,
+  ACTIVATED_KEY,
+  CONSENT_KEY,
+} from "@/lib/app-config";
 
 export const Route = createFileRoute("/attivazione")({
   head: () => ({
     meta: [
       { title: `Attivazione — ${APP_NAME}` },
       { name: "description", content: "Attiva la tua licenza." },
+      { name: "robots", content: "noindex" },
     ],
   }),
   component: AttivazionePage,
@@ -22,6 +29,10 @@ export const Route = createFileRoute("/attivazione")({
 type ReasonInfo = { message: string; code: string };
 
 const REASON_MESSAGES: Record<string, ReasonInfo> = {
+  email_not_verified: {
+    message: "L'email non risulta verificata. Rifai la verifica dal passaggio 1.",
+    code: "E-001",
+  },
   license_not_found: {
     message:
       "Il codice licenza inserito non è valido. Controlla di averlo copiato correttamente dall'email di acquisto (senza spazi iniziali o finali).",
@@ -63,30 +74,42 @@ function AttivazionePage() {
   const navigate = useNavigate();
   const activate = useServerFn(verifyAndActivateLicense);
 
-  const [email, setEmail] = React.useState("");
+  const [email, setEmail] = React.useState<string | null>(null);
   const [licenseKey, setLicenseKey] = React.useState("");
   const [puk, setPuk] = React.useState("");
   const [error, setError] = React.useState<ReasonInfo | null>(null);
   const [loading, setLoading] = React.useState(false);
 
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const verified = window.localStorage.getItem(VERIFIED_EMAIL_KEY);
+    if (!verified) {
+      navigate({ to: "/auth", replace: true });
+      return;
+    }
+    setEmail(verified);
+  }, [navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!email.trim() || !licenseKey.trim() || !puk.trim()) {
+    if (!email || !licenseKey.trim() || !puk.trim()) {
       setError({ message: "Compila tutti i campi.", code: "" });
       return;
     }
     setLoading(true);
     try {
       const res = await activate({
-        data: { email: email.trim(), licenseKey: licenseKey.trim(), puk: puk.trim() },
+        data: { email, licenseKey: licenseKey.trim(), puk: puk.trim() },
       });
       if (res.ok) {
         if (typeof window !== "undefined") {
           window.localStorage.setItem(LICENSE_ID_KEY, res.licenseId);
-          window.localStorage.setItem(ACTIVATED_KEY, "1");
+          // ACTIVATED_KEY/CONSENT_KEY vengono scritte solo dopo il passaggio 3
+          window.localStorage.removeItem(ACTIVATED_KEY);
+          window.localStorage.removeItem(CONSENT_KEY);
         }
-        navigate({ to: "/", replace: true });
+        navigate({ to: "/condizioni", replace: true });
         return;
       }
       setError(REASON_MESSAGES[res.reason] ?? REASON_MESSAGES.server_error);
@@ -98,28 +121,23 @@ function AttivazionePage() {
     }
   };
 
+  if (!email) return null;
+
   return (
     <div className="mx-auto flex min-h-[80vh] max-w-md items-center px-4 py-8">
       <Card className="w-full">
         <CardHeader>
           <CardTitle>Attivazione licenza — {APP_NAME}</CardTitle>
           <CardDescription>
-            Inserisci l'email di acquisto, il codice licenza e il codice PUK ricevuti via email al
+            Passaggio 2 di 3. Inserisci il codice licenza e il codice PUK ricevuti via email al
             momento dell'acquisto.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="nome@azienda.it"
-                autoComplete="email"
-              />
+              <Label htmlFor="email">Email verificata</Label>
+              <Input id="email" type="email" value={email} readOnly disabled />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="license">Codice licenza</Label>
@@ -152,6 +170,18 @@ function AttivazionePage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Attivazione…" : "Attiva"}
             </Button>
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.localStorage.removeItem(VERIFIED_EMAIL_KEY);
+                }
+                navigate({ to: "/auth", replace: true });
+              }}
+              className="w-full text-center text-xs text-muted-foreground underline"
+            >
+              Cambia email
+            </button>
           </form>
         </CardContent>
       </Card>

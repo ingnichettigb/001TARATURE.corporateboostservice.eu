@@ -43,6 +43,7 @@ import { loadLanguage, saveLanguage } from '@/common/language/storage';
 import { useServerFn } from '@tanstack/react-start';
 import { getPdfExportsStatus, decrementPdfExports } from '@/lib/license.functions';
 import { LICENSE_ID_KEY } from '@/lib/app-config';
+import { usePdfExportsExhaustedDialog } from '@/components/pdf-exports-exhausted-dialog';
 
 export default function App() {
   // Lingua persistente e condivisa con il menu principale e gli altri moduli
@@ -58,8 +59,10 @@ export default function App() {
   // (src/lib/license.functions.ts + gate in src/routes/__root.tsx).
   // null = nessuna licenza / illimitato → badge non mostrato.
   const [pdfExportsBadge, setPdfExportsBadge] = useState<number | null>(null);
+  const [showLastExportWarning, setShowLastExportWarning] = useState(false);
   const fetchPdfExportsStatus = useServerFn(getPdfExportsStatus);
   const decrementExports = useServerFn(decrementPdfExports);
+  const { showExhausted, dialog: pdfExportsExhaustedDialog } = usePdfExportsExhaustedDialog();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -68,6 +71,7 @@ export default function App() {
     fetchPdfExportsStatus({ data: { licenseId } })
       .then(({ remaining }) => {
         setPdfExportsBadge(remaining);
+        setShowLastExportWarning(remaining === 1);
       })
       .catch((err) => {
         console.error('getPdfExportsStatus call failed:', err);
@@ -212,14 +216,18 @@ export default function App() {
 
   // Scala il contatore export PDF della licenza (no-op se nessuna licenza
   // attivata o se illimitata). Fail-open: il PDF è già stato consegnato
-  // in ogni caso, questo aggiorna solo badge/quota lato server.
+  // in ogni caso, questo aggiorna solo badge/quota/dialog lato server.
   const decrementPdfExportsIfLicensed = () => {
     if (typeof window === 'undefined') return;
     const licenseId = window.localStorage.getItem(LICENSE_ID_KEY);
     if (!licenseId) return;
     decrementExports({ data: { licenseId } })
-      .then(({ remaining }) => {
+      .then(({ remaining, exhausted }) => {
         setPdfExportsBadge(remaining);
+        setShowLastExportWarning(false);
+        if (exhausted) {
+          showExhausted();
+        }
       })
       .catch((err) => {
         console.error('decrementPdfExports call failed:', err);
@@ -581,6 +589,19 @@ export default function App() {
             </button>
           </div>
         </div>
+
+        {showLastExportWarning && (
+          <div className="max-w-7xl mx-auto mt-1.5 flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-800">
+            <Info className="w-3.5 h-3.5 shrink-0 text-amber-600" />
+            {lang === 'en'
+              ? 'This is the last PDF generation available for this licence.'
+              : lang === 'es'
+              ? 'Esta es la última generación de PDF disponible para esta licencia.'
+              : lang === 'de'
+              ? 'Dies ist die letzte verfügbare PDF-Generierung für diese Lizenz.'
+              : "Questa è l'ultima generazione PDF disponibile per questa licenza."}
+          </div>
+        )}
 
         {/* STEP CAROUSEL - single scrollable row, active step auto-centered */}
         <div className="max-w-7xl mx-auto mt-1.5 flex items-center gap-1">
@@ -1584,6 +1605,9 @@ export default function App() {
         onClose={() => setIsInfoModalOpen(false)}
         lang={lang}
       />
+
+      {/* Dialog bloccante: plafond export PDF della licenza esaurito */}
+      {pdfExportsExhaustedDialog}
     </div>
   );
 }

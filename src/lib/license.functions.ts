@@ -21,6 +21,7 @@ export const checkLicenseStatus = createServerFn({ method: "POST" })
   });
 
 type FailReason =
+  | "email_not_verified"
   | "license_not_found"
   | "license_expired"
   | "puk_not_found"
@@ -33,11 +34,9 @@ type ActivateResult =
   | { ok: true; reactivated: boolean; licenseId: string; pukId: string; userId: string }
   | { ok: false; reason: FailReason; code: string };
 
-// NOTA: a differenza del pattern MiniFAT, qui NON c'è uno step preliminare
-// di "email verificata su Cloud" (questo prodotto non ha ancora un proprio
-// progetto Supabase Cloud/Lovable con lead_emails). L'email serve solo per
-// identificare/creare l'utente sul DB esterno condiviso e gestire il claim
-// del PUK — stessa logica, un passaggio in meno.
+// Le 9 verifiche in sequenza sono documentate in FLUSSO-INGRESSO-README.md
+// (repo 002MnFAT, sezione 3) — replicate qui 1:1, con lead_emails/PUK/licenze
+// tutte sul DB esterno condiviso (ruopxyprezzxoirfrjrm).
 export const verifyAndActivateLicense = createServerFn({ method: "POST" })
   .inputValidator((input: { email: string; licenseKey: string; puk: string }) =>
     z
@@ -51,12 +50,24 @@ export const verifyAndActivateLicense = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<ActivateResult> => {
     try {
       const { supabaseExternal } = await import("@/integrations/supabase/client.external");
-      // Il DB esterno ha colonne non presenti in eventuali tipi generati
-      // (users, license_puk_map, puk_codes.user_id/type_product_code).
       const ext = supabaseExternal as unknown as { from: (t: string) => any };
       const { email, licenseKey, puk } = data;
 
-      // 1) trova la licenza per chiave + app_code
+      // 1) email verificata (passaggio 1, lead_emails namespaced per APP_CODE)
+      const { data: leadRow, error: leadErr } = await ext
+        .from("lead_emails")
+        .select("id, is_verified")
+        .ilike("email", email)
+        .eq("source", APP_CODE)
+        .eq("is_verified", true)
+        .limit(1)
+        .maybeSingle();
+      if (leadErr) throw new Error(leadErr.message);
+      if (!leadRow) {
+        return { ok: false, reason: "email_not_verified", code: "E-001" };
+      }
+
+      // 2) licenza per chiave + app_code, attiva
       const { data: license, error: lErr } = await ext
         .from("licenses")
         .select("id, is_active, expires_at, activated_at, subscription_type")
@@ -69,11 +80,13 @@ export const verifyAndActivateLicense = createServerFn({ method: "POST" })
       if (!license) {
         return { ok: false, reason: "license_not_found", code: "E-101" };
       }
+
+      // 3) scadenza
       if (license.expires_at && new Date(license.expires_at as string).getTime() <= Date.now()) {
         return { ok: false, reason: "license_expired", code: "E-103" };
       }
 
-      // 2) trova il PUK per codice
+      // 4) PUK esistente
       const { data: pukRow, error: pErr } = await ext
         .from("puk_codes")
         .select("id, used, user_id, type_product_code, license_id")
@@ -84,12 +97,13 @@ export const verifyAndActivateLicense = createServerFn({ method: "POST" })
       if (!pukRow) {
         return { ok: false, reason: "puk_not_found", code: "E-201" };
       }
+
+      // 5) PUK del prodotto giusto
       if (pukRow.type_product_code && pukRow.type_product_code !== APP_CODE) {
         return { ok: false, reason: "puk_wrong_product", code: "E-203" };
       }
 
-      // 3) verifica che il PUK appartenga a questa licenza (via license_puk_map,
-      //    con fallback sul link diretto legacy puk_codes.license_id)
+      // 6) PUK appartenente alla licenza (mappa N:N o FK legacy diretto)
       const { data: mapRow, error: mErr } = await ext
         .from("license_puk_map")
         .select("id")
@@ -104,7 +118,7 @@ export const verifyAndActivateLicense = createServerFn({ method: "POST" })
         return { ok: false, reason: "puk_not_in_license", code: "E-204" };
       }
 
-      // 4) risolvi/crea l'utente sul DB esterno (per email)
+      // 7) risolvi/crea l'utente sul DB esterno (per email)
       const { data: existingUser, error: uErr } = await ext
         .from("users")
         .select("id, email")
@@ -126,7 +140,7 @@ export const verifyAndActivateLicense = createServerFn({ method: "POST" })
         userId = insUser.id as string;
       }
 
-      // 5) logica di claim del PUK
+      // 8) claim del posto
       if (pukRow.user_id && pukRow.user_id !== userId) {
         return { ok: false, reason: "puk_claimed_by_other", code: "E-202" };
       }
@@ -149,8 +163,7 @@ export const verifyAndActivateLicense = createServerFn({ method: "POST" })
         }
       }
 
-      // 6) segna activated_at se ancora nullo (primo claim su questa licenza).
-      //    Per licenze single_use, le 48h di validità partono da QUESTO istante.
+      // 9) prima attivazione: activated_at + (se single_use) expires_at = ora + 48h
       if (!license.activated_at) {
         const nowIso = new Date().toISOString();
         const updatePayload: Record<string, string> = { activated_at: nowIso };
@@ -202,7 +215,6 @@ export const getPdfExportsStatus = createServerFn({ method: "POST" })
       return { remaining: license?.pdf_exports_remaining ?? null };
     } catch (err) {
       console.error("getPdfExportsStatus error:", err);
-      // fail-open: in caso di errore tecnico non mostriamo il banner
       return { remaining: null };
     }
   });
@@ -232,12 +244,10 @@ export const decrementPdfExports = createServerFn({ method: "POST" })
         return { remaining: null, exhausted: false };
       }
 
-      // illimitato: nessuna azione
       if (license.pdf_exports_remaining === null) {
         return { remaining: null, exhausted: false };
       }
 
-      // già esaurito in precedenza (es. doppio click, retry di rete): no-op idempotente
       if (license.pdf_exports_remaining <= 0) {
         return { remaining: 0, exhausted: true };
       }
@@ -258,8 +268,6 @@ export const decrementPdfExports = createServerFn({ method: "POST" })
       return { remaining: newRemaining, exhausted: newRemaining <= 0 };
     } catch (err) {
       console.error("decrementPdfExports error:", err);
-      // fail-open: non blocchiamo la consegna del PDF già avvenuta per un
-      // problema tecnico sul decremento.
       return { remaining: null, exhausted: false };
     }
   });
