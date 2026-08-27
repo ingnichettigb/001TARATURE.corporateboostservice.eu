@@ -480,8 +480,9 @@ export default function App() {
               )}
               <button
                 type="button"
+                disabled={exportsBlocked}
                 onClick={() => handleExportPdf(false)}
-                className="bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-emerald-950"
+                className="bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-emerald-950 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Printer className="w-3.5 h-3.5 text-emerald-100" />
                 {lang === 'en' ? 'Print PDF' : lang === 'es' ? 'Imprimir PDF' : lang === 'de' ? 'PDF Drucken' : 'Stampa PDF'}
@@ -489,12 +490,14 @@ export default function App() {
             </div>
             <button
               type="button"
+              disabled={exportsBlocked}
               onClick={() => handleExportPdf(true)}
-              className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-teal-900"
+              className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-teal-900 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Printer className="w-3.5 h-3.5 text-teal-100" />
               {lang === 'en' ? 'Condensed PDF' : lang === 'es' ? 'PDF Condensado' : lang === 'de' ? 'Kompakt PDF' : 'PDF condensata'}
             </button>
+
 
             {/* Language Dropdown */}
             <div className="relative">
