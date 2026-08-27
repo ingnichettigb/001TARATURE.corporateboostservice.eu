@@ -12,22 +12,26 @@ function generateOtp(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
+// NOTA: inizialmente questa funzione chiamava il connector-gateway di
+// Lovable (pattern usato da 002MnFAT). Per 001TARATURE quel connector
+// non risulta disponibile nel catalogo del workspace ("Connectors" ->
+// nessun Resend, solo Mailgun/Gmail/Outlook/...), quindi si chiama
+// direttamente l'API pubblica di Resend con RESEND_API_KEY. Più semplice,
+// documentato ufficialmente da Resend come alternativa valida, e non
+// dipende da nessuna connessione/catalogo Lovable.
 async function sendOtpEmail(to: string, code: string) {
   const apiKey = process.env.RESEND_API_KEY;
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  if (!apiKey || !lovableKey) {
-    throw new Error("Email service not configured");
+  if (!apiKey) {
+    throw new Error("Email service not configured: missing RESEND_API_KEY");
   }
-  // Il mittente verificato su Resend per questo connector è configurabile
-  // via secret RESEND_FROM_EMAIL (presente in questo progetto Lovable);
-  // fallback all'indirizzo storico se il secret non è impostato.
+  // Mittente verificato su Resend, configurabile via secret RESEND_FROM_EMAIL
+  // con fallback all'indirizzo storico se il secret non è impostato.
   const fromEmail = process.env.RESEND_FROM_EMAIL || "team@corporateboostservice.eu";
-  const res = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
+  const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${lovableKey}`,
-      "X-Connection-Api-Key": apiKey,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       from: `${APP_CODE} <${fromEmail}>`,
