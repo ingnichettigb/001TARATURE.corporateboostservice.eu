@@ -167,6 +167,21 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
     document.body.removeChild(link);
   };
 
+  /**
+   * Export CSV con gate di quota centralizzato: PDF e CSV dello stesso ciclo
+   * contano come una sola esportazione.
+   */
+  const handleExportCSV = async () => {
+    if (onExportCsvGate) {
+      const allowed = await onExportCsvGate();
+      if (!allowed) return;
+    }
+    if (viewType === 'grid') handleExportGridCSV();
+    else handleExportListCSV();
+  };
+
+
+
   // Trigger Print Dialog — usa la STESSA funzione dei bottoni "Stampa PDF" /
   // "PDF condensata" nell'header (BombConApp.handleExportPdf), garantendo che
   // schema geometrico, numero di relazione e modalità di stampa multipla
