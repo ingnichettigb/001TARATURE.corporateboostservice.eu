@@ -1024,8 +1024,9 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
           {/* Export & Print */}
           <div className="flex gap-1 shrink-0">
             <button
-              onClick={viewType === 'grid' ? handleExportGridCSV : handleExportListCSV}
-              className="bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow-xs flex items-center gap-1 cursor-pointer"
+              onClick={handleExportCSV}
+              disabled={exportsBlocked}
+              className="bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow-xs flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               title={
                 lang === 'en' ? 'Export CSV' :
                 lang === 'es' ? 'Exportar CSV' :
@@ -1038,7 +1039,8 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
             </button>
             <button
               onClick={handlePrint}
-              className="bg-emerald-800 hover:bg-emerald-900 border border-emerald-950 text-white text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow-xs flex items-center gap-1 cursor-pointer"
+              disabled={exportsBlocked}
+              className="bg-emerald-800 hover:bg-emerald-900 border border-emerald-950 text-white text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow-xs flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               title={
                 lang === 'en' ? 'Print PDF' :
                 lang === 'es' ? 'Imprimir PDF' :
@@ -1051,7 +1053,8 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
             </button>
             <button
               onClick={handlePrintCondensed}
-              className="bg-teal-700 hover:bg-teal-800 border border-teal-900 text-white text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow-xs flex items-center gap-1 cursor-pointer"
+              disabled={exportsBlocked}
+              className="bg-teal-700 hover:bg-teal-800 border border-teal-900 text-white text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow-xs flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               title={
                 lang === 'en' ? 'Condensed PDF' :
                 lang === 'es' ? 'PDF Condensado' :
