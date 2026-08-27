@@ -58,25 +58,14 @@ export default function App() {
   // Contatore export PDF rimanenti, legato alla licenza attivata
   // (src/lib/license.functions.ts + gate in src/routes/__root.tsx).
   // null = nessuna licenza / illimitato → badge non mostrato.
-  const [pdfExportsBadge, setPdfExportsBadge] = useState<number | null>(null);
-  const [showLastExportWarning, setShowLastExportWarning] = useState(false);
-  const fetchPdfExportsStatus = useServerFn(getPdfExportsStatus);
-  const decrementExports = useServerFn(decrementPdfExports);
-  const { showExhausted, dialog: pdfExportsExhaustedDialog } = usePdfExportsExhaustedDialog();
+  const {
+    remaining: pdfExportsBadge,
+    blocked: exportsBlocked,
+    showLastExportWarning,
+    consume: consumeExport,
+    dialog: pdfExportsExhaustedDialog,
+  } = useExportQuota();
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const licenseId = window.localStorage.getItem(LICENSE_ID_KEY);
-    if (!licenseId) return;
-    fetchPdfExportsStatus({ data: { licenseId } })
-      .then(({ remaining }) => {
-        setPdfExportsBadge(remaining);
-        setShowLastExportWarning(remaining === 1);
-      })
-      .catch((err) => {
-        console.error('getPdfExportsStatus call failed:', err);
-      });
-  }, [fetchPdfExportsStatus]);
   
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
