@@ -11,6 +11,8 @@ import { generateCalibrationPDF } from '../../services/pdf';
 import { getExtendedValidityText } from '../../services/extended-validity';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import ExportCountBadge from '@/common/exports/ExportCountBadge';
+
 
 interface CalibrationTableProps {
   result: CalculationResult;
@@ -30,9 +32,11 @@ interface CalibrationTableProps {
   onExportCsvGate?: () => Promise<boolean> | boolean;
   /** Quota esaurita: disabilita tutti i pulsanti di esportazione. */
   exportsBlocked?: boolean;
+  /** Esportazioni rimanenti mostrate nel badge sopra i pulsanti. */
+  exportsRemaining?: number | null;
 }
 
-export default function CalibrationTable({ result, lang = 'it', compilerInfo, onExportPdf, onExportCsvGate, exportsBlocked = false }: CalibrationTableProps) {
+export default function CalibrationTable({ result, lang = 'it', compilerInfo, onExportPdf, onExportCsvGate, exportsBlocked = false, exportsRemaining = null }: CalibrationTableProps) {
 
   const t = translations[lang];
   const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
@@ -1023,6 +1027,7 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
 
           {/* Export & Print */}
           <div className="flex gap-1 shrink-0">
+            <ExportCountBadge count={exportsRemaining} lang={lang}>
             <button
               onClick={handleExportCSV}
               disabled={exportsBlocked}
@@ -1037,6 +1042,8 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
               <Download className="w-3.5 h-3.5" />
               <span>CSV</span>
             </button>
+            </ExportCountBadge>
+            <ExportCountBadge count={exportsRemaining} lang={lang}>
             <button
               onClick={handlePrint}
               disabled={exportsBlocked}
@@ -1051,6 +1058,8 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
               <Printer className="w-3.5 h-3.5 text-emerald-100" />
               <span>PDF</span>
             </button>
+            </ExportCountBadge>
+            <ExportCountBadge count={exportsRemaining} lang={lang}>
             <button
               onClick={handlePrintCondensed}
               disabled={exportsBlocked}
@@ -1070,6 +1079,7 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
                  'Cond.'}
               </span>
             </button>
+            </ExportCountBadge>
           </div>
         </div>
       </div>

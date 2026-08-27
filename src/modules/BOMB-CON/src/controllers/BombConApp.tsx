@@ -41,6 +41,8 @@ import { captureGeometryImage } from '../services/captureGeometry';
 import { getExtendedNumbers, getSelectedExtendedEntries, getExtendedValidityText, formatExtendedEntry } from '../services/extended-validity';
 import { loadLanguage, saveLanguage } from '@/common/language/storage';
 import { useExportQuota } from '@/common/exports/useExportQuota';
+import ExportCountBadge from '@/common/exports/ExportCountBadge';
+
 
 
 export default function App() {
@@ -464,20 +466,7 @@ export default function App() {
 
           {/* Header actions: PDF, Condensed PDF, Language, Info, Close */}
           <div className="flex items-center gap-1.5 flex-nowrap justify-end">
-            <div className="relative inline-flex">
-              {pdfExportsBadge !== null && (
-                <span
-                  className="absolute -right-1.5 -top-1.5 z-10 flex h-4 w-4 items-center justify-center rounded-full bg-green-600 text-[9px] font-bold text-white shadow"
-                  title={
-                    lang === 'en' ? 'PDF exports remaining' :
-                    lang === 'es' ? 'Exportaciones PDF restantes' :
-                    lang === 'de' ? 'Verbleibende PDF-Exporte' :
-                    'Export PDF rimanenti'
-                  }
-                >
-                  {pdfExportsBadge}
-                </span>
-              )}
+            <ExportCountBadge count={pdfExportsBadge} lang={lang}>
               <button
                 type="button"
                 disabled={exportsBlocked}
@@ -487,16 +476,19 @@ export default function App() {
                 <Printer className="w-3.5 h-3.5 text-emerald-100" />
                 {lang === 'en' ? 'Print PDF' : lang === 'es' ? 'Imprimir PDF' : lang === 'de' ? 'PDF Drucken' : 'Stampa PDF'}
               </button>
-            </div>
-            <button
-              type="button"
-              disabled={exportsBlocked}
-              onClick={() => handleExportPdf(true)}
-              className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-teal-900 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Printer className="w-3.5 h-3.5 text-teal-100" />
-              {lang === 'en' ? 'Condensed PDF' : lang === 'es' ? 'PDF Condensado' : lang === 'de' ? 'Kompakt PDF' : 'PDF condensata'}
-            </button>
+            </ExportCountBadge>
+            <ExportCountBadge count={pdfExportsBadge} lang={lang}>
+              <button
+                type="button"
+                disabled={exportsBlocked}
+                onClick={() => handleExportPdf(true)}
+                className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-teal-900 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Printer className="w-3.5 h-3.5 text-teal-100" />
+                {lang === 'en' ? 'Condensed PDF' : lang === 'es' ? 'PDF Condensado' : lang === 'de' ? 'Kompakt PDF' : 'PDF condensata'}
+              </button>
+            </ExportCountBadge>
+
 
 
             {/* Language Dropdown */}
@@ -1028,7 +1020,7 @@ export default function App() {
               )}
               {step === 6 && (
                 <div className="print:hidden">
-                  <CalibrationTable result={result} lang={lang} compilerInfo={compilerInfo} onExportPdf={handleExportPdf} onExportCsvGate={handleExportCsvGate} exportsBlocked={exportsBlocked} />
+                  <CalibrationTable result={result} lang={lang} compilerInfo={compilerInfo} onExportPdf={handleExportPdf} onExportCsvGate={handleExportCsvGate} exportsBlocked={exportsBlocked} exportsRemaining={pdfExportsBadge} />
                 </div>
               )}
             </div>
