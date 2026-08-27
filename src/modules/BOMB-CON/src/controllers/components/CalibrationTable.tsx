@@ -23,9 +23,17 @@ interface CalibrationTableProps {
    * Se non fornita, si ricade sulla generazione diretta (senza questi arricchimenti).
    */
   onExportPdf?: (condensed: boolean) => Promise<void> | void;
+  /**
+   * Gate centralizzato per l'export CSV: restituisce false se la quota è
+   * esaurita (in tal caso il CSV non viene generato).
+   */
+  onExportCsvGate?: () => Promise<boolean> | boolean;
+  /** Quota esaurita: disabilita tutti i pulsanti di esportazione. */
+  exportsBlocked?: boolean;
 }
 
-export default function CalibrationTable({ result, lang = 'it', compilerInfo, onExportPdf }: CalibrationTableProps) {
+export default function CalibrationTable({ result, lang = 'it', compilerInfo, onExportPdf, onExportCsvGate, exportsBlocked = false }: CalibrationTableProps) {
+
   const t = translations[lang];
   const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -158,6 +166,21 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
     link.click();
     document.body.removeChild(link);
   };
+
+  /**
+   * Export CSV con gate di quota centralizzato: PDF e CSV dello stesso ciclo
+   * contano come una sola esportazione.
+   */
+  const handleExportCSV = async () => {
+    if (onExportCsvGate) {
+      const allowed = await onExportCsvGate();
+      if (!allowed) return;
+    }
+    if (viewType === 'grid') handleExportGridCSV();
+    else handleExportListCSV();
+  };
+
+
 
   // Trigger Print Dialog — usa la STESSA funzione dei bottoni "Stampa PDF" /
   // "PDF condensata" nell'header (BombConApp.handleExportPdf), garantendo che
@@ -1001,8 +1024,9 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
           {/* Export & Print */}
           <div className="flex gap-1 shrink-0">
             <button
-              onClick={viewType === 'grid' ? handleExportGridCSV : handleExportListCSV}
-              className="bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow-xs flex items-center gap-1 cursor-pointer"
+              onClick={handleExportCSV}
+              disabled={exportsBlocked}
+              className="bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow-xs flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               title={
                 lang === 'en' ? 'Export CSV' :
                 lang === 'es' ? 'Exportar CSV' :
@@ -1015,7 +1039,8 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
             </button>
             <button
               onClick={handlePrint}
-              className="bg-emerald-800 hover:bg-emerald-900 border border-emerald-950 text-white text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow-xs flex items-center gap-1 cursor-pointer"
+              disabled={exportsBlocked}
+              className="bg-emerald-800 hover:bg-emerald-900 border border-emerald-950 text-white text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow-xs flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               title={
                 lang === 'en' ? 'Print PDF' :
                 lang === 'es' ? 'Imprimir PDF' :
@@ -1028,7 +1053,8 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
             </button>
             <button
               onClick={handlePrintCondensed}
-              className="bg-teal-700 hover:bg-teal-800 border border-teal-900 text-white text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow-xs flex items-center gap-1 cursor-pointer"
+              disabled={exportsBlocked}
+              className="bg-teal-700 hover:bg-teal-800 border border-teal-900 text-white text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow-xs flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               title={
                 lang === 'en' ? 'Condensed PDF' :
                 lang === 'es' ? 'PDF Condensado' :

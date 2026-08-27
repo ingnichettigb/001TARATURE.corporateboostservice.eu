@@ -40,10 +40,8 @@ import { generateCalibrationPDF } from '../services/pdf';
 import { captureGeometryImage } from '../services/captureGeometry';
 import { getExtendedNumbers, getSelectedExtendedEntries, getExtendedValidityText, formatExtendedEntry } from '../services/extended-validity';
 import { loadLanguage, saveLanguage } from '@/common/language/storage';
-import { useServerFn } from '@tanstack/react-start';
-import { getPdfExportsStatus, decrementPdfExports } from '@/lib/license.functions';
-import { LICENSE_ID_KEY } from '@/lib/app-config';
-import { usePdfExportsExhaustedDialog } from '@/components/pdf-exports-exhausted-dialog';
+import { useExportQuota } from '@/common/exports/useExportQuota';
+
 
 export default function App() {
   // Lingua persistente e condivisa con il menu principale e gli altri moduli
@@ -58,25 +56,14 @@ export default function App() {
   // Contatore export PDF rimanenti, legato alla licenza attivata
   // (src/lib/license.functions.ts + gate in src/routes/__root.tsx).
   // null = nessuna licenza / illimitato → badge non mostrato.
-  const [pdfExportsBadge, setPdfExportsBadge] = useState<number | null>(null);
-  const [showLastExportWarning, setShowLastExportWarning] = useState(false);
-  const fetchPdfExportsStatus = useServerFn(getPdfExportsStatus);
-  const decrementExports = useServerFn(decrementPdfExports);
-  const { showExhausted, dialog: pdfExportsExhaustedDialog } = usePdfExportsExhaustedDialog();
+  const {
+    remaining: pdfExportsBadge,
+    blocked: exportsBlocked,
+    showLastExportWarning,
+    consume: consumeExport,
+    dialog: pdfExportsExhaustedDialog,
+  } = useExportQuota();
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const licenseId = window.localStorage.getItem(LICENSE_ID_KEY);
-    if (!licenseId) return;
-    fetchPdfExportsStatus({ data: { licenseId } })
-      .then(({ remaining }) => {
-        setPdfExportsBadge(remaining);
-        setShowLastExportWarning(remaining === 1);
-      })
-      .catch((err) => {
-        console.error('getPdfExportsStatus call failed:', err);
-      });
-  }, [fetchPdfExportsStatus]);
   
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
@@ -181,13 +168,17 @@ export default function App() {
   /**
    * Esporta il PDF: uno solo (con l'elenco dei numeri spuntati) oppure
    * uno per ogni numero di fabbrica spuntato (validità estesa = UNICO).
+   * La quota è gestita centralmente da useExportQuota (PDF + CSV dello stesso
+   * ciclo = 1 sola esportazione).
    */
   const handleExportPdf = async (condensed: boolean) => {
+    const allowed = await consumeExport('pdf');
+    if (!allowed) return;
+
     const geometryImage = await captureGeometryImage(input);
 
     if (printMode !== 'multiplo') {
       await generateCalibrationPDF(result, lang, compilerInfo, condensed, reportNumber, geometryImage);
-      decrementPdfExportsIfLicensed();
       return;
     }
 
@@ -211,28 +202,11 @@ export default function App() {
       await generateCalibrationPDF(singleResult, lang, compilerInfo, condensed, reportNumber, geometryImage);
       await new Promise((r) => setTimeout(r, 400));
     }
-    decrementPdfExportsIfLicensed();
   };
 
-  // Scala il contatore export PDF della licenza (no-op se nessuna licenza
-  // attivata o se illimitata). Fail-open: il PDF è già stato consegnato
-  // in ogni caso, questo aggiorna solo badge/quota/dialog lato server.
-  const decrementPdfExportsIfLicensed = () => {
-    if (typeof window === 'undefined') return;
-    const licenseId = window.localStorage.getItem(LICENSE_ID_KEY);
-    if (!licenseId) return;
-    decrementExports({ data: { licenseId } })
-      .then(({ remaining, exhausted }) => {
-        setPdfExportsBadge(remaining);
-        setShowLastExportWarning(false);
-        if (exhausted) {
-          showExhausted();
-        }
-      })
-      .catch((err) => {
-        console.error('decrementPdfExports call failed:', err);
-      });
-  };
+  /** Consuma la quota per un'esportazione CSV (gratuita se nello stesso ciclo del PDF). */
+  const handleExportCsvGate = () => consumeExport('csv');
+
 
 
   const [formKey, setFormKey] = useState<number>(0);
@@ -506,8 +480,9 @@ export default function App() {
               )}
               <button
                 type="button"
+                disabled={exportsBlocked}
                 onClick={() => handleExportPdf(false)}
-                className="bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-emerald-950"
+                className="bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-emerald-950 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Printer className="w-3.5 h-3.5 text-emerald-100" />
                 {lang === 'en' ? 'Print PDF' : lang === 'es' ? 'Imprimir PDF' : lang === 'de' ? 'PDF Drucken' : 'Stampa PDF'}
@@ -515,12 +490,14 @@ export default function App() {
             </div>
             <button
               type="button"
+              disabled={exportsBlocked}
               onClick={() => handleExportPdf(true)}
-              className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-teal-900"
+              className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold py-1.5 px-2.5 rounded-lg text-[11px] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer border border-teal-900 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Printer className="w-3.5 h-3.5 text-teal-100" />
               {lang === 'en' ? 'Condensed PDF' : lang === 'es' ? 'PDF Condensado' : lang === 'de' ? 'Kompakt PDF' : 'PDF condensata'}
             </button>
+
 
             {/* Language Dropdown */}
             <div className="relative">
@@ -1051,7 +1028,7 @@ export default function App() {
               )}
               {step === 6 && (
                 <div className="print:hidden">
-                  <CalibrationTable result={result} lang={lang} compilerInfo={compilerInfo} onExportPdf={handleExportPdf} />
+                  <CalibrationTable result={result} lang={lang} compilerInfo={compilerInfo} onExportPdf={handleExportPdf} onExportCsvGate={handleExportCsvGate} exportsBlocked={exportsBlocked} />
                 </div>
               )}
             </div>
