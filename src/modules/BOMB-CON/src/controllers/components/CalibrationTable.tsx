@@ -11,6 +11,8 @@ import { generateCalibrationPDF } from '../../services/pdf';
 import { getExtendedValidityText } from '../../services/extended-validity';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import ExportCountBadge from '@/common/exports/ExportCountBadge';
+
 
 interface CalibrationTableProps {
   result: CalculationResult;
