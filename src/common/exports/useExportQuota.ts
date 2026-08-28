@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getPdfExportsStatus, decrementPdfExports } from "@/lib/license.functions";
-import { LICENSE_ID_KEY } from "@/lib/app-config";
+import { PUK_ID_KEY } from "@/lib/app-config";
 import { usePdfExportsExhaustedDialog } from "@/components/pdf-exports-exhausted-dialog";
 
 export type ExportKind = "pdf" | "csv";
@@ -18,7 +18,8 @@ export type ExportKind = "pdf" | "csv";
  *   l'esportazione successiva scala di nuovo il contatore.
  * - Con contatore a 0 ogni esportazione è bloccata e viene mostrato il dialog
  *   esistente di quota esaurita.
- * - Il valore è persistito lato server (licenses.pdf_exports_remaining).
+ * - Il valore è persistito lato server (puk_codes.pdf_exports_remaining),
+ *   per singola PUK: non è condiviso tra le PUK della stessa licenza.
  */
 export function useExportQuota() {
   const [remaining, setRemaining] = useState<number | null>(null);
@@ -33,9 +34,9 @@ export function useExportQuota() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const licenseId = window.localStorage.getItem(LICENSE_ID_KEY);
-    if (!licenseId) return;
-    fetchStatus({ data: { licenseId } })
+    const pukId = window.localStorage.getItem(PUK_ID_KEY);
+    if (!pukId) return;
+    fetchStatus({ data: { pukId } })
       .then(({ remaining: r }) => {
         setRemaining(r);
         setShowLastExportWarning(r === 1);
@@ -52,9 +53,9 @@ export function useExportQuota() {
   const consume = useCallback(
     async (kind: ExportKind): Promise<boolean> => {
       if (typeof window === "undefined") return true;
-      const licenseId = window.localStorage.getItem(LICENSE_ID_KEY);
-      // Nessuna licenza / quota illimitata → nessun limite.
-      if (!licenseId) return true;
+      const pukId = window.localStorage.getItem(PUK_ID_KEY);
+      // Nessuna PUK / quota illimitata → nessun limite.
+      if (!pukId) return true;
 
       // Export già incluso nel ciclo corrente → gratuito.
       if (cycle.current[kind] === false && (cycle.current.pdf || cycle.current.csv)) {
@@ -70,7 +71,7 @@ export function useExportQuota() {
       if (inFlight.current) return false;
       inFlight.current = true;
       try {
-        const { remaining: r, exhausted } = await decrement({ data: { licenseId } });
+        const { remaining: r, exhausted } = await decrement({ data: { pukId } });
         setRemaining(r);
         setShowLastExportWarning(false);
         // Nuovo ciclo: questo tipo è consumato, l'altro resta gratuito una volta.
