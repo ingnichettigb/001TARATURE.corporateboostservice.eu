@@ -82,6 +82,7 @@ This project was built with [Lovable](https://lovable.dev).
 - **Modulo BOMB-CON** (unico "Attivo"): geometria, calcolo, tabella di calibrazione, export PDF (stampa/condensata/multipla), manuale d'uso in-app, bottoni header ristilizzati (verde, ben visibili).
 - **Sistema di licensing a 3 passaggi**, replica del flusso collaudato su `002MnFAT` (vedi commit `2067d48`):
   `/auth` (OTP email) → `/attivazione` (licenza + PUK) → `/condizioni` (accettazione ToS 4 lingue) → SaaS accessibile, con rivalidazione della licenza a ogni navigazione e contatore export PDF (badge + banner ultimo credito + dialog bloccante a esaurimento).
+  Il contatore export è **per singola PUK** (colonna `puk_codes.pdf_exports_remaining`, chiave localStorage `001TARATURE:pukId`): non è condiviso tra le PUK della stessa licenza e a 0 non disattiva la licenza.
   Dati su DB esterno condiviso `ruopxyprezzxoirfrjrm`, prodotto `001TARATURE` già in `product_catalog`.
 
 ### Da fare (TODO)

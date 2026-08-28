@@ -194,25 +194,27 @@ export const verifyAndActivateLicense = createServerFn({ method: "POST" })
 
 // Da chiamare al mount della pagina modulo: dice quanti export PDF restano
 // (per mostrare il badge / il banner "ultima generazione disponibile").
+// Il contatore è PER SINGOLA PUK (colonna pdf_exports_remaining su puk_codes),
+// non condiviso tra le PUK della stessa licenza.
 // remaining === null significa illimitato.
 export const getPdfExportsStatus = createServerFn({ method: "POST" })
-  .inputValidator((input: { licenseId: string }) =>
-    z.object({ licenseId: z.string().uuid() }).parse(input),
+  .inputValidator((input: { pukId: string }) =>
+    z.object({ pukId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data }): Promise<{ remaining: number | null }> => {
     try {
       const { supabaseExternal } = await import("@/integrations/supabase/client.external");
       const ext = supabaseExternal as unknown as { from: (t: string) => any };
 
-      const { data: license, error: lErr } = await ext
-        .from("licenses")
+      const { data: puk, error: lErr } = await ext
+        .from("puk_codes")
         .select("pdf_exports_remaining")
-        .eq("id", data.licenseId)
+        .eq("id", data.pukId)
         .limit(1)
         .maybeSingle();
       if (lErr) throw new Error(lErr.message);
 
-      return { remaining: license?.pdf_exports_remaining ?? null };
+      return { remaining: puk?.pdf_exports_remaining ?? null };
     } catch (err) {
       console.error("getPdfExportsStatus error:", err);
       return { remaining: null };
@@ -220,49 +222,43 @@ export const getPdfExportsStatus = createServerFn({ method: "POST" })
   });
 
 // Da chiamare subito dopo la generazione del PDF finale. Scala atomicamente
-// pdf_exports_remaining di 1 (solo se > 0). Se il contatore arriva a 0,
-// disattiva la licenza nello stesso UPDATE: al prossimo controllo di
-// runLicenseStatus (già eseguito ad ogni navigazione tramite AuthGate)
-// l'accesso viene bloccato senza toccare altro codice.
+// pdf_exports_remaining di 1 (solo se > 0) sulla singola PUK.
+// L'esaurimento riguarda solo quella PUK: NON disattiva la licenza.
 export const decrementPdfExports = createServerFn({ method: "POST" })
-  .inputValidator((input: { licenseId: string }) =>
-    z.object({ licenseId: z.string().uuid() }).parse(input),
+  .inputValidator((input: { pukId: string }) =>
+    z.object({ pukId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data }): Promise<{ remaining: number | null; exhausted: boolean }> => {
     try {
       const { supabaseExternal } = await import("@/integrations/supabase/client.external");
       const ext = supabaseExternal as unknown as { from: (t: string) => any };
 
-      const { data: license, error: lErr } = await ext
-        .from("licenses")
-        .select("id, pdf_exports_remaining, is_active")
-        .eq("id", data.licenseId)
+      const { data: puk, error: lErr } = await ext
+        .from("puk_codes")
+        .select("id, pdf_exports_remaining")
+        .eq("id", data.pukId)
         .limit(1)
         .maybeSingle();
       if (lErr) throw new Error(lErr.message);
-      if (!license) {
+      if (!puk) {
         return { remaining: null, exhausted: false };
       }
 
-      if (license.pdf_exports_remaining === null) {
+      if (puk.pdf_exports_remaining === null) {
         return { remaining: null, exhausted: false };
       }
 
-      if (license.pdf_exports_remaining <= 0) {
+      if (puk.pdf_exports_remaining <= 0) {
         return { remaining: 0, exhausted: true };
       }
 
-      const newRemaining = license.pdf_exports_remaining - 1;
-      const updatePayload: Record<string, unknown> = { pdf_exports_remaining: newRemaining };
-      if (newRemaining <= 0) {
-        updatePayload.is_active = false;
-      }
+      const newRemaining = puk.pdf_exports_remaining - 1;
 
       const { error: updErr } = await ext
-        .from("licenses")
-        .update(updatePayload)
-        .eq("id", data.licenseId)
-        .eq("pdf_exports_remaining", license.pdf_exports_remaining); // guardia ottimistica anti-race
+        .from("puk_codes")
+        .update({ pdf_exports_remaining: newRemaining })
+        .eq("id", data.pukId)
+        .eq("pdf_exports_remaining", puk.pdf_exports_remaining); // guardia ottimistica anti-race
       if (updErr) throw new Error(updErr.message);
 
       return { remaining: newRemaining, exhausted: newRemaining <= 0 };

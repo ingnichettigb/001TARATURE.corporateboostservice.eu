@@ -14,6 +14,7 @@ export const TERMS_VERSION = "v1";
 export const VERIFIED_EMAIL_KEY = `${APP_CODE}:verifiedEmail`;
 export const ACTIVATED_KEY = `${APP_CODE}:activated`;
 export const LICENSE_ID_KEY = `${APP_CODE}:licenseId`;
+export const PUK_ID_KEY = `${APP_CODE}:pukId`;
 export const CONSENT_KEY = `${APP_CODE}:consent`;
 export const LAST_LICENSE_CHECK_KEY = `${APP_CODE}:lastLicenseCheck`;
 export const LICENSE_INVALID_REASON_KEY = `${APP_CODE}:licenseInvalidReason`;
@@ -22,6 +23,7 @@ export const GATE_KEYS = [
   VERIFIED_EMAIL_KEY,
   ACTIVATED_KEY,
   LICENSE_ID_KEY,
+  PUK_ID_KEY,
   CONSENT_KEY,
   LAST_LICENSE_CHECK_KEY,
 ] as const;
@@ -29,6 +31,7 @@ export const GATE_KEYS = [
 export const LICENSE_KEYS = [
   ACTIVATED_KEY,
   LICENSE_ID_KEY,
+  PUK_ID_KEY,
   CONSENT_KEY,
   LAST_LICENSE_CHECK_KEY,
 ] as const;
