@@ -11,6 +11,7 @@ import {
   APP_NAME,
   VERIFIED_EMAIL_KEY,
   LICENSE_ID_KEY,
+  PUK_ID_KEY,
   ACTIVATED_KEY,
   CONSENT_KEY,
 } from "@/lib/app-config";
@@ -105,6 +106,7 @@ function AttivazionePage() {
       if (res.ok) {
         if (typeof window !== "undefined") {
           window.localStorage.setItem(LICENSE_ID_KEY, res.licenseId);
+          window.localStorage.setItem(PUK_ID_KEY, res.pukId);
           // ACTIVATED_KEY/CONSENT_KEY vengono scritte solo dopo il passaggio 3
           window.localStorage.removeItem(ACTIVATED_KEY);
           window.localStorage.removeItem(CONSENT_KEY);
