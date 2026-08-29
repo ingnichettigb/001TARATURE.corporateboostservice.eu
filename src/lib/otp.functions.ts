@@ -57,6 +57,22 @@ async function sendOtpEmail(to: string, code: string) {
 // (ruopxyprezzxoirfrjrm), distinguendo il prodotto tramite la colonna
 // `source = APP_CODE`. Evita di dover collegare un progetto Cloud dedicato
 // per ognuno degli altri 10-11 prodotti da replicare.
+//
+// FIX 2026-08-29 (bug E-010 "duplicate key value violates unique constraint
+// lead_emails_email_idx"): l'unique index su questa tabella è definito SOLO
+// su `email`, GLOBALMENTE — non su (email, source). Significa che può
+// esistere al massimo UNA riga per indirizzo email in tutto il database,
+// condivisa tra tutti i prodotti del portfolio, non una per prodotto come
+// il filtro `.eq("source", APP_CODE)" lasciava intendere.
+//
+// Il codice precedente faceva UPDATE solo se trovava una riga NON verificata
+// per l'APP_CODE corrente; se l'email risultava già verificata (login
+// ripetuto) o verificata per un altro prodotto, cadeva nel ramo INSERT e
+// falliva contro il vincolo unique, restituendo E-010 a qualunque utente
+// ricorrente. Ora: si cerca SEMPRE per sola email (nessun filtro su
+// source), e se una riga esiste già la si aggiorna sempre (nuovo codice,
+// is_verified riportato a false, source riallineato all'app corrente).
+// L'INSERT avviene solo se non esiste alcuna riga per quella email.
 export const requestOtp = createServerFn({ method: "POST" })
   .inputValidator((input: { email: string }) => z.object({ email: emailSchema }).parse(input))
   .handler(async ({ data }) => {
@@ -67,9 +83,8 @@ export const requestOtp = createServerFn({ method: "POST" })
 
       const { data: latest, error: latestErr } = await ext
         .from("lead_emails")
-        .select("id, is_verified, otp_attempts, otp_window_start")
+        .select("id, is_verified, otp_attempts, otp_window_start, source")
         .ilike("email", email)
-        .eq("source", APP_CODE)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -98,13 +113,19 @@ export const requestOtp = createServerFn({ method: "POST" })
       const nextAttempts = attempts + 1;
       const sentAtIso = new Date(now).toISOString();
 
-      if (latest && !latest.is_verified) {
+      if (latest) {
+        // Riga già esistente per questa email (indipendentemente da
+        // is_verified o da quale prodotto l'aveva creata): la si
+        // riutilizza sempre, dato che l'unique index è globale e non
+        // può esisterne una seconda.
         const { error: updErr } = await ext
           .from("lead_emails")
           .update({
             verification_code: code,
             otp_attempts: nextAttempts,
             otp_window_start: sentAtIso,
+            is_verified: false,
+            source: APP_CODE,
           })
           .eq("id", latest.id);
         if (updErr) throw new Error(`DB update lead_emails failed: ${updErr.message}`);
@@ -156,11 +177,14 @@ export const verifyOtp = createServerFn({ method: "POST" })
       const ext = supabaseExternal as unknown as { from: (t: string) => any };
       const { email, code } = data;
 
+      // NOTA: nessun filtro su `source` qui — coerente con il fix sopra,
+      // dato che esiste al massimo una riga per email a livello di DB.
+      // email + codice a 6 cifre + is_verified=false sono già sufficienti
+      // a identificare univocamente la riga corretta.
       const { data: row, error } = await ext
         .from("lead_emails")
         .select("id, verification_code, otp_window_start, created_at, is_verified")
         .ilike("email", email)
-        .eq("source", APP_CODE)
         .eq("verification_code", code)
         .eq("is_verified", false)
         .order("created_at", { ascending: false })
