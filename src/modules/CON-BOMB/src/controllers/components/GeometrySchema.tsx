@@ -306,51 +306,53 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
 
   const totalDrawn = hFondo_px + lCil_px + hCono_px;
   // 4.1 spazio in eccesso: disegno centrato verticalmente
-  const yDomeTop = zoneY0 + Math.max(0, (availH - totalDrawn) / 2);
-  const yCilTop = yDomeTop + hFondo_px;
+  // ORIENTAMENTO CON-BOMB: cono in ALTO (coperchio), calotta bombata in BASSO (fondo)
+  const yApex = zoneY0 + Math.max(0, (availH - totalDrawn) / 2);
+  const yCilTop = yApex + hCono_px;
   const yCilBot = yCilTop + lCil_px;
-  const yApex = yCilBot + hCono_px;
+  const yDomeBot = yCilBot + hFondo_px;
 
 
   const leftX = cx - halfW;
   const rightX = cx + halfW;
   const yCilMid = (yCilTop + yCilBot) / 2;
 
-  // curva fondo bombato (in ALTO): peak reale della bezier = 0.75 * rise
+  // curva fondo bombato (in BASSO): peak reale della bezier = 0.75 * rise
   const domeRise = Math.max(hFondo_px / 0.75, 18);
 
   const pathData = `
     M ${leftX} ${yCilTop}
-    C ${leftX} ${yCilTop - domeRise}, ${rightX} ${yCilTop - domeRise}, ${rightX} ${yCilTop}
-    L ${rightX} ${yCilBot}
     L ${cx} ${yApex}
-    L ${leftX} ${yCilBot}
+    L ${rightX} ${yCilTop}
+    L ${rightX} ${yCilBot}
+    C ${rightX} ${yCilBot + domeRise}, ${leftX} ${yCilBot + domeRise}, ${leftX} ${yCilBot}
     Z
   `;
 
-  // callout 1 — ancoraggio percentuale sull'altezza disegnata del fondo
+  // callout 1 — ancoraggio percentuale sull'altezza disegnata del fondo bombato (in basso)
   const domeT = 0.15;
-  const p0 = { x: leftX, y: yCilTop };
-  const p1 = { x: leftX, y: yCilTop - domeRise };
-  const p2 = { x: rightX, y: yCilTop - domeRise };
-  const p3 = { x: rightX, y: yCilTop };
+  const p0 = { x: leftX, y: yCilBot };
+  const p1 = { x: leftX, y: yCilBot + domeRise };
+  const p2 = { x: rightX, y: yCilBot + domeRise };
+  const p3 = { x: rightX, y: yCilBot };
   const mt = 1 - domeT;
   const domePtX =
     mt * mt * mt * p0.x + 3 * mt * mt * domeT * p1.x + 3 * mt * domeT * domeT * p2.x + domeT ** 3 * p3.x;
   const domePtY =
     mt * mt * mt * p0.y + 3 * mt * mt * domeT * p1.y + 3 * mt * domeT * domeT * p2.y + domeT ** 3 * p3.y;
   const callout1X = domePtX - 15;
-  const callout1Y = domePtY - 6;
+  const callout1Y = domePtY + 6;
 
-  // callout 3 — 50% dell'altezza disegnata del cono (percentuale, non px assoluti)
+  // callout 3 — 50% dell'altezza disegnata del cono (in alto)
   const coneT = 0.5;
   const coneVX = cx - leftX;
-  const coneVY = yApex - yCilBot;
+  const coneVY = yApex - yCilTop;
   const coneLen = Math.sqrt(coneVX * coneVX + coneVY * coneVY) || 1;
   const conePointX = leftX + coneVX * coneT;
-  const conePointY = yCilBot + coneVY * coneT;
-  const callout3X = conePointX + (-coneVY / coneLen) * 16;
-  const callout3Y = conePointY + (coneVX / coneLen) * 16;
+  const conePointY = yCilTop + coneVY * coneT;
+  const callout3X = conePointX + (coneVY / coneLen) * 16;
+  const callout3Y = conePointY - (coneVX / coneLen) * 16;
+
 
   // colonna quote (destra, larghezza fissa)
   const chainX = drawW - RIGHT_W + 16;   // 706
