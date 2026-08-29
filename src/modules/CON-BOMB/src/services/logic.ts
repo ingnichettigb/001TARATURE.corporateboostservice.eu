@@ -204,6 +204,8 @@ export function calculateTank(input: TankInput): CalculationResult {
   const coperchio = calculateHead(dInt, input.coperchio);
 
   const isConicFondo = input.fondo.type === 'conico';
+  const isConicCoperchio = input.coperchio.type === 'conico';
+
 
   // Altezze zone
   const H3_fondo = fondo.H3; // per conico = H_cono puro (sotto il raccordo)
