@@ -19,7 +19,7 @@ interface CalibrationTableProps {
   lang?: Language;
   compilerInfo?: CompilerInfo;
   /**
-   * Esportazione PDF condivisa con l'header del modulo (BombConApp.handleExportPdf).
+   * Esportazione PDF condivisa con l'header del modulo (ConBombApp.handleExportPdf).
    * Include cattura dello schema geometrico, numero di relazione coerente e
    * gestione della modalità di stampa (unico / un PDF per numero di fabbrica).
    * Se non fornita, si ricade sulla generazione diretta (senza questi arricchimenti).
@@ -187,7 +187,7 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
 
 
   // Trigger Print Dialog — usa la STESSA funzione dei bottoni "Stampa PDF" /
-  // "PDF condensata" nell'header (BombConApp.handleExportPdf), garantendo che
+  // "PDF condensata" nell'header (ConBombApp.handleExportPdf), garantendo che
   // schema geometrico, numero di relazione e modalità di stampa multipla
   // vengano gestiti in modo identico. Fallback diretto solo se il modulo
   // chiamante non passa la prop (retro-compatibilità).
@@ -903,7 +903,7 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
 
         const emitText = `${labels[lang].emitted} ${result.input.report.data || new Date().toISOString().split('T')[0]}`;
         doc.text(emitText, 15, 287);
-        doc.text('BOMB-CON TARATURA', 105, 287, { align: 'center' });
+        doc.text('CON-BOMB TARATURA', 105, 287, { align: 'center' });
 
         const pageText = `${labels[lang].page} ${i} / ${totalPagesCount}`;
         doc.text(pageText, 195, 287, { align: 'right' });

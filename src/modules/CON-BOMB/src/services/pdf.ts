@@ -1088,7 +1088,7 @@ export async function generateCalibrationPDF(
 
       const emitText = `${labels[lang].emitted} ${result.input.report.data || new Date().toISOString().split('T')[0]}`;
       doc.text(emitText, 15, 287);
-      doc.text('BOMB-CON Taratura', 105, 287, { align: 'center' });
+      doc.text('CON-BOMB Taratura', 105, 287, { align: 'center' });
 
       const pageText = `${labels[lang].page} ${i} / ${totalPagesCount}`;
       doc.text(pageText, 195, 287, { align: 'right' });

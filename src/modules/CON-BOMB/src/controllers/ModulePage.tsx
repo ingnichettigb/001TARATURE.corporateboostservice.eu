@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, FileSignature } from "lucide-react";
-import BombConApp from "./BombConApp";
+import ConBombApp from "./ConBombApp";
 
 /**
- * Pagina principale del modulo BOMB-CON.
+ * Pagina principale del modulo CON-BOMB.
  * L'applicazione importata contiene già le sezioni standard:
  * Input (TankInputForm) → Calcolo (core/logic.ts) → Output (ResultsDashboard,
  * CalibrationTable) → PDF (core/pdf.ts).
@@ -27,7 +27,7 @@ export default function ModulePage() {
           Intestazione report
         </Link>
       </div>
-      <BombConApp />
+      <ConBombApp />
     </div>
   );
 }
