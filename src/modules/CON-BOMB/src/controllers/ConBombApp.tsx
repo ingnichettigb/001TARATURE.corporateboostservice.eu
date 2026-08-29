@@ -104,17 +104,18 @@ export default function App() {
     lCil: 5200,      // 5.2 meters cylindrical shell
     rho: 0.85,       // Gazole/diesel density
     fondo: {
+      type: 'pseudoellittico',
+      sp: 6,
+      hColletto: 30,
+    },
+    coperchio: {
       type: 'conico',
       sp: 8,
       hColletto: 40,
       hCono: 900, // altezza totale (cono puro + raccordo)
       rRaccordo: 30, // raccordo cono/colletto (mm)
     },
-    coperchio: {
-      type: 'pseudoellittico',
-      sp: 6,
-      hColletto: 30,
-    },
+
     report: {
       cliente: 'Petrolchimica Padana S.p.A.',
       riferimento: 'Parco Serbatoi - Area Stoccaggio Sud',
