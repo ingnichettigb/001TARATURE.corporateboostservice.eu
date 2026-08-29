@@ -662,18 +662,18 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             </text>
           </g>
 
-          {/* INCLINAZIONE CONO — riquadro nella fascia inferiore fissa */}
+          {/* INCLINAZIONE CONO — riquadro nella fascia superiore (cono in alto) */}
           {(() => {
             const angBoxW = 108;
             const angBoxH = 42;
             const angBoxX = Math.min(cx + halfW + 24, drawW - RIGHT_W - SAFE - angBoxW);
-            const angBoxY = drawH - BOTTOM_BAND + 14;
+            const angBoxY = Math.max(4, yCilTop - angBoxH - 30);
 
             // vertice dell'angolo: incrocio virola verticale / linea inclinata destra del cono
             const vx = rightX;
-            const vy = yCilBot;
+            const vy = yCilTop;
             const dxS = cx - rightX;
-            const dyS = yApex - yCilBot;
+            const dyS = yApex - yCilTop;
             const lenS = Math.hypot(dxS, dyS) || 1;
             const rArc = 34;
             const ax = vx - rArc; // direzione orizzontale (verso l'interno)
@@ -681,18 +681,19 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             const bx = vx + (dxS / lenS) * rArc;
             const by = vy + (dyS / lenS) * rArc;
             const labX = vx - rArc * 0.72;
-            const labY = vy + rArc * 0.46;
+            const labY = vy - rArc * 0.46;
             return (
               <g>
                 {/* linea inclinata di riferimento */}
-                <line x1={cx} y1={yApex} x2={rightX} y2={yCilBot} stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,3" />
+                <line x1={cx} y1={yApex} x2={rightX} y2={yCilTop} stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,3" />
                 {/* semicerchio dell'angolo */}
                 <path
-                  d={`M ${ax} ${ay} A ${rArc} ${rArc} 0 0 0 ${bx} ${by}`}
+                  d={`M ${ax} ${ay} A ${rArc} ${rArc} 0 0 1 ${bx} ${by}`}
                   fill="none"
                   stroke="#0f766e"
                   strokeWidth="1.4"
                 />
+
                 <circle cx={vx} cy={vy} r="2.4" fill="#0f766e" />
                 <text x={labX} y={labY} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
                   {angolo != null ? `${angolo.toFixed(1)}°` : ''}
