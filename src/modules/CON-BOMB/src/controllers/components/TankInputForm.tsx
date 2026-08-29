@@ -29,13 +29,13 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
   // Spin animation trigger count
   const [spinCount, setSpinCount] = useState<number>(0);
 
-  // Fondo State (sempre CONICO)
-  const [fondoSp, setFondoSp] = useState<number>(initialInput.fondo.sp);
-  const [fondoColletto, setFondoColletto] = useState<number>(initialInput.fondo.hColletto);
-  const [fondoRRaccordo, setFondoRRaccordo] = useState<number>(initialInput.fondo.rRaccordo ?? 30);
-  const [fondoHCono, setFondoHCono] = useState<number>(initialInput.fondo.hCono ?? Math.round(initialInput.dInt / 2 + initialInput.fondo.hColletto));
+  // Coperchio State (sempre CONICO)
+  const [coperchioSp, setCoperchioSp] = useState<number>(initialInput.coperchio.sp);
+  const [coperchioColletto, setCoperchioColletto] = useState<number>(initialInput.coperchio.hColletto);
+  const [coperchioRRaccordo, setCoperchioRRaccordo] = useState<number>(initialInput.coperchio.rRaccordo ?? 30);
+  const [coperchioHCono, setCoperchioHCono] = useState<number>(initialInput.coperchio.hCono ?? Math.round(initialInput.dInt / 2 + initialInput.coperchio.hColletto));
 
-  // NOTA: h_cono qui è l'ALTEZZA TOTALE DEL FONDO CONICO, COLLETTO INCLUSO.
+  // NOTA: h_cono qui è l'ALTEZZA TOTALE DEL COPERCHIO CONICO, COLLETTO INCLUSO.
   // La geometria (cono puro + raccordo) lavora sulla quota netta = h_cono - h_colletto.
   const hTotFromAngle = (alfaDeg: number, R_base: number, r_racc: number, hColl: number = 0): number => {
     const a = alfaDeg * Math.PI / 180;
@@ -63,36 +63,36 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
     return ang;
   };
 
-  const [fondoAngolo, setFondoAngolo] = useState<number | null>(() => {
+  const [coperchioAngolo, setCoperchioAngolo] = useState<number | null>(() => {
     const r = initialInput.dInt / 2;
-    const h = initialInput.fondo.hCono ?? Math.round(r + initialInput.fondo.hColletto);
-    const rracc = initialInput.fondo.rRaccordo ?? 30;
+    const h = initialInput.coperchio.hCono ?? Math.round(r + initialInput.coperchio.hColletto);
+    const rracc = initialInput.coperchio.rRaccordo ?? 30;
     if (r <= 0) return null;
-    const ang = angleFromHTot(h, r, rracc, initialInput.fondo.hColletto);
+    const ang = angleFromHTot(h, r, rracc, initialInput.coperchio.hColletto);
     return ang != null ? Math.round(ang * 100) / 100 : null;
   });
   // lockedBy: 'h' means user typed altezza → angle is derived/disabled; 'angolo' means user typed angolo → altezza derived/disabled
   const [lockedBy, setLockedBy] = useState<'h' | 'angolo' | null>('h');
   const [raccordoError, setRaccordoError] = useState<string | null>(null);
   const [showAngleHelp, setShowAngleHelp] = useState<boolean>(false);
-  const [fondoCollettoConfirmed, setFondoCollettoConfirmed] = useState<boolean>(true);
-
-  // Costante: fondo sempre conico
-  const fondoType: HeadType = 'conico';
-  const fondoRCustom = 0;
-  const fondoRCustomVal = 0;
-
-  // Coperchio State (sempre BOMBATO)
-  const [coperchioType, setCoperchioType] = useState<HeadType>(
-    initialInput.coperchio.type === 'conico' ? 'pseudoellittico' : initialInput.coperchio.type
-  );
-  const [coperchioSp, setCoperchioSp] = useState<number>(initialInput.coperchio.sp);
-  const [coperchioColletto, setCoperchioColletto] = useState<number>(initialInput.coperchio.hColletto);
-  const [coperchioRCustom, setCoperchioRCustom] = useState<number>(initialInput.coperchio.R_custom ?? initialInput.dInt);
-  const [coperchioRCustomVal, setCoperchioRCustomVal] = useState<number>(initialInput.coperchio.r_custom ?? (initialInput.dInt / 10));
   const [coperchioCollettoConfirmed, setCoperchioCollettoConfirmed] = useState<boolean>(true);
-  const coperchioUgualeAlFondo = false;
-  const setCoperchioUgualeAlFondo = (_: boolean) => {};
+
+  // Costante: coperchio sempre conico
+  const coperchioType: HeadType = 'conico';
+  const coperchioRCustom = 0;
+  const coperchioRCustomVal = 0;
+
+  // Fondo State (sempre BOMBATO)
+  const [fondoType, setFondoType] = useState<HeadType>(
+    initialInput.fondo.type === 'conico' ? 'pseudoellittico' : initialInput.fondo.type
+  );
+  const [fondoSp, setFondoSp] = useState<number>(initialInput.fondo.sp);
+  const [fondoColletto, setFondoColletto] = useState<number>(initialInput.fondo.hColletto);
+  const [fondoRCustom, setFondoRCustom] = useState<number>(initialInput.fondo.R_custom ?? initialInput.dInt);
+  const [fondoRCustomVal, setFondoRCustomVal] = useState<number>(initialInput.fondo.r_custom ?? (initialInput.dInt / 10));
+  const [fondoCollettoConfirmed, setFondoCollettoConfirmed] = useState<boolean>(true);
+  const fondoUgualeAlCoperchio = false;
+  const setFondoUgualeAlCoperchio = (_: boolean) => {};
 
   // Report Meta State
   const [cliente, setCliente] = useState(initialInput.report.cliente);
@@ -102,7 +102,7 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
   const [dataReport, setDataReport] = useState(initialInput.report.data);
 
   // Accordion controls
-  const [activeTab, setActiveTab] = useState<'dims' | 'fondo' | 'coperchio' | 'report'>('dims');
+  const [activeTab, setActiveTab] = useState<'dims' | 'coperchio' | 'fondo' | 'report'>('dims');
 
   // Load external initial values when they change (e.g. loaded from localStorage/sidebar)
   useEffect(() => {
@@ -113,72 +113,72 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
     setDataReport(initialInput.report.data);
   }, [initialInput.report]);
 
-  // Synchronize coperchio with fondo when active
+  // Synchronize fondo with coperchio when active
   useEffect(() => {
-    if (coperchioUgualeAlFondo) {
-      setCoperchioType(fondoType);
-      setCoperchioSp(fondoSp);
-      setCoperchioColletto(fondoColletto);
-      setCoperchioRCustom(fondoRCustom);
-      setCoperchioRCustomVal(fondoRCustomVal);
-      setCoperchioCollettoConfirmed(true);
+    if (fondoUgualeAlCoperchio) {
+      setFondoType(coperchioType);
+      setFondoSp(coperchioSp);
+      setFondoColletto(coperchioColletto);
+      setFondoRCustom(coperchioRCustom);
+      setFondoRCustomVal(coperchioRCustomVal);
+      setFondoCollettoConfirmed(true);
     }
-  }, [coperchioUgualeAlFondo, fondoType, fondoSp, fondoColletto, fondoRCustom, fondoRCustomVal]);
+  }, [fondoUgualeAlCoperchio, coperchioType, coperchioSp, coperchioColletto, coperchioRCustom, coperchioRCustomVal]);
 
   // Recalcolo automatico del campo DERIVATO quando D_int o r_raccordo cambia
   useEffect(() => {
     const r = dInt / 2;
     if (r <= 0) return;
     if (lockedBy === 'h') {
-      const ang = angleFromHTot(fondoHCono, r, fondoRRaccordo, fondoColletto);
+      const ang = angleFromHTot(coperchioHCono, r, coperchioRRaccordo, coperchioColletto);
       if (ang != null) {
-        setFondoAngolo(Math.round(ang * 100) / 100);
+        setCoperchioAngolo(Math.round(ang * 100) / 100);
         setRaccordoError(null);
       } else {
         setRaccordoError("Il raggio di raccordo inserito è troppo grande per questa combinazione di diametro e altezza.");
       }
-    } else if (lockedBy === 'angolo' && fondoAngolo != null) {
-      const h = hTotFromAngle(fondoAngolo, r, fondoRRaccordo, fondoColletto);
+    } else if (lockedBy === 'angolo' && coperchioAngolo != null) {
+      const h = hTotFromAngle(coperchioAngolo, r, coperchioRRaccordo, coperchioColletto);
       if (!isNaN(h)) {
-        setFondoHCono(Math.max(1, Math.round(h)));
+        setCoperchioHCono(Math.max(1, Math.round(h)));
         setRaccordoError(null);
       } else {
         setRaccordoError("Il raggio di raccordo inserito è troppo grande per questa combinazione di diametro e angolo.");
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dInt, fondoRRaccordo, fondoColletto]);
+  }, [dInt, coperchioRRaccordo, coperchioColletto]);
 
-  const handleFondoHConoChange = (raw: string) => {
+  const handleCoperchioHConoChange = (raw: string) => {
     if (raw === '') {
       setLockedBy(null);
-      setFondoHCono(0);
-      setFondoAngolo(null);
+      setCoperchioHCono(0);
+      setCoperchioAngolo(null);
       setRaccordoError(null);
       return;
     }
     const val = Math.max(1, parseInt(raw) || 0);
-    setFondoHCono(val);
+    setCoperchioHCono(val);
     setLockedBy('h');
     const r = dInt / 2;
     if (r > 0) {
-      const ang = angleFromHTot(val, r, fondoRRaccordo, fondoColletto);
+      const ang = angleFromHTot(val, r, coperchioRRaccordo, coperchioColletto);
       if (ang != null) {
-        setFondoAngolo(Math.round(ang * 100) / 100);
+        setCoperchioAngolo(Math.round(ang * 100) / 100);
         setRaccordoError(null);
       } else {
-        setFondoAngolo(null);
+        setCoperchioAngolo(null);
         setRaccordoError("Il raggio di raccordo inserito è troppo grande per questa combinazione di diametro e altezza.");
       }
     } else {
-      setFondoAngolo(null);
+      setCoperchioAngolo(null);
     }
   };
 
-  const handleFondoAngoloChange = (raw: string) => {
+  const handleCoperchioAngoloChange = (raw: string) => {
     if (raw === '') {
       setLockedBy(null);
-      setFondoAngolo(null);
+      setCoperchioAngolo(null);
       setRaccordoError(null);
       return;
     }
@@ -186,13 +186,13 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
     if (isNaN(val)) return;
     if (val <= 0) val = 0.01;
     if (val >= 90) val = 89.99;
-    setFondoAngolo(Math.round(val * 100) / 100);
+    setCoperchioAngolo(Math.round(val * 100) / 100);
     setLockedBy('angolo');
     const r = dInt / 2;
     if (r > 0) {
-      const h = hTotFromAngle(val, r, fondoRRaccordo, fondoColletto);
+      const h = hTotFromAngle(val, r, coperchioRRaccordo, coperchioColletto);
       if (!isNaN(h)) {
-        setFondoHCono(Math.max(1, Math.round(h)));
+        setCoperchioHCono(Math.max(1, Math.round(h)));
         setRaccordoError(null);
       } else {
         setRaccordoError("Il raggio di raccordo inserito è troppo grande per questa combinazione di diametro e angolo.");
@@ -200,27 +200,27 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
     }
   };
 
-  const resetFondoConoFields = () => {
+  const resetCoperchioConoFields = () => {
     setLockedBy(null);
-    setFondoHCono(0);
-    setFondoAngolo(null);
+    setCoperchioHCono(0);
+    setCoperchioAngolo(null);
     setRaccordoError(null);
   };
 
 
   // Effect to handle automatic proposal of colletto height when spessore changes
-  const handleFondoSpChange = (val: number) => {
-    setFondoSp(val);
-    const calculatedColletto = val * 5;
-    setFondoColletto(calculatedColletto);
-    setFondoCollettoConfirmed(false); // prompt to confirm
-  };
-
   const handleCoperchioSpChange = (val: number) => {
     setCoperchioSp(val);
     const calculatedColletto = val * 5;
     setCoperchioColletto(calculatedColletto);
     setCoperchioCollettoConfirmed(false); // prompt to confirm
+  };
+
+  const handleFondoSpChange = (val: number) => {
+    setFondoSp(val);
+    const calculatedColletto = val * 5;
+    setFondoColletto(calculatedColletto);
+    setFondoCollettoConfirmed(false); // prompt to confirm
   };
 
   const handleCalculate = (e: React.FormEvent) => {
@@ -231,18 +231,18 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
       dInt: dInt || 1000,
       lCil: lCil || 2000,
       rho: rho || 1,
-      fondo: {
-        type: 'conico',
-        sp: fondoSp || 5,
-        hColletto: fondoColletto || 25,
-        hCono: fondoHCono || Math.round((dInt || 1000) / 2 + (fondoColletto || 25)),
-        rRaccordo: fondoRRaccordo || 30,
-      },
       coperchio: {
-        type: coperchioType,
+        type: 'conico',
         sp: coperchioSp || 5,
         hColletto: coperchioColletto || 25,
-        ...(coperchioType === 'custom' ? { R_custom: coperchioRCustom, r_custom: coperchioRCustomVal } : {})
+        hCono: coperchioHCono || Math.round((dInt || 1000) / 2 + (coperchioColletto || 25)),
+        rRaccordo: coperchioRRaccordo || 30,
+      },
+      fondo: {
+        type: fondoType,
+        sp: fondoSp || 5,
+        hColletto: fondoColletto || 25,
+        ...(fondoType === 'custom' ? { R_custom: fondoRCustom, r_custom: fondoRCustomVal } : {})
       },
       report: {
         ...initialInput.report,
@@ -255,8 +255,8 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
     };
 
     // Auto mark as confirmed when submit is clicked
-    setFondoCollettoConfirmed(true);
     setCoperchioCollettoConfirmed(true);
+    setFondoCollettoConfirmed(true);
 
     // Trigger spin animation
     setSpinCount(prev => prev + 1);
@@ -284,18 +284,6 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
         </button>
         <button
           type="button"
-          onClick={() => setActiveTab('fondo')}
-          className={`flex-1 py-1.5 px-2.5 rounded-md transition-all flex items-center justify-center gap-1 border ${
-            activeTab === 'fondo' 
-              ? 'bg-sky-300 text-sky-950 border-sky-400 shadow-xs font-extrabold' 
-              : 'bg-sky-100/80 text-sky-900 border-sky-200 hover:bg-sky-200/90 hover:text-sky-950'
-          }`}
-        >
-          Fondo conico
-          {!fondoCollettoConfirmed && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />}
-        </button>
-        <button
-          type="button"
           onClick={() => setActiveTab('coperchio')}
           className={`flex-1 py-1.5 px-2.5 rounded-md transition-all flex items-center justify-center gap-1 border ${
             activeTab === 'coperchio' 
@@ -303,8 +291,20 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
               : 'bg-sky-100/80 text-sky-900 border-sky-200 hover:bg-sky-200/90 hover:text-sky-950'
           }`}
         >
-          Coperchio bombato
+          Coperchio conico
           {!coperchioCollettoConfirmed && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />}
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('fondo')}
+          className={`flex-1 py-1.5 px-2.5 rounded-md transition-all flex items-center justify-center gap-1 border ${
+            activeTab === 'fondo' 
+              ? 'bg-sky-300 text-sky-950 border-sky-400 shadow-xs font-extrabold' 
+              : 'bg-sky-100/80 text-sky-900 border-sky-200 hover:bg-sky-200/90 hover:text-sky-950'
+          }`}
+        >
+          Fondo bombato
+          {!fondoCollettoConfirmed && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />}
         </button>
         <button
           type="button"
@@ -393,21 +393,21 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
             <div className="p-3 bg-emerald-50/50 rounded-lg border border-emerald-200 flex items-start gap-2.5 text-xs text-neutral-800 mt-2">
               <HelpCircle className="w-4 h-4 text-emerald-800 shrink-0 mt-0.5" />
               <p className="font-medium">
-                Il serbatoio è composto da un mantello cilindrico centrale, un fondo conico e un coperchio bombato calcolato secondo il profilo torosferico prescelto.
+                Il serbatoio è composto da un mantello cilindrico centrale, un coperchio conico e un fondo bombato calcolato secondo il profilo torosferico prescelto.
               </p>
             </div>
           </div>
         )}
 
-        {activeTab === 'fondo' && (
+        {activeTab === 'coperchio' && (
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-neutral-950 pb-2 border-b border-neutral-200 flex items-center gap-1.5">
               <Layers className="w-4 h-4 text-emerald-800" />
-              Geometria Fondo Conico
+              Geometria Coperchio Conico
             </h3>
 
             <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-lg text-[11px] text-emerald-950 font-medium">
-              Il fondo è un <strong>cono retto</strong> con vertice rivolto verso il basso. Definire l'altezza del cono (dalla base cilindrica al vertice).
+              Il coperchio è un <strong>cono retto</strong> con vertice rivolto verso il basso. Definire l'altezza del cono (dalla base cilindrica al vertice).
             </div>
 
             <div className="p-2.5 bg-amber-50 border border-amber-300 rounded-lg flex items-start gap-2 text-[11px] text-amber-900">
@@ -446,7 +446,7 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
               </div>
               <button
                 type="button"
-                onClick={resetFondoConoFields}
+                onClick={resetCoperchioConoFields}
                 className="flex items-center gap-1 text-[10px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-md px-2 py-1 transition-colors cursor-pointer"
                 title="Sblocca entrambi i campi"
               >
@@ -491,14 +491,14 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
                 }`}>
                   <input
                     type="radio"
-                    name="fondoInputMode"
+                    name="coperchioInputMode"
                     checked={lockedBy !== 'angolo'}
                     onChange={() => {
                       setLockedBy('h');
                       const r = dInt / 2;
-                      if (r > 0 && fondoHCono > 0) {
-                        const ang = angleFromHTot(fondoHCono, r, fondoRRaccordo, fondoColletto);
-                        if (ang != null) setFondoAngolo(Math.round(ang * 100) / 100);
+                      if (r > 0 && coperchioHCono > 0) {
+                        const ang = angleFromHTot(coperchioHCono, r, coperchioRRaccordo, coperchioColletto);
+                        if (ang != null) setCoperchioAngolo(Math.round(ang * 100) / 100);
                       }
                     }}
                     className="accent-emerald-700"
@@ -510,15 +510,15 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
                 } ${dInt <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}>
                   <input
                     type="radio"
-                    name="fondoInputMode"
+                    name="coperchioInputMode"
                     checked={lockedBy === 'angolo'}
                     disabled={dInt <= 0}
                     onChange={() => {
                       setLockedBy('angolo');
                       const r = dInt / 2;
-                      if (r > 0 && fondoAngolo == null && fondoHCono > 0) {
-                        const ang = angleFromHTot(fondoHCono, r, fondoRRaccordo, fondoColletto);
-                        if (ang != null) setFondoAngolo(Math.round(ang * 100) / 100);
+                      if (r > 0 && coperchioAngolo == null && coperchioHCono > 0) {
+                        const ang = angleFromHTot(coperchioHCono, r, coperchioRRaccordo, coperchioColletto);
+                        if (ang != null) setCoperchioAngolo(Math.round(ang * 100) / 100);
                       }
                     }}
                     className="accent-emerald-700"
@@ -540,8 +540,8 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
                   min="1"
                   max="10000"
                   disabled={lockedBy === 'angolo'}
-                  value={fondoHCono || ''}
-                  onChange={(e) => handleFondoHConoChange(e.target.value)}
+                  value={coperchioHCono || ''}
+                  onChange={(e) => handleCoperchioHConoChange(e.target.value)}
                   className={`w-full text-sm border-2 rounded-lg px-3 py-2 font-bold focus:ring-2 focus:ring-emerald-800 focus:outline-hidden transition-colors ${
                     lockedBy === 'angolo'
                       ? 'bg-neutral-100 text-neutral-500 border-neutral-300 cursor-not-allowed'
@@ -561,8 +561,8 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
                   min="0.01"
                   max="89.99"
                   disabled={lockedBy !== 'angolo' || dInt <= 0}
-                  value={fondoAngolo ?? ''}
-                  onChange={(e) => handleFondoAngoloChange(e.target.value)}
+                  value={coperchioAngolo ?? ''}
+                  onChange={(e) => handleCoperchioAngoloChange(e.target.value)}
                   className={`w-full text-sm border-2 rounded-lg px-3 py-2 font-bold focus:ring-2 focus:ring-emerald-800 focus:outline-hidden transition-colors ${
                     lockedBy !== 'angolo' || dInt <= 0
                       ? 'bg-neutral-100 text-neutral-500 border-neutral-300 cursor-not-allowed'
@@ -575,26 +575,26 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
 
             {/* Verifica coerenza altezze interne */}
             {(() => {
-              const hFondo = fondoHCono || 0;
+              const hCoperchio = coperchioHCono || 0;
               const hVirola = lCil || 0;
               let hCop = 0;
               try {
                 const cop = calculateHead(dInt || 1000, {
-                  type: coperchioType,
-                  sp: coperchioSp || 5,
-                  hColletto: coperchioColletto || 25,
-                  ...(coperchioType === 'custom' ? { R_custom: coperchioRCustom, r_custom: coperchioRCustomVal } : {})
+                  type: fondoType,
+                  sp: fondoSp || 5,
+                  hColletto: fondoColletto || 25,
+                  ...(fondoType === 'custom' ? { R_custom: fondoRCustom, r_custom: fondoRCustomVal } : {})
                 } as HeadConfig);
-                hCop = cop.H_int + (coperchioColletto || 0);
+                hCop = cop.H_int + (fondoColletto || 0);
               } catch { hCop = 0; }
-              const somma = hFondo + hVirola + hCop;
+              const somma = hCoperchio + hVirola + hCop;
               return (
                 <div className="p-2.5 bg-emerald-50 border border-emerald-300 rounded-lg text-[11px] text-emerald-950">
                   <span className="block font-bold uppercase tracking-wide mb-1">Verifica coerenza altezze interne</span>
                   <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
-                    <span>Fondo conico (colletto incl.)</span><span className="font-bold text-right">{Math.round(hFondo)} mm</span>
+                    <span>Coperchio conico (colletto incl.)</span><span className="font-bold text-right">{Math.round(hCoperchio)} mm</span>
                     <span>Virola cilindrica</span><span className="font-bold text-right">{Math.round(hVirola)} mm</span>
-                    <span>Coperchio bombato (colletto incl.)</span><span className="font-bold text-right">{Math.round(hCop)} mm</span>
+                    <span>Fondo bombato (colletto incl.)</span><span className="font-bold text-right">{Math.round(hCop)} mm</span>
                     <span className="border-t border-emerald-300 pt-0.5 font-bold">Altezza totale interna</span>
                     <span className="border-t border-emerald-300 pt-0.5 font-bold text-right">{Math.round(somma)} mm</span>
                   </div>
@@ -612,12 +612,12 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
                 min="0"
                 max="1000"
                 required
-                value={fondoRRaccordo || ''}
-                onChange={(e) => setFondoRRaccordo(Math.max(0, parseInt(e.target.value) || 0))}
+                value={coperchioRRaccordo || ''}
+                onChange={(e) => setCoperchioRRaccordo(Math.max(0, parseInt(e.target.value) || 0))}
                 className="w-full text-sm bg-[#d7ecd7]/80 border-2 border-emerald-300/80 rounded-lg px-3 py-2 text-emerald-950 font-bold focus:bg-[#cde9cd] focus:ring-2 focus:ring-emerald-800 focus:outline-hidden transition-colors"
               />
               <p className="text-[10px] text-neutral-700 mt-1 leading-snug">
-                Il raccordo tra il cono e il colletto non è a spigolo vivo ma è arrotondato con questo raggio. Il volume del fondo tiene conto di questa curvatura. <em>Default suggerito: 30 mm.</em>
+                Il raccordo tra il cono e il colletto non è a spigolo vivo ma è arrotondato con questo raggio. Il volume del coperchio tiene conto di questa curvatura. <em>Default suggerito: 30 mm.</em>
               </p>
             </div>
 
@@ -647,8 +647,8 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
                   min="1"
                   max="100"
                   required
-                  value={fondoSp || ''}
-                  onChange={(e) => handleFondoSpChange(Math.max(1, parseInt(e.target.value) || 0))}
+                  value={coperchioSp || ''}
+                  onChange={(e) => handleCoperchioSpChange(Math.max(1, parseInt(e.target.value) || 0))}
                   className="w-full text-sm bg-[#d7ecd7]/80 border-2 border-emerald-300/80 rounded-lg px-3 py-2 text-emerald-950 font-bold focus:bg-[#cde9cd] focus:ring-2 focus:ring-emerald-800 focus:outline-hidden transition-colors"
                 />
               </div>
@@ -663,10 +663,10 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
                   min="0"
                   max="1000"
                   required
-                  value={fondoColletto ?? ''}
+                  value={coperchioColletto ?? ''}
                   onChange={(e) => {
-                    setFondoColletto(Math.max(0, parseInt(e.target.value) || 0));
-                    setFondoCollettoConfirmed(true);
+                    setCoperchioColletto(Math.max(0, parseInt(e.target.value) || 0));
+                    setCoperchioCollettoConfirmed(true);
                   }}
                   className="w-full text-sm bg-[#d7ecd7]/80 border-2 border-emerald-300/80 rounded-lg px-3 py-2 text-emerald-950 font-bold focus:bg-[#cde9cd] focus:ring-2 focus:ring-emerald-800 focus:outline-hidden transition-colors"
                 />
@@ -675,11 +675,11 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
           </div>
         )}
 
-        {activeTab === 'coperchio' && (
+        {activeTab === 'fondo' && (
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-neutral-950 pb-2 border-b border-neutral-200 flex items-center gap-1.5">
               <Layers className="w-4 h-4 text-emerald-800" />
-              Geometria Coperchio Bombato
+              Geometria Fondo Bombato
             </h3>
 
             <div className="p-2.5 bg-amber-50 border border-amber-300 rounded-lg flex items-start gap-2 text-[11px] text-amber-900">
@@ -705,8 +705,8 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
 
             <div>
               <label className="block text-xs font-bold text-neutral-900 mb-2 flex items-center gap-1.5 uppercase tracking-wide">
-                Tipologia Testa Coperchio
-                {coperchioUgualeAlFondo && <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.5 rounded-sm uppercase">Sincronizzato</span>}
+                Tipologia Testa Fondo
+                {fondoUgualeAlCoperchio && <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.5 rounded-sm uppercase">Sincronizzato</span>}
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {[
@@ -717,12 +717,12 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
                   <button
                     key={t.id}
                     type="button"
-                    disabled={coperchioUgualeAlFondo}
-                    onClick={() => !coperchioUgualeAlFondo && setCoperchioType(t.id as HeadType)}
+                    disabled={fondoUgualeAlCoperchio}
+                    onClick={() => !fondoUgualeAlCoperchio && setFondoType(t.id as HeadType)}
                     className={`flex flex-col items-center justify-center p-3 border-2 rounded-xl text-center transition-all ${
-                      coperchioUgualeAlFondo ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                      fondoUgualeAlCoperchio ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
                     } ${
-                      coperchioType === t.id
+                      fondoType === t.id
                         ? 'border-emerald-800 bg-emerald-50 text-emerald-950 font-extrabold ring-1 ring-emerald-800'
                         : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300'
                     }`}
@@ -745,11 +745,11 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
                   min="1"
                   max="100"
                   required
-                  disabled={coperchioUgualeAlFondo}
-                  value={coperchioSp || ''}
-                  onChange={(e) => handleCoperchioSpChange(Math.max(1, parseInt(e.target.value) || 0))}
+                  disabled={fondoUgualeAlCoperchio}
+                  value={fondoSp || ''}
+                  onChange={(e) => handleFondoSpChange(Math.max(1, parseInt(e.target.value) || 0))}
                   className={`w-full text-sm border-2 rounded-lg px-3 py-2 text-emerald-950 font-bold focus:ring-2 focus:ring-emerald-800 focus:outline-hidden ${
-                    coperchioUgualeAlFondo
+                    fondoUgualeAlCoperchio
                       ? 'bg-neutral-100 text-neutral-500 border-neutral-300 cursor-not-allowed'
                       : 'bg-[#d7ecd7]/80 border-emerald-300/80 focus:bg-[#cde9cd]'
                   }`}
@@ -767,21 +767,21 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
                     min="0"
                     max="1000"
                     required
-                    disabled={coperchioUgualeAlFondo}
-                    value={coperchioColletto ?? ''}
+                    disabled={fondoUgualeAlCoperchio}
+                    value={fondoColletto ?? ''}
                     onChange={(e) => {
-                      setCoperchioColletto(Math.max(0, parseInt(e.target.value) || 0));
-                      setCoperchioCollettoConfirmed(true);
+                      setFondoColletto(Math.max(0, parseInt(e.target.value) || 0));
+                      setFondoCollettoConfirmed(true);
                     }}
                     className={`w-full text-sm border-2 rounded-lg px-3 py-2 text-emerald-950 font-bold focus:ring-2 focus:ring-emerald-800 focus:outline-hidden ${
-                      coperchioUgualeAlFondo
+                      fondoUgualeAlCoperchio
                         ? 'bg-neutral-100 text-neutral-500 border-neutral-300 cursor-not-allowed'
-                        : !coperchioCollettoConfirmed
+                        : !fondoCollettoConfirmed
                         ? 'bg-amber-100 border-amber-400 ring-2 ring-amber-200'
                         : 'bg-[#d7ecd7]/80 border-emerald-300/80 focus:bg-[#cde9cd]'
                     }`}
                   />
-                  {coperchioColletto === coperchioSp * 5 && (
+                  {fondoColletto === fondoSp * 5 && (
                     <span className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[10px] text-emerald-900 font-bold italic">
                       5 × Sp
                     </span>
@@ -791,18 +791,18 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
             </div>
 
             {/* Colletto Confirmation Prompt */}
-            {!coperchioCollettoConfirmed && !coperchioUgualeAlFondo && (
+            {!fondoCollettoConfirmed && !fondoUgualeAlCoperchio && (
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between gap-2 animate-fade-in">
                 <div className="flex items-start gap-2 text-xs text-amber-800">
                   <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-semibold block">Nuovo Colletto Proposto: {coperchioSp * 5} mm</span>
+                    <span className="font-semibold block">Nuovo Colletto Proposto: {fondoSp * 5} mm</span>
                     <span className="text-[11px] opacity-80">Calcolato automaticamente (5 × Spessore).</span>
                   </div>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setCoperchioCollettoConfirmed(true)}
+                  onClick={() => setFondoCollettoConfirmed(true)}
                   className="bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold py-1 px-2.5 rounded-md transition-colors flex items-center gap-1 shadow-xs"
                 >
                   <Check className="w-3 h-3" />
@@ -811,9 +811,9 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
               </div>
             )}
 
-            {coperchioType === 'custom' && (
+            {fondoType === 'custom' && (
               <div className="p-4 bg-emerald-50/50 rounded-xl border border-emerald-200 space-y-3 animate-fade-in">
-                <span className="text-xs font-bold text-emerald-950 uppercase tracking-wider block">Misure Non Standard (Coperchio)</span>
+                <span className="text-xs font-bold text-emerald-950 uppercase tracking-wider block">Misure Non Standard (Fondo)</span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold text-neutral-900 mb-1 uppercase tracking-wide">
@@ -823,11 +823,11 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
                       type="number"
                       required
                       min="1"
-                      disabled={coperchioUgualeAlFondo}
-                      value={coperchioRCustom || ''}
-                      onChange={(e) => setCoperchioRCustom(Math.max(1, parseInt(e.target.value) || 0))}
+                      disabled={fondoUgualeAlCoperchio}
+                      value={fondoRCustom || ''}
+                      onChange={(e) => setFondoRCustom(Math.max(1, parseInt(e.target.value) || 0))}
                       className={`w-full text-sm border-2 rounded-lg px-3 py-1.5 text-emerald-950 font-bold focus:ring-2 focus:ring-emerald-800 focus:outline-hidden ${
-                        coperchioUgualeAlFondo
+                        fondoUgualeAlCoperchio
                           ? 'bg-neutral-100 text-neutral-500 border-neutral-300 cursor-not-allowed'
                           : 'bg-[#d7ecd7]/80 border-emerald-300/80 focus:bg-[#cde9cd]'
                       }`}
@@ -841,11 +841,11 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
                       type="number"
                       required
                       min="1"
-                      disabled={coperchioUgualeAlFondo}
-                      value={coperchioRCustomVal || ''}
-                      onChange={(e) => setCoperchioRCustomVal(Math.max(1, parseInt(e.target.value) || 0))}
+                      disabled={fondoUgualeAlCoperchio}
+                      value={fondoRCustomVal || ''}
+                      onChange={(e) => setFondoRCustomVal(Math.max(1, parseInt(e.target.value) || 0))}
                       className={`w-full text-sm border-2 rounded-lg px-3 py-1.5 text-emerald-950 font-bold focus:ring-2 focus:ring-emerald-800 focus:outline-hidden ${
-                        coperchioUgualeAlFondo
+                        fondoUgualeAlCoperchio
                           ? 'bg-neutral-100 text-neutral-500 border-neutral-300 cursor-not-allowed'
                           : 'bg-[#d7ecd7]/80 border-emerald-300/80 focus:bg-[#cde9cd]'
                       }`}
