@@ -405,13 +405,14 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
         >
           <line
             x1={cx}
-            y1={yDomeTop - 20}
+            y1={yApex - 20}
             x2={cx}
-            y2={yApex + 20}
+            y2={yDomeBot + 20}
             stroke="#94a3b8"
             strokeWidth="1"
             strokeDasharray="6,4"
           />
+
 
           {/* RIQUADRO 1 — FONDO BOMBATO */}
           <g>
