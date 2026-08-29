@@ -393,7 +393,7 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
             <div className="p-3 bg-emerald-50/50 rounded-lg border border-emerald-200 flex items-start gap-2.5 text-xs text-neutral-800 mt-2">
               <HelpCircle className="w-4 h-4 text-emerald-800 shrink-0 mt-0.5" />
               <p className="font-medium">
-                Il serbatoio è composto da un mantello cilindrico centrale, un coperchio conico e un fondo bombato calcolato secondo il profilo torosferico prescelto.
+                Il serbatoio è composto da un mantello cilindrico centrale, un fondo bombato calcolato secondo il profilo torosferico prescelto e un coperchio conico.
               </p>
             </div>
           </div>
@@ -407,7 +407,7 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
             </h3>
 
             <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-lg text-[11px] text-emerald-950 font-medium">
-              Il coperchio è un <strong>cono retto</strong> con vertice rivolto verso il basso. Definire l'altezza del cono (dalla base cilindrica al vertice).
+              Il coperchio è un <strong>cono retto</strong> con vertice rivolto verso l'alto. Definire l'altezza del cono (dalla base cilindrica al vertice).
             </div>
 
             <div className="p-2.5 bg-amber-50 border border-amber-300 rounded-lg flex items-start gap-2 text-[11px] text-amber-900">
@@ -817,7 +817,7 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold text-neutral-900 mb-1 uppercase tracking-wide">
-                      Roggio Bombatura (R_custom) (mm)
+                      Raggio Bombatura (R_custom) (mm)
                     </label>
                     <input
                       type="number"
