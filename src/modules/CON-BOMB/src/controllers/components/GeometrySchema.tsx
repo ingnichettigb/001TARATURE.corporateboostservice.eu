@@ -363,14 +363,15 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const boxSumH = 76;
   const box2H = 96;
   const box3H = 155;
-  // riquadro 3 (coperchio conico): fisso in basso
-  const box3Y = drawH - box3H - 6;
-  // riquadro 1 (fondo): fisso in alto
-  const box1Y = Math.max(4, Math.min(callout1Y - 50, box3Y - box1H - boxSumH - box2H - 36));
+  // riquadro 1 (fondo bombato): fisso in basso
+  const box1Y = drawH - box1H - 6;
+  // riquadro 3 (coperchio conico): fisso in alto
+  const box3Y = Math.max(4, Math.min(callout3Y - 40, box1Y - box3H - boxSumH - box2H - 36));
   // i due riquadri centrali si redistribuiscono con spazio verticale uguale
-  const boxGapV = (box3Y - (box1Y + box1H) - boxSumH - box2H) / 3;
-  const boxSumY = box1Y + box1H + boxGapV;
+  const boxGapV = (box1Y - (box3Y + box3H) - boxSumH - box2H) / 3;
+  const boxSumY = box3Y + box3H + boxGapV;
   const box2Y = boxSumY + boxSumH + boxGapV;
+
   // ancoraggio del callout 2 alla quota del riquadro 2
   const callout2Y = Math.min(Math.max(box2Y + box2H / 2, yCilTop + 18), yCilBot - 18);
 
