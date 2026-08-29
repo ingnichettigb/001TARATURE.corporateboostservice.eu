@@ -615,15 +615,22 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             </foreignObject>
           </g>
 
-          {/* CATENA DI QUOTE: fondo + virola + coperchio conico */}
+          {/* CATENA DI QUOTE: coperchio conico + virola + fondo bombato */}
           <g>
-            <line x1={chainX} y1={yDomeTop} x2={chainX} y2={yApex} stroke="#334155" strokeWidth="1" />
-            {[yDomeTop, yCilTop, yCilBot, yApex].map((yy, i) => (
+            <line x1={chainX} y1={yApex} x2={chainX} y2={yDomeBot} stroke="#334155" strokeWidth="1" />
+            {[yApex, yCilTop, yCilBot, yDomeBot].map((yy, i) => (
               <line key={i} x1={chainX - 7} y1={yy} x2={chainX + 7} y2={yy} stroke="#334155" strokeWidth="1" />
             ))}
-            <text x={chainX + 10} y={(yDomeTop + yCilTop) / 2 + 5} fontSize="14" fontWeight="600" fill="#000000">
-              {fmt(hFondo_calc)}
-            </text>
+            <foreignObject x={chainX + 8} y={(yApex + yCilTop) / 2 - 12} width="86" height="24">
+              <input
+                type="number"
+                value={hCono}
+                onChange={(e) => patchCoperchio({ hCono: Number(e.target.value) })}
+                style={editableDimStyle}
+                className="editable-dim"
+                title="Altezza coperchio conico, colletto incluso (mm)"
+              />
+            </foreignObject>
             <foreignObject x={chainX + 8} y={yCilMid - 12} width="86" height="24">
               <input
                 type="number"
@@ -634,20 +641,14 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 title="Altezza sezione cilindrica (mm)"
               />
             </foreignObject>
-            <foreignObject x={chainX + 8} y={(yCilBot + yApex) / 2 - 12} width="86" height="24">
-              <input
-                type="number"
-                value={hCono}
-                onChange={(e) => patchCoperchio({ hCono: Number(e.target.value) })}
-                style={editableDimStyle}
-                className="editable-dim"
-                title="Altezza coperchio conico, colletto incluso (mm)"
-              />
-            </foreignObject>
+            <text x={chainX + 10} y={(yCilBot + yDomeBot) / 2 + 5} fontSize="14" fontWeight="600" fill="#000000">
+              {fmt(hFondo_calc)}
+            </text>
           </g>
 
           {/* QUOTA TOTALE */}
-          <DimLine x={dim4X} y1={yDomeTop} y2={yApex} label={fmt(hTot)} />
+          <DimLine x={dim4X} y1={yApex} y2={yDomeBot} label={fmt(hTot)} />
+
 
           {/* CAPACITÀ TOTALE */}
           <g>
