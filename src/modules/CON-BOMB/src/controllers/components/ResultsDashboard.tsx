@@ -477,7 +477,7 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                 <div className="space-y-2 mt-3 text-xs text-neutral-800">
                   <div className="flex justify-between py-1 border-b border-neutral-200">
                     <span className="font-bold text-neutral-900">
-                      {lang === 'en' ? 'Bottom Cone Volume:' : lang === 'es' ? 'Volumen del Fondo Cónico:' : lang === 'de' ? 'Volumen des Konusbodens:' : 'Volume Fondo Conico:'}
+                      {lang === 'en' ? 'Dished Bottom Volume:' : lang === 'es' ? 'Volumen del Fondo Abombado:' : lang === 'de' ? 'Volumen des gewölbten Bodens:' : 'Volume Fondo Bombato:'}
                     </span>
                     <span className="font-mono font-extrabold text-neutral-950">{formatNum(result.volumeFondo, 2)} {lang === 'en' ? 'liters' : lang === 'es' ? 'litros' : lang === 'de' ? 'Liter' : 'litri'}</span>
                   </div>
@@ -489,7 +489,7 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                   </div>
                   <div className="flex justify-between py-1 border-b border-neutral-200">
                     <span className="font-bold text-neutral-900">
-                      {lang === 'en' ? 'Top Head Volume:' : lang === 'es' ? 'Volumen del Extremo Superior:' : lang === 'de' ? 'Volumen des oberen Deckels:' : 'Volume Coperchio Bombato:'}
+                      {lang === 'en' ? 'Conical Top Volume:' : lang === 'es' ? 'Volumen de la Tapa Cónica:' : lang === 'de' ? 'Volumen des konischen Deckels:' : 'Volume Coperchio Conico:'}
                     </span>
                     <span className="font-mono font-extrabold text-neutral-950">{formatNum(result.volumeCoperchio, 2)} {lang === 'en' ? 'liters' : lang === 'es' ? 'litros' : lang === 'de' ? 'Liter' : 'litri'}</span>
                   </div>

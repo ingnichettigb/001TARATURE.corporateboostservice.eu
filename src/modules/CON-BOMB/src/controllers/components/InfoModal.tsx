@@ -20,7 +20,7 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
     it: {
       title: "Manuale d'Uso & Informazioni Tecniche",
       subtitle: "Modello Matematico Integrato a 7 Zone",
-      intro: "Questo applicativo professionale esegue la taratura geometrica millimetrica di serbatoi cilindrici ad asse orizzontale dotati di fondo conico e coperchio bombato standard (Klöpper, Korbbogen), piano o completamente personalizzato. Il calcolo volumetrico si basa su una discretizzazione continua a passo di 1 millimetro.",
+      intro: "Questo applicativo professionale esegue la taratura geometrica millimetrica di serbatoi cilindrici ad asse orizzontale dotati di fondo bombato standard (Klöpper, Korbbogen) e coperchio conico , piano o completamente personalizzato. Il calcolo volumetrico si basa su una discretizzazione continua a passo di 1 millimetro.",
       
       sections: [
         {

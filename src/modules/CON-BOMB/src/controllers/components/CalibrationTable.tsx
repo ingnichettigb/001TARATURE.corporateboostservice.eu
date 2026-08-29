@@ -233,9 +233,9 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
           
           // Volumes
           volumeTitle: 'Volumi dei Singoli Componenti',
-          bottomVolume: 'Volume Fondo Conico:',
+          bottomVolume: 'Volume Fondo Bombato:',
           cylinderVolume: 'Volume Mantello Cilindrico:',
-          topVolume: 'Volume Coperchio Bombato:',
+          topVolume: 'Volume Coperchio Conico:',
           totalVolume: 'VOLUME TOTALE NOMINALE:',
           
           // Sheets
