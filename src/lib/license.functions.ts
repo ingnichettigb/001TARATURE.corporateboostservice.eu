@@ -53,12 +53,15 @@ export const verifyAndActivateLicense = createServerFn({ method: "POST" })
       const ext = supabaseExternal as unknown as { from: (t: string) => any };
       const { email, licenseKey, puk } = data;
 
-      // 1) email verificata (passaggio 1, lead_emails namespaced per APP_CODE)
+      // 1) email verificata (passaggio 1). NOTA 2026-08-29: nessun filtro
+      // su `source` qui — la verifica OTP prova solo il possesso della
+      // casella email, non è legata a un singolo prodotto. La stessa
+      // email verificata su un altro prodotto del portfolio è comunque
+      // valida come prova di possesso per questo step.
       const { data: leadRow, error: leadErr } = await ext
         .from("lead_emails")
         .select("id, is_verified")
         .ilike("email", email)
-        .eq("source", APP_CODE)
         .eq("is_verified", true)
         .limit(1)
         .maybeSingle();
