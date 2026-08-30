@@ -7,6 +7,14 @@ import React, { useState, useEffect } from 'react';
 import { SavedTank, TankInput, CompilerInfo } from '../../models/types';
 import { Save, Trash2, FolderOpen, AlertCircle, Pencil, Copy, Printer, Check, X, Download, Upload } from 'lucide-react';
 import { Language, translations } from '../../utils/translations';
+import {
+  loadSavedTanks,
+  saveTanks as persistTanks,
+  newTankId,
+  formatTankDate,
+} from '@/common/tanks/storage';
+import { buildTankFile, downloadTankFile, parseTankFile, safeFileName } from '@/common/tanks/file';
+import ImportMismatchDialog from '@/common/tanks/ImportMismatchDialog';
 
 interface SavedTanksListProps {
   currentInput: TankInput;
@@ -16,6 +24,8 @@ interface SavedTanksListProps {
   setActiveTankId: (id: string | null) => void;
   suggestedName?: string;
   onSaveAndDownload?: () => void;
+  /** Tipologia serbatoio del modulo (nome cartella, es. "BOMB-CON"). */
+  tankType: string;
 }
 
 export default function SavedTanksList({ 
@@ -25,13 +35,17 @@ export default function SavedTanksList({
   activeTankId,
   setActiveTankId,
   suggestedName = '',
-  onSaveAndDownload
+  onSaveAndDownload,
+  tankType
 }: SavedTanksListProps) {
   const t = translations[lang];
   const [savedTanks, setSavedTanks] = useState<SavedTank[]>([]);
   const [tankName, setTankName] = useState(suggestedName);
   const [nameTouched, setNameTouched] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [mismatch, setMismatch] = useState<
+    { fileTankType: string; input: TankInput; compilerInfo?: CompilerInfo; name: string } | null
+  >(null);
 
   // Keep proposing the auto-generated name until the user edits it manually
   useEffect(() => {
@@ -46,14 +60,7 @@ export default function SavedTanksList({
 
   useEffect(() => {
     const loadTanks = () => {
-      const stored = localStorage.getItem('bomb_bomb_saved_tanks');
-      if (stored) {
-        try {
-          setSavedTanks(JSON.parse(stored));
-        } catch (e) {
-          console.error('Error parsing saved tanks', e);
-        }
-      }
+      setSavedTanks(loadSavedTanks<TankInput, CompilerInfo>(tankType) as SavedTank[]);
     };
 
     loadTanks();
@@ -62,10 +69,10 @@ export default function SavedTanksList({
     return () => {
       window.removeEventListener('saved-tanks-updated', loadTanks);
     };
-  }, []);
+  }, [tankType]);
 
   const saveTanksToStorage = (tanks: SavedTank[]) => {
-    localStorage.setItem('bomb_bomb_saved_tanks', JSON.stringify(tanks));
+    persistTanks(tankType, tanks as any);
     setSavedTanks(tanks);
   };
 
@@ -88,15 +95,9 @@ export default function SavedTanksList({
     }
 
     const newSaved: SavedTank = {
-      id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+      id: newTankId(),
       name: trimmedName,
-      date: new Date().toLocaleDateString('it-IT', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
+      date: formatTankDate(),
       input: JSON.parse(JSON.stringify(currentInput)), // Deep copy
       compilerInfo: storedCompilerInfo,
     };
@@ -106,20 +107,15 @@ export default function SavedTanksList({
     setActiveTankId(newSaved.id);
 
     // Prompt the user to save the JSON file directly to their computer
-    // This opens the browser's native download/save-as dialog with the exact name
     try {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(newSaved, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      // Use the exact custom name provided by the user for the file
-      const safeFileName = trimmedName.replace(/[/\\?%*:|"<>. ]/g, '_');
-      downloadAnchor.setAttribute("download", `${safeFileName}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
+      const fileName = safeFileName(trimmedName);
+      downloadTankFile(
+        fileName,
+        buildTankFile(tankType, trimmedName, currentInput, storedCompilerInfo)
+      );
 
       setMessage({ 
-        text: `Configurazione "${trimmedName}" salvata in locale e scaricata come "${safeFileName}.json"!`, 
+        text: `Configurazione "${trimmedName}" salvata in locale e scaricata come "${fileName}.json"!`, 
         type: 'success' 
       });
     } catch (err) {
@@ -147,14 +143,35 @@ export default function SavedTanksList({
 
   const handleExportSingle = (tank: SavedTank, e: React.MouseEvent) => {
     e.stopPropagation();
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tank, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    const safeName = tank.name.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
-    downloadAnchor.setAttribute("download", `bomb_bomb_config_${safeName}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    const fileName = `${tankType.toLowerCase()}_${tank.name.toLowerCase().replace(/[^a-z0-9_-]/g, '_')}`;
+    downloadTankFile(fileName, buildTankFile(tankType, tank.name, tank.input, tank.compilerInfo));
+  };
+
+  const importParsedTank = (
+    importedInput: TankInput,
+    importedName: string,
+    importedCompilerInfo?: CompilerInfo,
+    warning?: string
+  ) => {
+    const newSaved: SavedTank = {
+      id: newTankId(),
+      name: `${importedName} (Importato)`,
+      date: formatTankDate(),
+      input: importedInput,
+      compilerInfo: importedCompilerInfo,
+    };
+
+    const updated = [newSaved, ...savedTanks];
+    saveTanksToStorage(updated);
+    onLoadTank(importedInput, importedCompilerInfo, newSaved.id);
+
+    setMessage({
+      text: warning
+        ? `${warning} Configurazione "${newSaved.name}" caricata.`
+        : `Configurazione "${newSaved.name}" importata e caricata!`,
+      type: 'success',
+    });
+    setTimeout(() => setMessage(null), 5000);
   };
 
   const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,51 +180,33 @@ export default function SavedTanksList({
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      try {
-        const parsed = JSON.parse(event.target?.result as string);
-        let importedInput: TankInput;
-        let importedName = 'Serbatoio Importato';
-        let importedCompilerInfo: CompilerInfo | undefined = undefined;
+      const result = parseTankFile<TankInput, CompilerInfo>(
+        (event.target?.result as string) ?? '',
+        tankType
+      );
 
-        if (parsed.input && parsed.name) {
-          importedInput = parsed.input;
-          importedName = parsed.name;
-          if (parsed.compilerInfo) {
-            importedCompilerInfo = parsed.compilerInfo;
-          }
-        } else if (parsed.dInt && parsed.lCil && parsed.fondo) {
-          importedInput = parsed;
-          if (parsed.report?.nomeSerbatoio) {
-            importedName = parsed.report.nomeSerbatoio;
-          }
-        } else {
-          throw new Error('Formato file non valido. Deve contenere una configurazione serbatoio valida.');
-        }
-
-        const newSaved: SavedTank = {
-          id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
-          name: `${importedName} (Importato)`,
-          date: new Date().toLocaleDateString('it-IT', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          }),
-          input: importedInput,
-          compilerInfo: importedCompilerInfo,
-        };
-
-        const updated = [newSaved, ...savedTanks];
-        saveTanksToStorage(updated);
-        onLoadTank(importedInput, importedCompilerInfo, newSaved.id);
-        
-        setMessage({ text: `Configurazione "${newSaved.name}" importata e caricata!`, type: 'success' });
-        setTimeout(() => setMessage(null), 4000);
-      } catch (err: any) {
-        setMessage({ text: `Errore nell'importazione: ${err.message || 'JSON non valido'}`, type: 'error' });
+      if (result.status === 'invalid') {
+        setMessage({ text: `Errore nell'importazione: ${result.message}`, type: 'error' });
         setTimeout(() => setMessage(null), 5000);
+        return;
       }
+
+      if (result.status === 'mismatch') {
+        setMismatch({
+          fileTankType: result.tankType!,
+          input: result.input as TankInput,
+          compilerInfo: result.compilerInfo,
+          name: result.name,
+        });
+        return;
+      }
+
+      importParsedTank(
+        result.input as TankInput,
+        result.name,
+        result.compilerInfo,
+        result.status === 'legacy' ? result.message : undefined
+      );
     };
     reader.readAsText(file);
     e.target.value = '';
@@ -248,15 +247,9 @@ export default function SavedTanksList({
     e.stopPropagation();
     const newName = `${tank.name} - Copia`;
     const newSaved: SavedTank = {
-      id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+      id: newTankId(),
       name: newName,
-      date: new Date().toLocaleDateString('it-IT', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
+      date: formatTankDate(),
       input: JSON.parse(JSON.stringify(tank.input)),
       compilerInfo: tank.compilerInfo ? JSON.parse(JSON.stringify(tank.compilerInfo)) : undefined,
     };
@@ -305,6 +298,23 @@ export default function SavedTanksList({
 
   return (
     <div className="bg-white border-4 border-double border-emerald-800 rounded-xl p-5 shadow-xs">
+      <ImportMismatchDialog
+        open={!!mismatch}
+        fileTankType={mismatch?.fileTankType ?? ''}
+        currentTankType={tankType}
+        onClose={() => setMismatch(null)}
+        onLoadAnyway={() => {
+          if (mismatch) {
+            importParsedTank(
+              mismatch.input,
+              mismatch.name,
+              mismatch.compilerInfo,
+              `Attenzione: file di tipo ${mismatch.fileTankType} caricato in ${tankType}.`
+            );
+          }
+          setMismatch(null);
+        }}
+      />
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2 min-w-0">
           <Save className="w-4 h-4 text-neutral-600" />
