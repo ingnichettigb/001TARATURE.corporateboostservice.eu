@@ -601,6 +601,12 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                     </span>
                     <span className="font-mono">{formatNum(result.pesoLamieraCoperchio, 1)} kg</span>
                   </div>
+                  <div className="flex justify-between py-1 font-black text-neutral-950 border-t border-neutral-300 pt-1">
+                    <span>
+                      {lang === 'en' ? 'Shell Sheet Weight:' : lang === 'es' ? 'Peso de Chapa Virola:' : lang === 'de' ? 'Blechgewicht Mantel:' : 'Peso Lamiera Virola:'}
+                    </span>
+                    <span className="font-mono">{formatNum(result.pesoLamieraVirola, 1)} kg</span>
+                  </div>
                 </div>
               </div>
             </div>

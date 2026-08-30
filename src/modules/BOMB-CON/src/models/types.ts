@@ -38,7 +38,7 @@ export interface ReportMeta {
 export interface TankInput {
   dInt: number;       // diametro interno serbatoio (mm)
   lCil: number;       // lunghezza/altezza parte cilindrica (mm)
-  spVirola?: number;  // spessore lamiera virola (mm) — informativo
+  spVirola: number;   // spessore lamiera virola (mm)
   rho: number;        // peso specifico contenuto (kg/dm3)
   fondo: HeadConfig;
   coperchio: HeadConfig;
@@ -94,6 +94,7 @@ export interface CalculationResult {
   volumeTotale: number;
   pesoLamieraFondo: number;
   pesoLamieraCoperchio: number;
+  pesoLamieraVirola: number;
   sviluppoFondoMq: number;
   sviluppoCoperchioMq: number;
   pesoContenutoTotale: number;
