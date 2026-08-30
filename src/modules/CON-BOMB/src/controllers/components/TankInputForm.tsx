@@ -24,6 +24,7 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
   // Main dimensions
   const [dInt, setDInt] = useState<number>(initialInput.dInt);
   const [lCil, setLCil] = useState<number>(initialInput.lCil);
+  const [spVirola, setSpVirola] = useState<number>(initialInput.spVirola && initialInput.spVirola > 0 ? initialInput.spVirola : initialInput.fondo.sp);
   const [rho, setRho] = useState<number>(initialInput.rho);
 
   // Spin animation trigger count
@@ -230,6 +231,7 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
     const finalInput: TankInput = {
       dInt: dInt || 1000,
       lCil: lCil || 2000,
+      spVirola: spVirola || 6,
       rho: rho || 1,
       coperchio: {
         type: 'conico',
@@ -363,6 +365,23 @@ export default function TankInputForm({ initialInput, onSubmit, lang = 'it', sti
                   required
                   value={lCil || ''}
                   onChange={(e) => setLCil(Math.max(0, parseInt(e.target.value) || 0))}
+                  className="w-full text-sm bg-[#d7ecd7]/80 border-2 border-emerald-300/80 rounded-lg px-3 py-2 text-emerald-950 font-bold focus:bg-[#cde9cd] focus:ring-2 focus:ring-emerald-800 focus:outline-hidden transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-neutral-900 mb-1 flex items-center gap-1 uppercase tracking-wide">
+                  Spessore Virola (Sp_virola)
+                  <span className="text-[10px] text-neutral-700 font-bold">(mm)</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  max="200"
+                  required
+                  value={spVirola || ''}
+                  onChange={(e) => setSpVirola(Math.max(0, parseFloat(e.target.value) || 0))}
                   className="w-full text-sm bg-[#d7ecd7]/80 border-2 border-emerald-300/80 rounded-lg px-3 py-2 text-emerald-950 font-bold focus:bg-[#cde9cd] focus:ring-2 focus:ring-emerald-800 focus:outline-hidden transition-colors"
                 />
               </div>

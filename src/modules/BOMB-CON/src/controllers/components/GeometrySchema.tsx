@@ -514,7 +514,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             <foreignObject x={12} y={box2Y + 64} width={boxW - 18} height="26">
               <MiniField
                 label="Sp. virola"
-                value={input.spVirola ?? 0}
+                value={input.spVirola}
                 onChange={(v) => patch({ spVirola: v })}
                 labelWidth="66px"
                 width="78px"

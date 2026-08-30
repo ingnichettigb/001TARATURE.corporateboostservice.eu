@@ -629,7 +629,7 @@ export async function generateCalibrationPDF(
     const fon = result.input.fondo;
     const R_fon = result.fondo.R;
     const r_fon = result.fondo.r;
-    const pesoTotLamiera = result.pesoLamieraFondo + result.pesoLamieraCoperchio;
+    const pesoTotLamiera = result.pesoLamieraFondo + result.pesoLamieraCoperchio + result.pesoLamieraVirola;
 
     const body: any[] = [
       // coperchio conico
@@ -643,10 +643,10 @@ export async function generateCalibrationPDF(
       [grpTop, labels[lang].sheetWeight.replace(':',''), `${formatNumPDF(result.pesoLamieraCoperchio, 1)} kg`],
       // sezione cilindrica
       [grpCyl, labels[lang].cylinderLength.replace(':',''), `${result.input.lCil} mm`],
-      [grpCyl, labels[lang].thickness.replace(':',''), `${cop.sp} mm`],
+      [grpCyl, labels[lang].thickness.replace(':',''), `${result.input.spVirola} mm`],
       [grpCyl, lblSviluppo, `${formatNumPDF(Math.PI * result.input.dInt, 1)} mm`],
       [grpCyl, lblVolCyl, `${formatNumPDF(result.volumeCilindro, 2)} l`],
-      [grpCyl, labels[lang].sheetWeight.replace(':',''), `${formatNumPDF(Math.PI * result.input.dInt * result.input.lCil * cop.sp * 8 / 1e6, 1)} kg`],
+      [grpCyl, labels[lang].sheetWeight.replace(':',''), `${formatNumPDF(result.pesoLamieraVirola, 1)} kg`],
       // fondo bombato
       [grpCon, labels[lang].thickness.replace(':',''), `${fon.sp} mm`],
       [grpCon, lblRoggio, `${formatNumPDF(R_fon, 1)} mm`],

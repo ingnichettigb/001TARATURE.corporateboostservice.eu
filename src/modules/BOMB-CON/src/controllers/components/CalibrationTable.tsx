@@ -739,6 +739,10 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
           [
             `  • ${labels[lang].sheetWeight}`, `${formatNumPDF(result.pesoLamieraFondo, 1)} kg`,
             `  • ${labels[lang].sheetWeight}`, `${formatNumPDF(result.pesoLamieraCoperchio, 1)} kg`
+          ],
+          [
+            `  • ${labels[lang].sheetWeight} (virola)`, `${formatNumPDF(result.pesoLamieraVirola, 1)} kg`,
+            `  • ${labels[lang].sheetWeight} (tot.)`, `${formatNumPDF(result.pesoLamieraFondo + result.pesoLamieraCoperchio + result.pesoLamieraVirola, 1)} kg`
           ]
         ],
         didParseCell: (data) => {

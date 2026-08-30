@@ -103,6 +103,7 @@ export default function App() {
     dInt: 2200,      // 2.2 meters diameter
     lCil: 5200,      // 5.2 meters cylindrical shell
     rho: 0.85,       // Gazole/diesel density
+    spVirola: 6,     // spessore lamiera virola (mm)
     fondo: {
       type: 'conico',
       sp: 8,
@@ -307,7 +308,13 @@ export default function App() {
   };
 
   const handleLoadTank = (loadedInput: TankInput, loadedCompilerInfo?: CompilerInfo, tankId?: string) => {
-    setInput(loadedInput);
+    // Retrocompatibilità: i file salvati prima dell'introduzione di spVirola
+    // ereditano lo spessore del fondo.
+    const normalized: TankInput = {
+      ...loadedInput,
+      spVirola: loadedInput.spVirola && loadedInput.spVirola > 0 ? loadedInput.spVirola : loadedInput.fondo.sp,
+    };
+    setInput(normalized);
     if (loadedCompilerInfo) {
       handleSaveCompilerInfo(loadedCompilerInfo);
     }

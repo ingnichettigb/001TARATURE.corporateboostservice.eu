@@ -325,6 +325,9 @@ export function calculateTank(input: TankInput): CalculationResult {
   // Weights and surfaces
   const pesoLamieraFondo = fondo.Peso_lamiera_kg;
   const pesoLamieraCoperchio = coperchio.Peso_lamiera_kg;
+  // Peso lamiera virola: circonferenza media x lunghezza x spessore x densità (8 kg/dm3 acciaio)
+  const spVirola = input.spVirola && input.spVirola > 0 ? input.spVirola : input.fondo.sp;
+  const pesoLamieraVirola = (Math.PI * (dInt + spVirola) * lCil * spVirola * 8) / 1e6;
   const sviluppoFondoMq = fondo.Area_disco_da_tagliare_mq;
   const sviluppoCoperchioMq = coperchio.Area_disco_da_tagliare_mq;
 
@@ -349,6 +352,7 @@ export function calculateTank(input: TankInput): CalculationResult {
     volumeTotale,
     pesoLamieraFondo,
     pesoLamieraCoperchio,
+    pesoLamieraVirola,
     sviluppoFondoMq,
     sviluppoCoperchioMq,
     pesoContenutoTotale,
