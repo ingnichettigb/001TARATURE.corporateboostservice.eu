@@ -21,7 +21,7 @@ export function ModuleShell({ title, subtitle, badge, children, actions }: Modul
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="inline-flex items-center gap-1.5 rounded-md border border-emerald-700 bg-emerald-100 px-2.5 py-1.5 text-sm font-bold text-black transition-colors hover:bg-emerald-200"
           >
             <ArrowLeft className="h-4 w-4" />
             Menu
