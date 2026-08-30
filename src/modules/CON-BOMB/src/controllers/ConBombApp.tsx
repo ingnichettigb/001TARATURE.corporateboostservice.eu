@@ -12,6 +12,9 @@ import GeometrySchema from './components/GeometrySchema';
 import ResultsDashboard from './components/ResultsDashboard';
 import CalibrationTable from './components/CalibrationTable';
 import SavedTanksList from './components/SavedTanksList';
+import { TANK_TYPE } from '../constants';
+import { addTank, newTankId, formatTankDate } from '@/common/tanks/storage';
+import { buildTankFile, downloadTankFile } from '@/common/tanks/file';
 
 import InfoModal from './components/InfoModal';
 import { Language, translations } from '../utils/translations';
@@ -718,6 +721,7 @@ export default function App() {
             {/* STEP 7 - Saved configurations management */}
             {step === 7 && (
             <SavedTanksList 
+              tankType={TANK_TYPE}
               currentInput={input} 
               onLoadTank={handleLoadTank} 
               lang={lang} 
