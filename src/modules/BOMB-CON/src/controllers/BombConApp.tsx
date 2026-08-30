@@ -345,46 +345,23 @@ export default function App() {
 
     // Create SavedTank data structure
     const newSaved = {
-      id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+      id: newTankId(),
       name: safeFileName,
-      date: new Date().toLocaleDateString('it-IT', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
+      date: formatTankDate(),
       input: JSON.parse(JSON.stringify(input)),
       compilerInfo: JSON.parse(JSON.stringify(compilerInfo)),
     };
 
-    // Save to localStorage
-    const stored = localStorage.getItem('bomb_bomb_saved_tanks');
-    let currentTanks = [];
-    if (stored) {
-      try {
-        currentTanks = JSON.parse(stored);
-      } catch (e) {
-        console.error('Error reading localStorage tanks', e);
-      }
-    }
-
-    const updated = [newSaved, ...currentTanks.filter((t: any) => t.name !== newSaved.name)];
-    localStorage.setItem('bomb_bomb_saved_tanks', JSON.stringify(updated));
+    // Save to localStorage (chiave dedicata alla tipologia serbatoio)
+    addTank(TANK_TYPE, newSaved as any, { replaceSameName: true });
     setActiveTankId(newSaved.id);
-
-    // Dispatch the custom event to notify SavedTanksList
-    window.dispatchEvent(new CustomEvent('saved-tanks-updated'));
 
     // Download file
     try {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(newSaved, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `${safeFileName}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
+      downloadTankFile(
+        safeFileName,
+        buildTankFile(TANK_TYPE, newSaved.name, input, compilerInfo)
+      );
 
       setSaveFeedback({
         text: lang === 'en'
