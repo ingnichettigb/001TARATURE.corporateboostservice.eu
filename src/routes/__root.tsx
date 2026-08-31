@@ -242,12 +242,19 @@ function AuthGate({ children }: { children: ReactNode }) {
         <button
           type="button"
           onClick={() => {
-            clearGateKeys();
-            navigate({ to: "/auth", replace: true });
+            if (
+              window.confirm(
+                "Uscendo dovrai reinserire email, licenza e PUK per accedere di nuovo. Continuare?"
+              )
+            ) {
+              clearGateKeys();
+              navigate({ to: "/auth", replace: true });
+            }
           }}
-          className="fixed right-3 top-3 z-50 rounded-md border border-input bg-background/80 px-2.5 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur hover:bg-accent"
+          className="fixed right-3 top-3 z-50 flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-800 shadow-sm backdrop-blur hover:bg-amber-100"
         >
-          Esci
+          <LogOut className="h-3.5 w-3.5" />
+          Cambia licenza
         </button>
       )}
       {children}
