@@ -60,7 +60,13 @@ export default function SavedTanksList({
 
   useEffect(() => {
     const loadTanks = () => {
-      setSavedTanks(loadSavedTanks<TankInput, CompilerInfo>(tankType) as SavedTank[]);
+      const loaded = loadSavedTanks<TankInput, CompilerInfo>(tankType) as SavedTank[];
+      const normalized = loaded.map((t) => ({ ...t, name: buildTankFileName(tankType, t.name) }));
+      const changed = normalized.some((t, i) => t.name !== loaded[i]?.name);
+      if (changed) {
+        persistTanks(tankType, normalized as any);
+      }
+      setSavedTanks(normalized);
     };
 
     loadTanks();
@@ -94,34 +100,35 @@ export default function SavedTanksList({
       }
     }
 
+    const prefixedName = buildTankFileName(tankType, trimmedName);
+
     const newSaved: SavedTank = {
       id: newTankId(),
-      name: trimmedName,
+      name: prefixedName,
       date: formatTankDate(),
       input: JSON.parse(JSON.stringify(currentInput)), // Deep copy
       compilerInfo: storedCompilerInfo,
     };
 
-    const updated = [newSaved, ...savedTanks.filter(t => t.name !== trimmedName)];
+    const updated = [newSaved, ...savedTanks.filter(t => t.name !== prefixedName)];
     saveTanksToStorage(updated);
     setActiveTankId(newSaved.id);
 
     // Prompt the user to save the JSON file directly to their computer
     try {
-      const fileName = buildTankFileName(tankType, trimmedName);
       downloadTankFile(
-        fileName,
-        buildTankFile(tankType, trimmedName, currentInput, storedCompilerInfo)
+        prefixedName,
+        buildTankFile(tankType, prefixedName, currentInput, storedCompilerInfo)
       );
 
       setMessage({ 
-        text: `Configurazione "${trimmedName}" salvata in locale e scaricata come "${fileName}.json"!`, 
+        text: `Configurazione "${prefixedName}" salvata in locale e scaricata come "${prefixedName}.json"!`, 
         type: 'success' 
       });
     } catch (err) {
       console.error(err);
       setMessage({ 
-        text: `Configurazione "${trimmedName}" salvata in locale (errore download automatico)`, 
+        text: `Configurazione "${prefixedName}" salvata in locale (errore download automatico)`, 
         type: 'success' 
       });
     }
@@ -178,6 +185,8 @@ export default function SavedTanksList({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const realFileName = file.name.replace(/\.json$/i, '');
+
     const reader = new FileReader();
     reader.onload = (event) => {
       const result = parseTankFile<TankInput, CompilerInfo>(
@@ -196,14 +205,14 @@ export default function SavedTanksList({
           fileTankType: result.tankType!,
           input: result.input as TankInput,
           compilerInfo: result.compilerInfo,
-          name: result.name,
+          name: realFileName,
         });
         return;
       }
 
       importParsedTank(
         result.input as TankInput,
-        result.name,
+        realFileName,
         result.compilerInfo,
         result.status === 'legacy' ? result.message : undefined
       );
@@ -215,7 +224,8 @@ export default function SavedTanksList({
   const handleStartEdit = (tank: SavedTank, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingId(tank.id);
-    setEditingName(tank.name);
+    const prefix = `${tankType}_`;
+    setEditingName(tank.name.startsWith(prefix) ? tank.name.slice(prefix.length) : tank.name);
   };
 
   const handleSaveEdit = (id: string, e: React.MouseEvent) => {
@@ -226,15 +236,16 @@ export default function SavedTanksList({
       return;
     }
 
+    const prefixedName = buildTankFileName(tankType, trimmed);
     const updated = savedTanks.map(t => {
       if (t.id === id) {
-        return { ...t, name: trimmed };
+        return { ...t, name: prefixedName };
       }
       return t;
     });
     saveTanksToStorage(updated);
     setEditingId(null);
-    setMessage({ text: `Nome configurazione modificato in "${trimmed}" con successo!`, type: 'success' });
+    setMessage({ text: `Nome configurazione modificato in "${prefixedName}" con successo!`, type: 'success' });
     setTimeout(() => setMessage(null), 3000);
   };
 
