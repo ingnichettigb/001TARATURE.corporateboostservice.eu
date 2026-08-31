@@ -65,27 +65,6 @@ export function addTank<T = unknown, C = unknown>(
   return updated;
 }
 
-export function removeTank<T = unknown, C = unknown>(
-  tankType: string,
-  id: string,
-): SavedTankRecord<T, C>[] {
-  const updated = loadSavedTanks<T, C>(tankType).filter((t) => t.id !== id);
-  saveTanks(tankType, updated);
-  return updated;
-}
-
-export function renameTank<T = unknown, C = unknown>(
-  tankType: string,
-  id: string,
-  name: string,
-): SavedTankRecord<T, C>[] {
-  const updated = loadSavedTanks<T, C>(tankType).map((t) =>
-    t.id === id ? { ...t, name } : t,
-  );
-  saveTanks(tankType, updated);
-  return updated;
-}
-
 export function newTankId(): string {
   return typeof crypto !== "undefined" && crypto.randomUUID
     ? crypto.randomUUID()
@@ -101,5 +80,3 @@ export function formatTankDate(d: Date = new Date()): string {
     minute: "2-digit",
   });
 }
-
-export const SAVED_TANKS_EVENT = UPDATED_EVENT;

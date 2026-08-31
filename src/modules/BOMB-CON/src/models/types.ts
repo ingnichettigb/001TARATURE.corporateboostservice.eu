@@ -70,11 +70,6 @@ export interface HeadCalculated {
   Peso_lamiera_kg: number;
 }
 
-export interface CalibrationRow {
-  h_mm: number;
-  h_cm: number;
-  litri: number;
-}
 
 export interface CalculationResult {
   input: TankInput;
