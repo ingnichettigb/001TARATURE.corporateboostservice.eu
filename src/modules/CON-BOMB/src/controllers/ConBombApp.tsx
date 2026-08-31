@@ -191,10 +191,15 @@ export default function App() {
       return;
     }
 
-    const entries = getSelectedExtendedEntries(input.report);
-    const lista = entries.length > 0
-      ? entries
-      : [{ numero: input.report.numeroFabbrica || '', tag: input.report.tagNumber || '', incluso: true }];
+    const primaryEntry = {
+      numero: input.report.numeroFabbrica || '',
+      tag: input.report.tagNumber || '',
+      incluso: true,
+    };
+    const extendedEntries = getSelectedExtendedEntries(input.report);
+    const lista = primaryEntry.numero
+      ? [primaryEntry, ...extendedEntries.filter((e) => e.numero !== primaryEntry.numero)]
+      : extendedEntries;
 
     for (const entry of lista) {
       // Ogni PDF generato consuma una esportazione.
