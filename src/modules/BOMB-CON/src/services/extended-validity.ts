@@ -43,10 +43,6 @@ export function formatExtendedEntry(entry: ExtendedFactoryNumber): string {
   return tag ? `${entry.numero.trim()} (${tag})` : entry.numero.trim();
 }
 
-/** Solo i numeri spuntati. */
-export function getSelectedExtendedNumbers(report: ReportMeta): string[] {
-  return getSelectedExtendedEntries(report).map((n) => n.numero);
-}
 
 export function isMultiPrint(report: ReportMeta): boolean {
   return report.modalitaStampa === 'multiplo';
