@@ -224,7 +224,8 @@ export default function SavedTanksList({
   const handleStartEdit = (tank: SavedTank, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingId(tank.id);
-    setEditingName(tank.name);
+    const prefix = `${tankType}_`;
+    setEditingName(tank.name.startsWith(prefix) ? tank.name.slice(prefix.length) : tank.name);
   };
 
   const handleSaveEdit = (id: string, e: React.MouseEvent) => {
@@ -235,15 +236,16 @@ export default function SavedTanksList({
       return;
     }
 
+    const prefixedName = buildTankFileName(tankType, trimmed);
     const updated = savedTanks.map(t => {
       if (t.id === id) {
-        return { ...t, name: trimmed };
+        return { ...t, name: prefixedName };
       }
       return t;
     });
     saveTanksToStorage(updated);
     setEditingId(null);
-    setMessage({ text: `Nome configurazione modificato in "${trimmed}" con successo!`, type: 'success' });
+    setMessage({ text: `Nome configurazione modificato in "${prefixedName}" con successo!`, type: 'success' });
     setTimeout(() => setMessage(null), 3000);
   };
 
