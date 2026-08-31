@@ -13,7 +13,7 @@ import {
   newTankId,
   formatTankDate,
 } from '@/common/tanks/storage';
-import { buildTankFile, downloadTankFile, parseTankFile, safeFileName } from '@/common/tanks/file';
+import { buildTankFile, buildTankFileName, downloadTankFile, parseTankFile } from '@/common/tanks/file';
 import ImportMismatchDialog from '@/common/tanks/ImportMismatchDialog';
 
 interface SavedTanksListProps {
@@ -108,7 +108,7 @@ export default function SavedTanksList({
 
     // Prompt the user to save the JSON file directly to their computer
     try {
-      const fileName = safeFileName(trimmedName);
+      const fileName = buildTankFileName(tankType, trimmedName);
       downloadTankFile(
         fileName,
         buildTankFile(tankType, trimmedName, currentInput, storedCompilerInfo)
@@ -143,7 +143,7 @@ export default function SavedTanksList({
 
   const handleExportSingle = (tank: SavedTank, e: React.MouseEvent) => {
     e.stopPropagation();
-    const fileName = `${tankType.toLowerCase()}_${tank.name.toLowerCase().replace(/[^a-z0-9_-]/g, '_')}`;
+    const fileName = buildTankFileName(tankType, tank.name);
     downloadTankFile(fileName, buildTankFile(tankType, tank.name, tank.input, tank.compilerInfo));
   };
 

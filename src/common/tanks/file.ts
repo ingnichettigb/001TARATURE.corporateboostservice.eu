@@ -25,6 +25,11 @@ export function safeFileName(name: string): string {
   return name.replace(/[/\\?%*:|"<>. ]/g, "_");
 }
 
+/** Nome file JSON con prefisso della tipologia serbatoio. */
+export function buildTankFileName(tankType: string, name: string): string {
+  return `${tankType}_${safeFileName(name)}`;
+}
+
 /** Scarica il file JSON con il nome indicato. */
 export function downloadTankFile(fileName: string, data: unknown) {
   const dataStr =

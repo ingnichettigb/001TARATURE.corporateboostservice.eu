@@ -14,7 +14,7 @@ import CalibrationTable from './components/CalibrationTable';
 import SavedTanksList from './components/SavedTanksList';
 import { TANK_TYPE } from '../constants';
 import { addTank, newTankId, formatTankDate } from '@/common/tanks/storage';
-import { buildTankFile, downloadTankFile } from '@/common/tanks/file';
+import { buildTankFile, buildTankFileName, downloadTankFile } from '@/common/tanks/file';
 
 import InfoModal from './components/InfoModal';
 import { Language, translations } from '../utils/translations';
@@ -178,8 +178,10 @@ export default function App() {
    * ciclo = 1 sola esportazione).
    */
   const handleExportPdf = async (condensed: boolean) => {
-    const allowed = await consumeExport('pdf');
-    if (!allowed) return;
+    if (printMode !== 'multiplo') {
+      const allowed = await consumeExport('pdf');
+      if (!allowed) return;
+    }
 
     const geometryImage = await captureGeometryImage(input);
 
@@ -194,6 +196,10 @@ export default function App() {
       : [{ numero: input.report.numeroFabbrica || '', tag: input.report.tagNumber || '', incluso: true }];
 
     for (const entry of lista) {
+      // Ogni PDF generato consuma una esportazione.
+      const allowedSingle = await consumeExport('pdf');
+      if (!allowedSingle) break;
+
       const singleResult = {
         ...result,
         input: {
@@ -340,6 +346,7 @@ export default function App() {
 
   const handleSaveAndDownload = () => {
     const safeFileName = suggestedSaveName;
+    const downloadName = buildTankFileName(TANK_TYPE, safeFileName);
 
 
 
@@ -359,14 +366,14 @@ export default function App() {
     // Download file
     try {
       downloadTankFile(
-        safeFileName,
+        downloadName,
         buildTankFile(TANK_TYPE, newSaved.name, input, compilerInfo)
       );
 
       setSaveFeedback({
         text: lang === 'en'
-          ? `Configuration successfully saved in memory and downloaded as "${safeFileName}.json"`
-          : `Configurazione salvata con successo in memoria e scaricata come "${safeFileName}.json"`,
+          ? `Configuration successfully saved in memory and downloaded as "${downloadName}.json"`
+          : `Configurazione salvata con successo in memoria e scaricata come "${downloadName}.json"`,
         type: 'success'
       });
     } catch (err) {
