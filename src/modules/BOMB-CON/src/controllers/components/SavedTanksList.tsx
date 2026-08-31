@@ -185,6 +185,8 @@ export default function SavedTanksList({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const realFileName = file.name.replace(/\.json$/i, '');
+
     const reader = new FileReader();
     reader.onload = (event) => {
       const result = parseTankFile<TankInput, CompilerInfo>(
@@ -203,14 +205,14 @@ export default function SavedTanksList({
           fileTankType: result.tankType!,
           input: result.input as TankInput,
           compilerInfo: result.compilerInfo,
-          name: result.name,
+          name: realFileName,
         });
         return;
       }
 
       importParsedTank(
         result.input as TankInput,
-        result.name,
+        realFileName,
         result.compilerInfo,
         result.status === 'legacy' ? result.message : undefined
       );
