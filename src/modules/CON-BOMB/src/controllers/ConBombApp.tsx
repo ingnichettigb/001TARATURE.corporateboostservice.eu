@@ -347,6 +347,7 @@ export default function App() {
 
   const handleSaveAndDownload = () => {
     const safeFileName = suggestedSaveName;
+    const downloadName = buildTankFileName(TANK_TYPE, safeFileName);
 
 
 
@@ -366,14 +367,14 @@ export default function App() {
     // Download file
     try {
       downloadTankFile(
-        buildTankFileName(TANK_TYPE, safeFileName),
+        downloadName,
         buildTankFile(TANK_TYPE, newSaved.name, input, compilerInfo)
       );
 
       setSaveFeedback({
         text: lang === 'en'
-          ? `Configuration successfully saved in memory and downloaded as "${safeFileName}.json"`
-          : `Configurazione salvata con successo in memoria e scaricata come "${safeFileName}.json"`,
+          ? `Configuration successfully saved in memory and downloaded as "${downloadName}.json"`
+          : `Configurazione salvata con successo in memoria e scaricata come "${downloadName}.json"`,
         type: 'success'
       });
     } catch (err) {
