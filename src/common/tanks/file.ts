@@ -25,9 +25,11 @@ export function safeFileName(name: string): string {
   return name.replace(/[/\\?%*:|"<>. ]/g, "_");
 }
 
-/** Nome file JSON con prefisso della tipologia serbatoio. */
+/** Nome file JSON con prefisso della tipologia serbatoio (idempotente). */
 export function buildTankFileName(tankType: string, name: string): string {
-  return `${tankType}_${safeFileName(name)}`;
+  const safe = safeFileName(name);
+  const prefix = `${tankType}_`;
+  return safe.startsWith(prefix) ? safe : `${prefix}${safe}`;
 }
 
 /** Scarica il file JSON con il nome indicato. */
