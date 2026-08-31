@@ -60,7 +60,13 @@ export default function SavedTanksList({
 
   useEffect(() => {
     const loadTanks = () => {
-      setSavedTanks(loadSavedTanks<TankInput, CompilerInfo>(tankType) as SavedTank[]);
+      const loaded = loadSavedTanks<TankInput, CompilerInfo>(tankType) as SavedTank[];
+      const normalized = loaded.map((t) => ({ ...t, name: buildTankFileName(tankType, t.name) }));
+      const changed = normalized.some((t, i) => t.name !== loaded[i]?.name);
+      if (changed) {
+        persistTanks(tankType, normalized as any);
+      }
+      setSavedTanks(normalized);
     };
 
     loadTanks();
