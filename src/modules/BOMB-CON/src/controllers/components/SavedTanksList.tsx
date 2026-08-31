@@ -100,34 +100,35 @@ export default function SavedTanksList({
       }
     }
 
+    const prefixedName = buildTankFileName(tankType, trimmedName);
+
     const newSaved: SavedTank = {
       id: newTankId(),
-      name: trimmedName,
+      name: prefixedName,
       date: formatTankDate(),
       input: JSON.parse(JSON.stringify(currentInput)), // Deep copy
       compilerInfo: storedCompilerInfo,
     };
 
-    const updated = [newSaved, ...savedTanks.filter(t => t.name !== trimmedName)];
+    const updated = [newSaved, ...savedTanks.filter(t => t.name !== prefixedName)];
     saveTanksToStorage(updated);
     setActiveTankId(newSaved.id);
 
     // Prompt the user to save the JSON file directly to their computer
     try {
-      const fileName = buildTankFileName(tankType, trimmedName);
       downloadTankFile(
-        fileName,
-        buildTankFile(tankType, trimmedName, currentInput, storedCompilerInfo)
+        prefixedName,
+        buildTankFile(tankType, prefixedName, currentInput, storedCompilerInfo)
       );
 
       setMessage({ 
-        text: `Configurazione "${trimmedName}" salvata in locale e scaricata come "${fileName}.json"!`, 
+        text: `Configurazione "${prefixedName}" salvata in locale e scaricata come "${prefixedName}.json"!`, 
         type: 'success' 
       });
     } catch (err) {
       console.error(err);
       setMessage({ 
-        text: `Configurazione "${trimmedName}" salvata in locale (errore download automatico)`, 
+        text: `Configurazione "${prefixedName}" salvata in locale (errore download automatico)`, 
         type: 'success' 
       });
     }
