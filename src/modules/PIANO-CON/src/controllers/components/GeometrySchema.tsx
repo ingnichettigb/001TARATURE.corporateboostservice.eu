@@ -195,12 +195,6 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const hCono_calc = hCono;
   const hTot = result ? result.H_tot : hCoperchio_calc + lCil + hCono_calc;
 
-  const geometriaCoperchioValida = useMemo(() => {
-    const R = result?.coperchio.R ?? 0;
-    const r = result?.coperchio.r ?? 0;
-    const half = dInt / 2;
-    return Math.pow(R - r, 2) - Math.pow(half - r, 2) >= 0;
-  }, [result, dInt]);
 
   const raccordoError =
     angolo == null
@@ -217,12 +211,6 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const setDInt = (v: number) => {
     if (!(v > 0)) return;
     const next: TankInput = { ...input, dInt: v };
-    // ricalcola R/r del coperchio se standard
-    if (input.coperchio.type === 'decinormale') {
-      next.coperchio = { ...input.coperchio };
-    } else if (input.coperchio.type === 'pseudoellittico') {
-      next.coperchio = { ...input.coperchio };
-    }
     // mantiene l'angolo del cono costante al variare del diametro
     if (angolo != null) {
       const h = hTotFromAngle(angolo, v / 2, rRaccordoCono, hCollettoCono);
@@ -238,41 +226,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
     patchFondo({ hCono: Math.round(h * 10) / 10 });
   };
 
-  /* --- tipo coperchio (preset) --- */
-  type Preset = 'klopper' | 'korbbogen' | 'pseudoellittico' | 'custom';
-  const presetCoperchio: Preset =
-    input.coperchio.type === 'decinormale'
-      ? 'klopper'
-      : input.coperchio.type === 'pseudoellittico'
-        ? 'pseudoellittico'
-        : Math.abs((input.coperchio.R_custom ?? 0) - 0.8 * dInt) < 0.6 &&
-            Math.abs((input.coperchio.r_custom ?? 0) - 0.154 * dInt) < 0.6
-          ? 'korbbogen'
-          : 'custom';
-
-  const setPreset = (p: Preset) => {
-    if (p === 'klopper') {
-      patchCoperchio({ type: 'decinormale' as HeadType });
-    } else if (p === 'pseudoellittico') {
-      patchCoperchio({ type: 'pseudoellittico' as HeadType });
-    } else if (p === 'korbbogen') {
-      patchCoperchio({
-        type: 'custom' as HeadType,
-        R_custom: Math.round(0.8 * dInt * 10) / 10,
-        r_custom: Math.round(0.154 * dInt * 10) / 10,
-      });
-    } else {
-      patchCoperchio({
-        type: 'custom' as HeadType,
-        R_custom: input.coperchio.R_custom ?? dInt,
-        r_custom: input.coperchio.r_custom ?? dInt / 10,
-      });
-    }
-  };
-
-  const R_disp = result?.coperchio.R ?? 0;
-  const r_disp = result?.coperchio.r ?? 0;
-  const isCustomHead = input.coperchio.type === 'custom';
+  /* --- il coperchio è PIANO: nessun preset di bombatura --- */
 
   /* ---------- layout disegno: 5 fasce fisse indipendenti ---------- */
   const drawW = 800;
@@ -296,7 +250,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const scaleBase = halfW / (dInt / 2 || 1);
 
   // 3.1 / 3.2 coperchio e virola: altezze GRAFICHE FISSE (non scalate, solo rappresentative)
-  const hCoperchio_px = 96;
+  const hCoperchio_px = 40;
   const lCil_px = 250;
 
   // 3.3 fondo conico: unica parte scalata — inclinazione proporzionale alla larghezza (Ø)
@@ -316,17 +270,18 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const rightX = cx + halfW;
   const yCilMid = (yCilTop + yCilBot) / 2;
 
-  // curva coperchio bombato (in ALTO): peak reale della bezier = 0.75 * rise
-  const domeRise = Math.max(hCoperchio_px / 0.75, 18);
+  // coperchio PIANO (in ALTO): nessuna bombatura, profilo rettilineo
+  const domeRise = 0;
 
   const pathData = `
-    M ${leftX} ${yCilTop}
-    C ${leftX} ${yCilTop - domeRise}, ${rightX} ${yCilTop - domeRise}, ${rightX} ${yCilTop}
+    M ${leftX} ${yDomeTop}
+    L ${rightX} ${yDomeTop}
     L ${rightX} ${yCilBot}
     L ${cx} ${yApex}
     L ${leftX} ${yCilBot}
     Z
   `;
+  void domeRise;
 
   // callout 1 — ancoraggio percentuale sull'altezza disegnata del coperchio
   const domeT = 0.15;
@@ -357,7 +312,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const dim4X = drawW - RIGHT_W - 8;     // 682 (quota totale, testo verso sinistra)
 
   const boxW = 208;
-  const box1H = 176;
+  const box1H = 132;
   const boxSumH = 76;
   const box2H = 96;
   const box3H = 155;
@@ -411,7 +366,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             strokeDasharray="6,4"
           />
 
-          {/* RIQUADRO 1 — COPERCHIO BOMBATO */}
+          {/* RIQUADRO 1 — COPERCHIO PIANO */}
           <g>
             <rect x={6} y={box1Y} width={boxW} height={box1H} rx="5" fill="#ffffff" stroke="#0f766e" strokeWidth="1.2" />
             <line
@@ -423,55 +378,19 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
               strokeWidth="1"
               strokeDasharray="3,3"
             />
-            <foreignObject x={12} y={box1Y + 5} width={boxW - 18} height="24">
-              <select
-                value={presetCoperchio}
-                onChange={(e) => setPreset(e.target.value as Preset)}
-                style={{
-                  width: '100%',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  color: '#0f172a',
-                  background: '#ffffff',
-                  border: '1px solid #94a3b8',
-                  borderRadius: '3px',
-                  padding: '2px 4px',
-                  outline: 'none',
-                  fontFamily: 'inherit',
-                }}
-              >
-                <option value="klopper">Klopper DIN 28011 (decinormale)</option>
-                <option value="korbbogen">Korbbogen DIN 28013</option>
-                <option value="pseudoellittico">Pseudoellittico</option>
-                <option value="custom">Fuori Standard</option>
-              </select>
-            </foreignObject>
-            <foreignObject x={12} y={box1Y + 31} width={boxW - 18} height="24">
-              <MiniField
-                label="R grande"
-                value={Math.round(R_disp * 10) / 10}
-                onChange={(v) => patchCoperchio({ R_custom: v })}
-                readOnly={!isCustomHead}
-              />
-            </foreignObject>
-            <foreignObject x={12} y={box1Y + 57} width={boxW - 18} height="24">
-              <MiniField
-                label="r piccolo"
-                value={Math.round(r_disp * 10) / 10}
-                onChange={(v) => patchCoperchio({ r_custom: v })}
-                readOnly={!isCustomHead}
-              />
-            </foreignObject>
-            <foreignObject x={12} y={box1Y + 83} width={boxW - 18} height="24">
+            <text x={6 + boxW / 2} y={box1Y + 20} textAnchor="middle" fontSize="11" fontWeight="700" fill="#000000">
+              Coperchio piano (disco)
+            </text>
+            <foreignObject x={12} y={box1Y + 30} width={boxW - 18} height="24">
               <MiniField label="Colletto" value={hCollettoCoperchio} onChange={(v) => patchCoperchio({ hColletto: v })} />
             </foreignObject>
-            <foreignObject x={12} y={box1Y + 109} width={boxW - 18} height="24">
+            <foreignObject x={12} y={box1Y + 56} width={boxW - 18} height="24">
               <MiniField label="Sp." value={input.coperchio.sp} onChange={(v) => patchCoperchio({ sp: v })} />
             </foreignObject>
-            <text x={6 + boxW / 2} y={box1Y + 148} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
-              Coperchio bombato — litri
+            <text x={6 + boxW / 2} y={box1Y + 104} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+              Coperchio piano — litri
             </text>
-            <text x={6 + boxW / 2} y={box1Y + 166} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
+            <text x={6 + boxW / 2} y={box1Y + 122} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
               {result ? fmtL0(result.volumeCoperchio) : '—'}
             </text>
           </g>
@@ -743,14 +662,9 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
       </div>
 
       {/* ERRORI GEOMETRICI */}
-      {(raccordoError || !geometriaCoperchioValida) && (
+      {raccordoError && (
         <div className="bg-rose-50 border border-rose-300 rounded-xl p-3 space-y-1">
-          {raccordoError && <p className="text-xs font-bold text-rose-900">{raccordoError}</p>}
-          {!geometriaCoperchioValida && (
-            <p className="text-xs font-bold text-rose-900">
-              I raggi del coperchio bombato non sono geometricamente compatibili con il diametro interno.
-            </p>
-          )}
+          <p className="text-xs font-bold text-rose-900">{raccordoError}</p>
         </div>
       )}
 
@@ -767,7 +681,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
           <span className="text-right font-mono">{fmt(hCono_calc)} mm</span>
           <span>Sezione cilindrica (virola)</span>
           <span className="text-right font-mono">{fmt(lCil)} mm</span>
-          <span>Coperchio bombato (colletto incluso)</span>
+          <span>Coperchio piano (colletto incluso)</span>
           <span className="text-right font-mono">{fmt(hCoperchio_calc)} mm</span>
           <span className="border-t border-emerald-300 pt-1">Somma</span>
           <span className="text-right font-mono border-t border-emerald-300 pt-1">
