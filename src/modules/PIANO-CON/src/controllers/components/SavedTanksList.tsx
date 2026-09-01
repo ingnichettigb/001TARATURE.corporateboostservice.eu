@@ -24,7 +24,7 @@ interface SavedTanksListProps {
   setActiveTankId: (id: string | null) => void;
   suggestedName?: string;
   onSaveAndDownload?: () => void;
-  /** Tipologia serbatoio del modulo (nome cartella, es. "BOMB-CON"). */
+  /** Tipologia serbatoio del modulo (nome cartella, es. "PIANO-CON"). */
   tankType: string;
 }
 

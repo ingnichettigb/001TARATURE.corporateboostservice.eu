@@ -19,7 +19,7 @@ interface CalibrationTableProps {
   lang?: Language;
   compilerInfo?: CompilerInfo;
   /**
-   * Esportazione PDF condivisa con l'header del modulo (BombConApp.handleExportPdf).
+   * Esportazione PDF condivisa con l'header del modulo (PianoConApp.handleExportPdf).
    * Include cattura dello schema geometrico, numero di relazione coerente e
    * gestione della modalità di stampa (unico / un PDF per numero di fabbrica).
    * Se non fornita, si ricade sulla generazione diretta (senza questi arricchimenti).
@@ -187,7 +187,7 @@ export default function CalibrationTable({ result, lang = 'it', compilerInfo, on
 
 
   // Trigger Print Dialog — usa la STESSA funzione dei bottoni "Stampa PDF" /
-  // "PDF condensata" nell'header (BombConApp.handleExportPdf), garantendo che
+  // "PDF condensata" nell'header (PianoConApp.handleExportPdf), garantendo che
   // schema geometrico, numero di relazione e modalità di stampa multipla
   // vengano gestiti in modo identico. Fallback diretto solo se il modulo
   // chiamante non passa la prop (retro-compatibilità).
