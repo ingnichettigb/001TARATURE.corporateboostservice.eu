@@ -115,15 +115,15 @@ export default function App() {
       rRaccordo: 30, // raccordo cono/colletto (mm)
     },
     coperchio: {
-      type: 'pseudoellittico',
-      sp: 6,
-      hColletto: 30,
+      type: 'piano',
+      sp: 8,
+      hColletto: 0,
     },
     report: {
       cliente: 'Petrolchimica Padana S.p.A.',
       riferimento: 'Parco Serbatoi - Area Stoccaggio Sud',
       nomeSerbatoio: 'Serbatoio Diesel TK-104',
-      numeroDisegno: 'BOMB-TK-104-REV02',
+      numeroDisegno: 'PIANO-TK-104-REV02',
       data: new Date().toISOString().split('T')[0],
       compilatore: 'Ing. Marco Rossi',
       numeroFabbrica: '24/1098-S',
@@ -1229,8 +1229,8 @@ export default function App() {
                   <div><strong>Zone 3:</strong> {lang === 'en' ? 'Bottom straight flange' : lang === 'es' ? 'Cuello fondo (cilíndrico)' : lang === 'de' ? 'Bodenbord (zylindrisch)' : 'Colletto cilindrico Fondo'}</div>
                   <div><strong>Zone 4:</strong> {lang === 'en' ? 'Cylindrical shell' : lang === 'es' ? 'Cuerpo cilíndrico' : lang === 'de' ? 'Zylindrischer Mantel' : 'Mantello cilindrico Centrale'}</div>
                   <div><strong>Zone 5:</strong> {lang === 'en' ? 'Top straight flange' : lang === 'es' ? 'Cuello tapa (cilíndrico)' : lang === 'de' ? 'Deckelbord (zylindrisch)' : 'Colletto cilindrico Coperchio'}</div>
-                  <div><strong>Zone 6:</strong> {lang === 'en' ? 'Top knuckle (toroidal)' : lang === 'es' ? 'Raccordo tapa (toroidal)' : lang === 'de' ? 'Deckelkrempe (toroidal)' : 'Raccordo toroidale Coperchio'}</div>
-                  <div><strong>Zone 7:</strong> {lang === 'en' ? 'Top dome (spherical)' : lang === 'es' ? 'Cúpula tapa (esférica)' : lang === 'de' ? 'Deckelkuppel (sphärisch)' : 'Calotta Coperchio sferica'}</div>
+                  <div><strong>Zone 6:</strong> {lang === 'en' ? 'Not used (flat cover)' : lang === 'es' ? 'No utilizada (tapa plana)' : lang === 'de' ? 'Nicht genutzt (Flachdeckel)' : 'Non utilizzata (coperchio piano)'}</div>
+                  <div><strong>Zone 7:</strong> {lang === 'en' ? 'Flat cover plate' : lang === 'es' ? 'Tapa plana' : lang === 'de' ? 'Flachdeckel' : 'Coperchio piano (disco)'}</div>
                 </div>
               </div>
 
