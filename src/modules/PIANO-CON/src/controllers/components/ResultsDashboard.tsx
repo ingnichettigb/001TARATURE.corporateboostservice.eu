@@ -575,7 +575,7 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
 
                 <div className="space-y-2">
                   <span className="font-black text-neutral-950 border-b-2 border-emerald-900/10 pb-1 block">
-                    {lang === 'en' ? 'Top Head:' : lang === 'es' ? 'Extremo Superior:' : lang === 'de' ? 'Oberer Deckel:' : 'Coperchio Calotta:'}
+                    {lang === 'en' ? 'Flat Top:' : lang === 'es' ? 'Tapa Plana:' : lang === 'de' ? 'Flacher Deckel:' : 'Coperchio Piano:'}
                   </span>
                   <div className="flex justify-between py-1">
                     <span className="font-medium text-neutral-700">
