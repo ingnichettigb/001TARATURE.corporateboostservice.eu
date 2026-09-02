@@ -364,21 +364,6 @@ export async function generateCalibrationPDF(
     const h_c = 18;
     const dome_h = 3.5;
 
-    // Helper to draw a semi-ellipse
-    const drawSemiEllipse = (cx: number, cy: number, rx: number, ry: number, startAngle: number, endAngle: number) => {
-      const steps = 30;
-      let prevX = cx + rx * Math.cos(startAngle);
-      let prevY = cy + ry * Math.sin(startAngle);
-      for (let i = 1; i <= steps; i++) {
-        const angle = startAngle + (endAngle - startAngle) * (i / steps);
-        const currX = cx + rx * Math.cos(angle);
-        const currY = cy + ry * Math.sin(angle);
-        doc.line(prevX, prevY, currX, currY);
-        prevX = currX;
-        prevY = currY;
-      }
-    };
-
     // Helper to draw dashed line
     const drawDashedLine = (x1: number, y1: number, x2: number, y2: number) => {
       const dash = 1.2;
