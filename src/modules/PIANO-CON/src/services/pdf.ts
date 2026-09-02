@@ -105,13 +105,13 @@ export async function generateCalibrationPDF(
         volumeTitle: 'Volumi dei Singoli Componenti',
         bottomVolume: 'Volume Fondo Conico:',
         cylinderVolume: 'Volume Mantello Cilindrico:',
-        topVolume: 'Volume Coperchio Bombato:',
+        topVolume: 'Volume Coperchio Piano:',
         totalVolume: 'VOLUME TOTALE NOMINALE:',
         
         // Sheets
         sheetTitle: 'Dati Costruttivi e Lamiere (Acciaio)',
-        bottomHead: 'Fondo Calotta:',
-        topHead: 'Coperchio Calotta:',
+        bottomHead: 'Fondo Conico:',
+        topHead: 'Coperchio Piano:',
         thickness: 'Spessore Lamiera (Sp):',
         development: 'Sviluppo Srotolamento Lamiera (Diametro):',
         area: 'Area Disco Grezzo Taglio:',
@@ -395,8 +395,8 @@ export async function generateCalibrationPDF(
     const coneApexY = y_c + h_c + dome_h + 1.5;
     doc.setFillColor(240, 253, 244);
     doc.rect(x_c, y_c, w_c, h_c, 'F');
-    // Top dome (bombato)
-    doc.ellipse(x_c + w_c / 2, y_c, w_c / 2, dome_h, 'F');
+    // Top flat cover (piano)
+    doc.rect(x_c, y_c - dome_h, w_c, dome_h, 'F');
     // Bottom cone (conico)
     doc.triangle(x_c, y_c + h_c, x_c + w_c, y_c + h_c, x_c + w_c / 2, coneApexY, 'F');
 
@@ -609,7 +609,7 @@ export async function generateCalibrationPDF(
     techY += 3;
 
 
-    const grpTop = lang === 'en' ? 'top head' : lang === 'es' ? 'cúpula sup.' : lang === 'de' ? 'obere Kuppe' : 'coperchio bombato';
+    const grpTop = lang === 'en' ? 'flat cover' : lang === 'es' ? 'tapa plana' : lang === 'de' ? 'Flachdeckel' : 'coperchio piano';
     const grpCyl = lang === 'en' ? 'cylindrical section' : lang === 'es' ? 'sección cilíndrica' : lang === 'de' ? 'Zylinderteil' : 'sezione cilindrica';
     const grpCon = lang === 'en' ? 'conical bottom' : lang === 'es' ? 'fondo cónico' : lang === 'de' ? 'Konischer Boden' : 'fondo conico';
     const grpAll = lang === 'en' ? 'Top + cylindrical part + bottom' : lang === 'es' ? 'Cúpula + parte cilíndrica + fondo' : lang === 'de' ? 'Deckel + Zylinderteil + Boden' : 'Coperchio + parte cilindrica + fondo';
@@ -625,18 +625,17 @@ export async function generateCalibrationPDF(
     const lblPesoTotLam = lang === 'en' ? 'Total Sheet Metal Weight' : lang === 'es' ? 'Peso Total Chapa' : lang === 'de' ? 'Gesamtes Blechgewicht' : 'Peso totale lamiera';
     const lblPesoPieno = lang === 'en' ? 'Weight with Full Content' : lang === 'es' ? 'Peso con Contenido Lleno' : lang === 'de' ? 'Gewicht bei Vollfüllung' : 'Peso con Contenuto Pieno';
 
+    const lblAreaPiano = lang === 'en' ? 'Flat plate area (m²)' : lang === 'es' ? 'Superficie disco plano (m²)' : lang === 'de' ? 'Fläche Flachdeckel (m²)' : 'Superficie disco piano (m²)';
+
     const cop = result.input.coperchio;
     const fon = result.input.fondo;
-    const R_cop = result.coperchio.R;
-    const r_cop = result.coperchio.r;
     const pesoTotLamiera = result.pesoLamieraFondo + result.pesoLamieraCoperchio + result.pesoLamieraVirola;
 
     const body: any[] = [
-      // coperchio bombato
+      // coperchio piano
       [grpTop, labels[lang].internalDiameter.replace(':',''), `${result.input.dInt} mm`],
       [grpTop, labels[lang].thickness.replace(':',''), `${cop.sp} mm`],
-      [grpTop, lblRoggio, `${formatNumPDF(R_cop, 1)} mm`],
-      [grpTop, lblToro, `${formatNumPDF(r_cop, 1)} mm`],
+      [grpTop, lblAreaPiano, `${formatNumPDF(result.coperchio.Area_disco_da_tagliare_mq, 3)} m²`],
       [grpTop, lblColletto, `${cop.hColletto} mm`],
       [grpTop, labels[lang].topVolume.replace(':',''), `${formatNumPDF(result.volumeCoperchio, 2)} l`],
       [grpTop, labels[lang].sheetWeight.replace(':',''), `${formatNumPDF(result.pesoLamieraCoperchio, 1)} kg`],
