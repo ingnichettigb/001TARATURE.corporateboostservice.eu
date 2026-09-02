@@ -407,8 +407,8 @@ export async function generateCalibrationPDF(
     doc.line(x_c, y_c, x_c, y_c + h_c);
     // Right vertical line
     doc.line(x_c + w_c, y_c, x_c + w_c, y_c + h_c);
-    // Top dome outline
-    drawSemiEllipse(x_c + w_c / 2, y_c, w_c / 2, dome_h, Math.PI, 2 * Math.PI);
+    // Top flat cover outline
+    doc.rect(x_c, y_c - dome_h, w_c, dome_h, 'S');
     // Bottom cone outlines (two slanted sides)
     doc.line(x_c, y_c + h_c, x_c + w_c / 2, coneApexY);
     doc.line(x_c + w_c, y_c + h_c, x_c + w_c / 2, coneApexY);
@@ -614,8 +614,6 @@ export async function generateCalibrationPDF(
     const grpCon = lang === 'en' ? 'conical bottom' : lang === 'es' ? 'fondo cónico' : lang === 'de' ? 'Konischer Boden' : 'fondo conico';
     const grpAll = lang === 'en' ? 'Top + cylindrical part + bottom' : lang === 'es' ? 'Cúpula + parte cilíndrica + fondo' : lang === 'de' ? 'Deckel + Zylinderteil + Boden' : 'Coperchio + parte cilindrica + fondo';
 
-    const lblRoggio = lang === 'en' ? 'Dish Radius (R_custom) (mm)' : lang === 'es' ? 'Radio Bombeo (R_custom) (mm)' : lang === 'de' ? 'Wölbradius (R_custom) (mm)' : 'Raggio Bombatura (R_custom) (mm)';
-    const lblToro = lang === 'en' ? 'Knuckle Radius (r_custom) (mm)' : lang === 'es' ? 'Radio Toro Raccordo (r_custom) (mm)' : lang === 'de' ? 'Krempenradius (r_custom) (mm)' : 'Raggio Toro Raccordo (r_custom) (mm)';
     const lblColletto = lang === 'en' ? 'Collar Height (h_colletto)' : lang === 'es' ? 'Altura Collarín (h_colletto)' : lang === 'de' ? 'Kragenhöhe (h_colletto)' : 'Altezza Colletto (h_colletto)';
     const lblSviluppo = lang === 'en' ? 'Sheet Unrolling Development' : lang === 'es' ? 'Desarrollo Desenrollado Chapa' : lang === 'de' ? 'Blechabwicklung' : 'Sviluppo Srotolamento Lamiera';
     const lblVolCyl = lang === 'en' ? 'Cylindrical Section Volume' : lang === 'es' ? 'Volumen Parte Cilíndrica' : lang === 'de' ? 'Volumen Zylinderteil' : 'Volume parte cilindrica';
