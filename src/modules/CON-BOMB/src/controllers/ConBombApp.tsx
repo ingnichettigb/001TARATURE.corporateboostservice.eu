@@ -201,11 +201,15 @@ export default function App() {
       ? [primaryEntry, ...extendedEntries.filter((e) => e.numero !== primaryEntry.numero)]
       : extendedEntries;
 
-    for (const entry of lista) {
+    // Base del numero di relazione senza suffisso: il progressivo riparte da 01 per ogni stampa multipla.
+    const reportBase = reportNumber.replace(/-\d+$/, '');
+
+    for (const [index, entry] of lista.entries()) {
       // Ogni PDF generato consuma una esportazione.
       const allowedSingle = await consumeExport('pdf');
       if (!allowedSingle) break;
 
+      const reportNumberPerDoc = `${reportBase}-${String(index + 1).padStart(2, '0')}`;
       const singleResult = {
         ...result,
         input: {
@@ -217,7 +221,7 @@ export default function App() {
           },
         },
       };
-      await generateCalibrationPDF(singleResult, lang, compilerInfo, condensed, reportNumber, geometryImage);
+      await generateCalibrationPDF(singleResult, lang, compilerInfo, condensed, reportNumberPerDoc, geometryImage);
       await new Promise((r) => setTimeout(r, 400));
     }
   };
