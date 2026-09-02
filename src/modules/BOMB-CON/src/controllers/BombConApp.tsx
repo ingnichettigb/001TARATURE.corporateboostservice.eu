@@ -220,7 +220,7 @@ export default function App() {
           },
         },
       };
-      await generateCalibrationPDF(singleResult, lang, compilerInfo, condensed, reportNumber, geometryImage);
+      await generateCalibrationPDF(singleResult, lang, compilerInfo, condensed, reportNumberPerDoc, geometryImage);
       await new Promise((r) => setTimeout(r, 400));
     }
   };
