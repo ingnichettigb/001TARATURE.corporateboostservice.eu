@@ -48,6 +48,8 @@ export default function SavedTanksList({
   const [mismatch, setMismatch] = useState<
     { fileTankType: string; input: TankInput; compilerInfo?: CompilerInfo; name: string } | null
   >(null);
+  const [folderDialogOpen, setFolderDialogOpen] = useState(false);
+  const folderAccess = supportsFolderAccess();
 
   // Keep proposing the auto-generated name until the user edits it manually
   useEffect(() => {
