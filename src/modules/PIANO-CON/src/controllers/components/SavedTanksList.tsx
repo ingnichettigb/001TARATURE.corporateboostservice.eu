@@ -384,16 +384,27 @@ export default function SavedTanksList({
                 <Save className="w-3.5 h-3.5" />
                 Salva
               </button>
-              <label className="flex-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg py-2 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs">
-                <Upload className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Importa JSON</span>
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleImportJSON}
-                  className="hidden"
-                />
-              </label>
+              {folderAccess ? (
+                <button
+                  type="button"
+                  onClick={() => setFolderDialogOpen(true)}
+                  className="flex-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg py-2 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                >
+                  <Upload className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Importa JSON</span>
+                </button>
+              ) : (
+                <label className="flex-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg py-2 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs">
+                  <Upload className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Importa JSON</span>
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportJSON}
+                    className="hidden"
+                  />
+                </label>
+              )}
             </div>
           </div>
         </div>
