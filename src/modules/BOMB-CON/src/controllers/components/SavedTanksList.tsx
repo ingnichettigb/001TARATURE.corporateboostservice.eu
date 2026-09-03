@@ -15,6 +15,8 @@ import {
 } from '@/common/tanks/storage';
 import { buildTankFile, buildTankFileName, downloadTankFile, parseTankFile } from '@/common/tanks/file';
 import ImportMismatchDialog from '@/common/tanks/ImportMismatchDialog';
+import ImportFromFolderDialog from '@/common/tanks/ImportFromFolderDialog';
+import { supportsFolderAccess } from '@/common/tanks/folder';
 
 interface SavedTanksListProps {
   currentInput: TankInput;
