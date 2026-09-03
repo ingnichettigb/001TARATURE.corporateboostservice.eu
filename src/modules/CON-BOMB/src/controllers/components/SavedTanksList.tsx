@@ -185,6 +185,34 @@ export default function SavedTanksList({
     setTimeout(() => setMessage(null), 5000);
   };
 
+  /** Elabora il contenuto JSON importato (da input file o dalla cartella collegata). */
+  const processImportedJson = (content: string, realFileName: string) => {
+    const result = parseTankFile<TankInput, CompilerInfo>(content, tankType);
+
+    if (result.status === 'invalid') {
+      setMessage({ text: `Errore nell'importazione: ${result.message}`, type: 'error' });
+      setTimeout(() => setMessage(null), 5000);
+      return;
+    }
+
+    if (result.status === 'mismatch') {
+      setMismatch({
+        fileTankType: result.tankType!,
+        input: result.input as TankInput,
+        compilerInfo: result.compilerInfo,
+        name: realFileName,
+      });
+      return;
+    }
+
+    importParsedTank(
+      result.input as TankInput,
+      realFileName,
+      result.compilerInfo,
+      result.status === 'legacy' ? result.message : undefined
+    );
+  };
+
   const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -193,33 +221,7 @@ export default function SavedTanksList({
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const result = parseTankFile<TankInput, CompilerInfo>(
-        (event.target?.result as string) ?? '',
-        tankType
-      );
-
-      if (result.status === 'invalid') {
-        setMessage({ text: `Errore nell'importazione: ${result.message}`, type: 'error' });
-        setTimeout(() => setMessage(null), 5000);
-        return;
-      }
-
-      if (result.status === 'mismatch') {
-        setMismatch({
-          fileTankType: result.tankType!,
-          input: result.input as TankInput,
-          compilerInfo: result.compilerInfo,
-          name: realFileName,
-        });
-        return;
-      }
-
-      importParsedTank(
-        result.input as TankInput,
-        realFileName,
-        result.compilerInfo,
-        result.status === 'legacy' ? result.message : undefined
-      );
+      processImportedJson((event.target?.result as string) ?? '', realFileName);
     };
     reader.readAsText(file);
     e.target.value = '';
