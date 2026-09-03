@@ -332,6 +332,12 @@ export default function SavedTanksList({
           setMismatch(null);
         }}
       />
+      <ImportFromFolderDialog
+        open={folderDialogOpen}
+        tankType={tankType}
+        onClose={() => setFolderDialogOpen(false)}
+        onFilePicked={(content, fileName) => processImportedJson(content, fileName)}
+      />
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2 min-w-0">
           <Save className="w-4 h-4 text-neutral-600" />
