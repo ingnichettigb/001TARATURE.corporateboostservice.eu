@@ -15,6 +15,8 @@ import {
 } from '@/common/tanks/storage';
 import { buildTankFile, buildTankFileName, downloadTankFile, parseTankFile } from '@/common/tanks/file';
 import ImportMismatchDialog from '@/common/tanks/ImportMismatchDialog';
+import ImportFromFolderDialog from '@/common/tanks/ImportFromFolderDialog';
+import { supportsFolderAccess } from '@/common/tanks/folder';
 
 interface SavedTanksListProps {
   currentInput: TankInput;
@@ -46,6 +48,8 @@ export default function SavedTanksList({
   const [mismatch, setMismatch] = useState<
     { fileTankType: string; input: TankInput; compilerInfo?: CompilerInfo; name: string } | null
   >(null);
+  const [folderDialogOpen, setFolderDialogOpen] = useState(false);
+  const folderAccess = supportsFolderAccess();
 
   // Keep proposing the auto-generated name until the user edits it manually
   useEffect(() => {
@@ -181,6 +185,34 @@ export default function SavedTanksList({
     setTimeout(() => setMessage(null), 5000);
   };
 
+  /** Elabora il contenuto JSON importato (da input file o dalla cartella collegata). */
+  const processImportedJson = (content: string, realFileName: string) => {
+    const result = parseTankFile<TankInput, CompilerInfo>(content, tankType);
+
+    if (result.status === 'invalid') {
+      setMessage({ text: `Errore nell'importazione: ${result.message}`, type: 'error' });
+      setTimeout(() => setMessage(null), 5000);
+      return;
+    }
+
+    if (result.status === 'mismatch') {
+      setMismatch({
+        fileTankType: result.tankType!,
+        input: result.input as TankInput,
+        compilerInfo: result.compilerInfo,
+        name: realFileName,
+      });
+      return;
+    }
+
+    importParsedTank(
+      result.input as TankInput,
+      realFileName,
+      result.compilerInfo,
+      result.status === 'legacy' ? result.message : undefined
+    );
+  };
+
   const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -189,33 +221,7 @@ export default function SavedTanksList({
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const result = parseTankFile<TankInput, CompilerInfo>(
-        (event.target?.result as string) ?? '',
-        tankType
-      );
-
-      if (result.status === 'invalid') {
-        setMessage({ text: `Errore nell'importazione: ${result.message}`, type: 'error' });
-        setTimeout(() => setMessage(null), 5000);
-        return;
-      }
-
-      if (result.status === 'mismatch') {
-        setMismatch({
-          fileTankType: result.tankType!,
-          input: result.input as TankInput,
-          compilerInfo: result.compilerInfo,
-          name: realFileName,
-        });
-        return;
-      }
-
-      importParsedTank(
-        result.input as TankInput,
-        realFileName,
-        result.compilerInfo,
-        result.status === 'legacy' ? result.message : undefined
-      );
+      processImportedJson((event.target?.result as string) ?? '', realFileName);
     };
     reader.readAsText(file);
     e.target.value = '';
@@ -326,6 +332,12 @@ export default function SavedTanksList({
           setMismatch(null);
         }}
       />
+      <ImportFromFolderDialog
+        open={folderDialogOpen}
+        tankType={tankType}
+        onClose={() => setFolderDialogOpen(false)}
+        onFilePicked={(content, fileName) => processImportedJson(content, fileName)}
+      />
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2 min-w-0">
           <Save className="w-4 h-4 text-neutral-600" />
@@ -372,16 +384,27 @@ export default function SavedTanksList({
                 <Save className="w-3.5 h-3.5" />
                 Salva
               </button>
-              <label className="flex-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg py-2 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs">
-                <Upload className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Importa JSON</span>
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleImportJSON}
-                  className="hidden"
-                />
-              </label>
+              {folderAccess ? (
+                <button
+                  type="button"
+                  onClick={() => setFolderDialogOpen(true)}
+                  className="flex-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg py-2 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                >
+                  <Upload className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Importa JSON</span>
+                </button>
+              ) : (
+                <label className="flex-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg py-2 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs">
+                  <Upload className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Importa JSON</span>
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportJSON}
+                    className="hidden"
+                  />
+                </label>
+              )}
             </div>
           </div>
         </div>
