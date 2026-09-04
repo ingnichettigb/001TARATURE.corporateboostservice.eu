@@ -473,28 +473,19 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
               strokeWidth="1"
               strokeDasharray="3,3"
             />
-            <text x={6 + boxW / 2} y={box3Y + 18} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
-              Coperchio conico
+            <text x={6 + boxW / 2} y={box3Y + 18} textAnchor="middle" fontSize="11" fontWeight="700" fill="#000000">
+              Coperchio piano (disco)
             </text>
-            <foreignObject x={12} y={box3Y + 26} width={boxW - 18} height="24">
-              <MiniField
-                label="R racc."
-                value={rRaccordoCono}
-                onChange={(v) => patchCoperchio({ rRaccordo: v })}
-                labelWidth="58px"
-                width="78px"
-              />
-            </foreignObject>
-            <foreignObject x={12} y={box3Y + 52} width={boxW - 18} height="24">
+            <foreignObject x={12} y={box3Y + 30} width={boxW - 18} height="24">
               <MiniField
                 label="Colletto"
-                value={hCollettoCono}
+                value={hCollettoCoperchio}
                 onChange={(v) => patchCoperchio({ hColletto: v })}
                 labelWidth="58px"
                 width="78px"
               />
             </foreignObject>
-            <foreignObject x={12} y={box3Y + 78} width={boxW - 18} height="24">
+            <foreignObject x={12} y={box3Y + 56} width={boxW - 18} height="24">
               <MiniField
                 label="Sp."
                 value={input.coperchio.sp}
@@ -503,12 +494,13 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 width="78px"
               />
             </foreignObject>
-            <text x={6 + boxW / 2} y={box3Y + 124} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
-              Coperchio conico — litri
+            <text x={6 + boxW / 2} y={box3Y + 104} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+              Coperchio piano — litri
             </text>
-            <text x={6 + boxW / 2} y={box3Y + 142} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
+            <text x={6 + boxW / 2} y={box3Y + 122} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
               {result ? fmtL0(result.volumeCoperchio) : '—'}
             </text>
+
 
           </g>
 
