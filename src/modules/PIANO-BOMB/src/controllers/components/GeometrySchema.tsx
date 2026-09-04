@@ -550,13 +550,14 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             <foreignObject x={chainX + 8} y={(yTop + yCilTop) / 2 - 12} width="86" height="24">
               <input
                 type="number"
-                value={hCono}
-                onChange={(e) => patchCoperchio({ hCono: Number(e.target.value) })}
+                value={hCollettoCoperchio}
+                onChange={(e) => patchCoperchio({ hColletto: Number(e.target.value) })}
                 style={editableDimStyle}
                 className="editable-dim"
-                title="Altezza coperchio conico, colletto incluso (mm)"
+                title="Altezza coperchio piano = colletto (mm)"
               />
             </foreignObject>
+
             <foreignObject x={chainX + 8} y={yCilMid - 12} width="86" height="24">
               <input
                 type="number"
