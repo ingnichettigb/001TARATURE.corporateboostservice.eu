@@ -587,70 +587,8 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             </text>
           </g>
 
-          {/* INCLINAZIONE CONO — riquadro nella fascia superiore (cono in alto) */}
-          {(() => {
-            const angBoxW = 108;
-            const angBoxH = 42;
-            const angBoxX = Math.min(cx + halfW + 24, drawW - RIGHT_W - SAFE - angBoxW);
-            const angBoxY = Math.max(4, yCilTop - angBoxH - 30);
+          {/* coperchio PIANO: nessuna inclinazione da quotare */}
 
-            // vertice dell'angolo: incrocio virola verticale / linea inclinata destra del cono
-            const vx = rightX;
-            const vy = yCilTop;
-            const dxS = cx - rightX;
-            const dyS = yTop - yCilTop;
-            const lenS = Math.hypot(dxS, dyS) || 1;
-            const rArc = 34;
-            const ax = vx - rArc; // direzione orizzontale (verso l'interno)
-            const ay = vy;
-            const bx = vx + (dxS / lenS) * rArc;
-            const by = vy + (dyS / lenS) * rArc;
-            const labX = vx - rArc * 0.72;
-            const labY = vy - rArc * 0.46;
-            return (
-              <g>
-                {/* linea inclinata di riferimento */}
-                <line x1={cx} y1={yTop} x2={rightX} y2={yCilTop} stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,3" />
-                {/* semicerchio dell'angolo */}
-                <path
-                  d={`M ${ax} ${ay} A ${rArc} ${rArc} 0 0 1 ${bx} ${by}`}
-                  fill="none"
-                  stroke="#0f766e"
-                  strokeWidth="1.4"
-                />
-
-                <circle cx={vx} cy={vy} r="2.4" fill="#0f766e" />
-                <text x={labX} y={labY} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
-                  {angolo != null ? `${angolo.toFixed(1)}°` : ''}
-                </text>
-                {/* richiamo dal riquadro al vertice */}
-                <line
-                  x1={angBoxX + angBoxW / 2}
-                  y1={angBoxY}
-                  x2={vx}
-                  y2={vy}
-                  stroke="#0f766e"
-                  strokeWidth="1"
-                  strokeDasharray="4,3"
-                />
-                <rect x={angBoxX} y={angBoxY} width={angBoxW} height={angBoxH} rx="5" fill="#ffffff" stroke="#0f766e" strokeWidth="1.2" />
-                <text x={angBoxX + 7} y={angBoxY + 14} fontSize="10" fontWeight="700" fill="#000000">Inclin. cono</text>
-                <foreignObject x={angBoxX + 5} y={angBoxY + 18} width={angBoxW - 10} height="22">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                    <input
-                      type="number"
-                      value={angolo ?? ''}
-                      onChange={(e) => setAngolo(Number(e.target.value))}
-                      style={{ ...editableDimStyle, width: '82px' }}
-                      className="editable-dim"
-                      title="Inclinazione del cono (gradi)"
-                    />
-                    <span style={{ fontSize: '11px', color: '#000000' }}>°</span>
-                  </div>
-                </foreignObject>
-              </g>
-            );
-          })()}
 
 
           <text x={drawW - 8} y={drawH - 8} textAnchor="end" fontSize="13" fill="#000000">
