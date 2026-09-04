@@ -339,7 +339,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
         >
           <line
             x1={cx}
-            y1={yApex - 20}
+            y1={yTop - 20}
             x2={cx}
             y2={yDomeBot + 20}
             stroke="#94a3b8"
@@ -551,11 +551,11 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
 
           {/* CATENA DI QUOTE: coperchio conico + virola + fondo bombato */}
           <g>
-            <line x1={chainX} y1={yApex} x2={chainX} y2={yDomeBot} stroke="#334155" strokeWidth="1" />
-            {[yApex, yCilTop, yCilBot, yDomeBot].map((yy, i) => (
+            <line x1={chainX} y1={yTop} x2={chainX} y2={yDomeBot} stroke="#334155" strokeWidth="1" />
+            {[yTop, yCilTop, yCilBot, yDomeBot].map((yy, i) => (
               <line key={i} x1={chainX - 7} y1={yy} x2={chainX + 7} y2={yy} stroke="#334155" strokeWidth="1" />
             ))}
-            <foreignObject x={chainX + 8} y={(yApex + yCilTop) / 2 - 12} width="86" height="24">
+            <foreignObject x={chainX + 8} y={(yTop + yCilTop) / 2 - 12} width="86" height="24">
               <input
                 type="number"
                 value={hCono}
@@ -581,7 +581,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
           </g>
 
           {/* QUOTA TOTALE */}
-          <DimLine x={dim4X} y1={yApex} y2={yDomeBot} label={fmt(hTot)} />
+          <DimLine x={dim4X} y1={yTop} y2={yDomeBot} label={fmt(hTot)} />
 
 
           {/* CAPACITÀ TOTALE */}
@@ -606,7 +606,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             const vx = rightX;
             const vy = yCilTop;
             const dxS = cx - rightX;
-            const dyS = yApex - yCilTop;
+            const dyS = yTop - yCilTop;
             const lenS = Math.hypot(dxS, dyS) || 1;
             const rArc = 34;
             const ax = vx - rArc; // direzione orizzontale (verso l'interno)
@@ -618,7 +618,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             return (
               <g>
                 {/* linea inclinata di riferimento */}
-                <line x1={cx} y1={yApex} x2={rightX} y2={yCilTop} stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,3" />
+                <line x1={cx} y1={yTop} x2={rightX} y2={yCilTop} stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,3" />
                 {/* semicerchio dell'angolo */}
                 <path
                   d={`M ${ax} ${ay} A ${rArc} ${rArc} 0 0 1 ${bx} ${by}`}
@@ -703,26 +703,26 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
         </div>
         <div className="grid grid-cols-2 gap-y-1 text-xs font-bold text-neutral-800">
           <span>Coperchio conico (colletto incluso)</span>
-          <span className="text-right font-mono">{fmt(hCono_calc)} mm</span>
+          <span className="text-right font-mono">{fmt(hCoperchio_calc)} mm</span>
           <span>Sezione cilindrica (virola)</span>
           <span className="text-right font-mono">{fmt(lCil)} mm</span>
           <span>Fondo bombato (colletto incluso)</span>
           <span className="text-right font-mono">{fmt(hFondo_calc)} mm</span>
           <span className="border-t border-emerald-300 pt-1">Somma</span>
           <span className="text-right font-mono border-t border-emerald-300 pt-1">
-            {fmt(hCono_calc + lCil + hFondo_calc)} mm
+            {fmt(hCoperchio_calc + lCil + hFondo_calc)} mm
           </span>
           <span className="font-black">Altezza totale interna (H_tot)</span>
           <span className="text-right font-mono font-black">{fmt(hTot)} mm</span>
         </div>
         <p
           className={`mt-2 text-xs font-black ${
-            Math.abs(hCono_calc + lCil + hFondo_calc - hTot) <= 1.5
+            Math.abs(hCoperchio_calc + lCil + hFondo_calc - hTot) <= 1.5
               ? 'text-emerald-800'
               : 'text-rose-800'
           }`}
         >
-          {Math.abs(hCono_calc + lCil + hFondo_calc - hTot) <= 1.5
+          {Math.abs(hCoperchio_calc + lCil + hFondo_calc - hTot) <= 1.5
             ? '✓ Altezze coerenti (scarto ≤ 1,5 mm per arrotondamento)'
             : '⚠ Scarto rilevato: verifica i parametri geometrici'}
         </p>
