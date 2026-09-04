@@ -13,46 +13,8 @@ interface GeometrySchemaProps {
   onChange: (input: TankInput) => void;
 }
 
-/* ---------- helpers geometria coperchio conico (stessa convenzione del motore) ---------- */
-// h_cono = ALTEZZA TOTALE del coperchio conico, COLLETTO INCLUSO.
-const hNetFromAngle = (alfaDeg: number, R_base: number, r_racc: number): number => {
-  const a = (alfaDeg * Math.PI) / 180;
-  const Z = r_racc * Math.sin(a);
-  const K = r_racc - Z;
-  const Y = R_base - K;
-  if (Y <= 0) return NaN;
-  return Y * Math.tan(a) + r_racc * Math.cos(a);
-};
+/* ---------- il coperchio è PIANO: nessuna geometria conica da risolvere ---------- */
 
-const hTotFromAngle = (alfaDeg: number, R_base: number, r_racc: number, hColl: number): number =>
-  hNetFromAngle(alfaDeg, R_base, r_racc) + hColl;
-
-const angleFromHTot = (
-  H_target: number,
-  R_base: number,
-  r_racc: number,
-  hColl: number
-): number | null => {
-  if (R_base <= 0) return null;
-  const H_net = H_target - hColl;
-  if (H_net <= 0) return null;
-  let lo = 0.01;
-  let hi = 89.99;
-  for (let i = 0; i < 60; i++) {
-    const mid = (lo + hi) / 2;
-    const v = hNetFromAngle(mid, R_base, r_racc);
-    if (isNaN(v)) {
-      hi = mid;
-      continue;
-    }
-    if (v - H_net < 0) lo = mid;
-    else hi = mid;
-  }
-  const ang = (lo + hi) / 2;
-  const check = hNetFromAngle(ang, R_base, r_racc);
-  if (isNaN(check) || Math.abs(check - H_net) > Math.max(2, H_net * 0.02)) return null;
-  return ang;
-};
 
 const fmt = (n: number): string =>
   !isFinite(n) ? '—' : Number.isInteger(n) ? String(n) : n.toFixed(1);
