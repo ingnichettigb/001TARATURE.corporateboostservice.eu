@@ -133,15 +133,8 @@ function DimLine({
 export default function GeometrySchema({ input, onChange }: GeometrySchemaProps) {
   const dInt = input.dInt;
   const lCil = input.lCil;
-  const rRaccordoCono = input.coperchio.rRaccordo ?? 30;
-  const hCollettoCono = input.coperchio.hColletto;
-  const hCono = input.coperchio.hCono ?? Math.round(dInt / 2 + hCollettoCono);
+  const hCollettoCoperchio = input.coperchio.hColletto;
   const hCollettoFondo = input.fondo.hColletto;
-
-  const angolo = useMemo(() => {
-    const a = angleFromHTot(hCono, dInt / 2, rRaccordoCono, hCollettoCono);
-    return a != null ? Math.round(a * 10) / 10 : null;
-  }, [hCono, dInt, rRaccordoCono, hCollettoCono]);
 
   const result = useMemo(() => {
     try {
@@ -154,8 +147,9 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const hFondo_calc = result
     ? result.fondo.H_int + hCollettoFondo
     : hCollettoFondo;
-  const hCono_calc = hCono;
-  const hTot = result ? result.H_tot : hFondo_calc + lCil + hCono_calc;
+  // il coperchio piano non aggiunge altezza interna oltre al colletto
+  const hCoperchio_calc = result ? result.coperchio.H_int + hCollettoCoperchio : hCollettoCoperchio;
+  const hTot = result ? result.H_tot : hFondo_calc + lCil + hCoperchio_calc;
 
   const geometriaFondoValida = useMemo(() => {
     const R = result?.fondo.R ?? 0;
@@ -163,11 +157,6 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
     const half = dInt / 2;
     return Math.pow(R - r, 2) - Math.pow(half - r, 2) >= 0;
   }, [result, dInt]);
-
-  const raccordoError =
-    angolo == null
-      ? 'Il raggio di raccordo o l\u2019altezza inseriti non sono compatibili con questo diametro.'
-      : null;
 
   /* --- patch helpers --- */
   const patch = (p: Partial<TankInput>) => onChange({ ...input, ...p });
@@ -185,20 +174,9 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
     } else if (input.fondo.type === 'pseudoellittico') {
       next.fondo = { ...input.fondo };
     }
-    // mantiene l'angolo del cono costante al variare del diametro
-    if (angolo != null) {
-      const h = hTotFromAngle(angolo, v / 2, rRaccordoCono, hCollettoCono);
-      if (isFinite(h)) next.coperchio = { ...input.coperchio, hCono: Math.round(h * 10) / 10 };
-    }
     onChange(next);
   };
 
-  const setAngolo = (v: number) => {
-    if (!(v > 0 && v < 90)) return;
-    const h = hTotFromAngle(v, dInt / 2, rRaccordoCono, hCollettoCono);
-    if (!isFinite(h)) return;
-    patchCoperchio({ hCono: Math.round(h * 10) / 10 });
-  };
 
   /* --- tipo fondo (preset) --- */
   type Preset = 'klopper' | 'korbbogen' | 'pseudoellittico' | 'custom';
