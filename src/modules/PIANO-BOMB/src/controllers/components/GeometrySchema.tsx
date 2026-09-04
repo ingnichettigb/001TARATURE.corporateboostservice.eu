@@ -239,16 +239,15 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const hFondo_px = 96;
   const lCil_px = 250;
 
-  // 3.3 coperchio conico: unica parte scalata — inclinazione proporzionale alla larghezza (Ø)
-  const hConoIdeal = hCono_calc * scaleBase;
-  const maxConoPx = Math.max(40, availH - hFondo_px - lCil_px);
-  const hCono_px = Math.min(hConoIdeal, maxConoPx);
+  // 3.3 coperchio PIANO: altezza grafica fissa (disco di lamiera + colletto)
+  const hCoperchio_px = 40;
+  void scaleBase;
 
-  const totalDrawn = hFondo_px + lCil_px + hCono_px;
+  const totalDrawn = hFondo_px + lCil_px + hCoperchio_px;
   // 4.1 spazio in eccesso: disegno centrato verticalmente
-  // ORIENTAMENTO CON-BOMB: cono in ALTO (coperchio), calotta bombata in BASSO (fondo)
-  const yApex = zoneY0 + Math.max(0, (availH - totalDrawn) / 2);
-  const yCilTop = yApex + hCono_px;
+  // ORIENTAMENTO PIANO-BOMB: coperchio piano in ALTO, calotta bombata in BASSO (fondo)
+  const yTop = zoneY0 + Math.max(0, (availH - totalDrawn) / 2);
+  const yCilTop = yTop + hCoperchio_px;
   const yCilBot = yCilTop + lCil_px;
   const yDomeBot = yCilBot + hFondo_px;
 
@@ -261,9 +260,8 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const domeRise = Math.max(hFondo_px / 0.75, 18);
 
   const pathData = `
-    M ${leftX} ${yCilTop}
-    L ${cx} ${yApex}
-    L ${rightX} ${yCilTop}
+    M ${leftX} ${yTop}
+    L ${rightX} ${yTop}
     L ${rightX} ${yCilBot}
     C ${rightX} ${yCilBot + domeRise}, ${leftX} ${yCilBot + domeRise}, ${leftX} ${yCilBot}
     Z
@@ -283,15 +281,10 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const callout1X = domePtX - 15;
   const callout1Y = domePtY + 6;
 
-  // callout 3 — 50% dell'altezza disegnata del cono (in alto)
-  const coneT = 0.5;
-  const coneVX = cx - leftX;
-  const coneVY = yApex - yCilTop;
-  const coneLen = Math.sqrt(coneVX * coneVX + coneVY * coneVY) || 1;
-  const conePointX = leftX + coneVX * coneT;
-  const conePointY = yCilTop + coneVY * coneT;
-  const callout3X = conePointX + (coneVY / coneLen) * 16;
-  const callout3Y = conePointY - (coneVX / coneLen) * 16;
+  // callout 3 — ancoraggio sul coperchio piano (in alto)
+  const callout3X = leftX - 15;
+  const callout3Y = yTop + hCoperchio_px / 2;
+
 
 
   // colonna quote (destra, larghezza fissa)
