@@ -113,11 +113,9 @@ export default function App() {
       hColletto: 30,
     },
     coperchio: {
-      type: 'conico',
+      type: 'piano',
       sp: 8,
-      hColletto: 40,
-      hCono: 900, // altezza totale (cono puro + raccordo)
-      rRaccordo: 30, // raccordo cono/colletto (mm)
+      hColletto: 0,
     },
 
     report: {
@@ -1351,21 +1349,12 @@ export default function App() {
                       </div>
                       <div className="flex justify-between border-t border-neutral-200 pt-1 mt-1 text-[8.5px]">
                         <span>
-                          {lang === 'en' ? 'Dish Radius (R):' :
-                           lang === 'es' ? 'Radio bombado (R):' :
-                           lang === 'de' ? 'Wölbungsradius (R):' :
-                           'Raggio bombatura (R):'}
+                          {lang === 'en' ? 'Flat plate area:' :
+                           lang === 'es' ? 'Superficie disco plano:' :
+                           lang === 'de' ? 'Fläche Flachdeckel:' :
+                           'Superficie disco piano:'}
                         </span>
-                        <span className="font-bold">{formatNum(result.coperchio.R, 1)} mm</span>
-                      </div>
-                      <div className="flex justify-between text-[8.5px]">
-                        <span>
-                          {lang === 'en' ? 'Knuckle Radius (r):' :
-                           lang === 'es' ? 'Radio raccordo (r):' :
-                           lang === 'de' ? 'Krempenradius (r):' :
-                           'Raggio di raccordo (r):'}
-                        </span>
-                        <span className="font-bold">{formatNum(result.coperchio.r, 1)} mm</span>
+                        <span className="font-bold">{formatNum(result.coperchio.Area_disco_da_tagliare_mq, 3)} m²</span>
                       </div>
                       <div className="flex justify-between text-[8.5px]">
                         <span>

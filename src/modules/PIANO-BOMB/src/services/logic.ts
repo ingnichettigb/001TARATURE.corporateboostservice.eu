@@ -9,6 +9,32 @@ import { TankInput, HeadConfig, HeadCalculated, CalculationResult } from '../mod
  * Calculates geometry and volumes for a single head (coperchio or fondo)
  */
 export function calculateHead(dInt: number, config: HeadConfig): HeadCalculated {
+  // === Testata PIANA (disco piano di lamiera) ===
+  if (config.type === 'piano') {
+    const R_base = dInt / 2;
+    const Area_mq = (Math.PI * R_base * R_base) / 1e6;          // superficie disco (m2)
+    const V_colletto_L = (Math.PI * R_base * R_base * config.hColletto) / 1e6;
+    return {
+      R: 0, r: 0, DR: 0, X: 0, alfa: 0, beta: 0,
+      H1: 0,
+      H_int: 0,          // il piano non aggiunge altezza interna oltre al colletto
+      H2: 0,
+      H3: 0,
+      Y: R_base,
+      Baric: 0,
+      K: 0,
+      H_esterna_totale: config.hColletto + config.sp,
+      V_calotta: 0,
+      V_toro: 0,
+      V_raccordo: 0,
+      V_colletto: V_colletto_L,
+      V_testata_LT: V_colletto_L,
+      Sviluppo_mm: dInt + config.sp,                            // diametro disco da tagliare
+      Area_disco_da_tagliare_mq: Area_mq,
+      Peso_lamiera_kg: Area_mq * config.sp * 8,                 // area x spessore x densita acciaio
+    };
+  }
+
   // === Testa conica (fondo conico retto con raccordo cono/colletto) ===
   if (config.type === 'conico') {
     const R_base = dInt / 2;
