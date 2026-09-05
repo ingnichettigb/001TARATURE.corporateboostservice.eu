@@ -489,7 +489,7 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                   </div>
                   <div className="flex justify-between py-1 border-b border-neutral-200">
                     <span className="font-bold text-neutral-900">
-                      {lang === 'en' ? 'Conical Top Volume:' : lang === 'es' ? 'Volumen de la Tapa Cónica:' : lang === 'de' ? 'Volumen des konischen Deckels:' : 'Volume Coperchio Conico:'}
+                      {lang === 'en' ? 'Flat Top Volume:' : lang === 'es' ? 'Volumen de la Tapa Plana:' : lang === 'de' ? 'Volumen des Flachdeckels:' : 'Volume Coperchio Piano:'}
                     </span>
                     <span className="font-mono font-extrabold text-neutral-950">{formatNum(result.volumeCoperchio, 2)} {lang === 'en' ? 'liters' : lang === 'es' ? 'litros' : lang === 'de' ? 'Liter' : 'litri'}</span>
                   </div>

@@ -9,6 +9,32 @@ import { TankInput, HeadConfig, HeadCalculated, CalculationResult } from '../mod
  * Calculates geometry and volumes for a single head (coperchio or fondo)
  */
 export function calculateHead(dInt: number, config: HeadConfig): HeadCalculated {
+  // === Testata PIANA (disco piano di lamiera) ===
+  if (config.type === 'piano') {
+    const R_base = dInt / 2;
+    const Area_mq = (Math.PI * R_base * R_base) / 1e6;          // superficie disco (m2)
+    const V_colletto_L = (Math.PI * R_base * R_base * config.hColletto) / 1e6;
+    return {
+      R: 0, r: 0, DR: 0, X: 0, alfa: 0, beta: 0,
+      H1: 0,
+      H_int: 0,          // il piano non aggiunge altezza interna oltre al colletto
+      H2: 0,
+      H3: 0,
+      Y: R_base,
+      Baric: 0,
+      K: 0,
+      H_esterna_totale: config.hColletto + config.sp,
+      V_calotta: 0,
+      V_toro: 0,
+      V_raccordo: 0,
+      V_colletto: V_colletto_L,
+      V_testata_LT: V_colletto_L,
+      Sviluppo_mm: dInt + config.sp,                            // diametro disco da tagliare
+      Area_disco_da_tagliare_mq: Area_mq,
+      Peso_lamiera_kg: Area_mq * config.sp * 8,                 // area x spessore x densita acciaio
+    };
+  }
+
   // === Testa conica (fondo conico retto con raccordo cono/colletto) ===
   if (config.type === 'conico') {
     const R_base = dInt / 2;
@@ -204,7 +230,6 @@ export function calculateTank(input: TankInput): CalculationResult {
   const coperchio = calculateHead(dInt, input.coperchio);
 
   const isConicFondo = input.fondo.type === 'conico';
-  const isConicCoperchio = input.coperchio.type === 'conico';
 
 
   // Altezze zone
@@ -274,40 +299,21 @@ export function calculateTank(input: TankInput): CalculationResult {
       // Zone 3, 4, 5 — colletti e parte cilindrica
       rVal = dInt / 2;
     } else if (h <= z6) {
-      if (isConicCoperchio) {
-        // Zona 6 conica — raccordo colletto/cono (arco tangente, speculare al fondo conico)
-        const r_racc = coperchio.r;
-        const R_base = dInt / 2;
-        const dh = h - z5; // 0 in basso, H_racc in cima
-        let sinPhi = r_racc > 0 ? dh / r_racc : 0;
-        if (sinPhi > 1) sinPhi = 1;
-        if (sinPhi < 0) sinPhi = 0;
-        const phi = Math.asin(sinPhi);
-        rVal = R_base - r_racc * (1 - Math.cos(phi));
-      } else {
-        // Zona 6 — raccordo toroidale coperchio
-        const h_zona = h - z5;
-        const BL = coperchio.r - h_zona + 1;
-        let term = BL * (2 * coperchio.r - BL);
-        if (term < 0) term = 0;
-        const BM = Math.sqrt(term);
-        rVal = (dInt / 2 - coperchio.r) + BM;
-      }
+      // Zona 6 — raccordo toroidale coperchio (non attiva con coperchio piano)
+      const h_zona = h - z5;
+      const BL = coperchio.r - h_zona + 1;
+      let term = BL * (2 * coperchio.r - BL);
+      if (term < 0) term = 0;
+      const BM = Math.sqrt(term);
+      rVal = (dInt / 2 - coperchio.r) + BM;
     } else {
-      if (isConicCoperchio) {
-        // Zona 7 — cono retto puro: raggio lineare da Y (a z6) fino a 0 (all'apice)
-        rVal = H3_coperchio > 0 ? coperchio.Y * (1 - (h - z6) / H3_coperchio) : 0;
-        if (rVal < 0) rVal = 0;
-      } else {
-        // Zona 7 — calotta sferica coperchio
-        const h_zona = h - z6;
-        const BN = H3_coperchio - h_zona;
-        let term = BN * (2 * coperchio.R - BN);
-        if (term < 0) term = 0;
-        rVal = Math.sqrt(term);
-      }
+      // Zona 7 — calotta sferica coperchio (non attiva con coperchio piano)
+      const h_zona = h - z6;
+      const BN = H3_coperchio - h_zona;
+      let term = BN * (2 * coperchio.R - BN);
+      if (term < 0) term = 0;
+      rVal = Math.sqrt(term);
     }
-
 
     raggioProfile[h] = rVal;
 

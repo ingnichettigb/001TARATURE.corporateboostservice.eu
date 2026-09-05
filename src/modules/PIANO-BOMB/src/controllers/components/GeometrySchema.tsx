@@ -298,7 +298,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const box3H = 155;
   // riquadro 1 (fondo bombato): fisso in basso
   const box1Y = drawH - box1H - 6;
-  // riquadro 3 (coperchio conico): fisso in alto
+  // riquadro 3 (coperchio piano): fisso in alto
   const box3Y = Math.max(4, Math.min(callout3Y - 40, box1Y - box3H - boxSumH - box2H - 36));
   // i due riquadri centrali si redistribuiscono con spazio verticale uguale
   const boxGapV = (box1Y - (box3Y + box3H) - boxSumH - box2H) / 3;
@@ -541,7 +541,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             </foreignObject>
           </g>
 
-          {/* CATENA DI QUOTE: coperchio conico + virola + fondo bombato */}
+          {/* CATENA DI QUOTE: coperchio piano + virola + fondo bombato */}
           <g>
             <line x1={chainX} y1={yTop} x2={chainX} y2={yDomeBot} stroke="#334155" strokeWidth="1" />
             {[yTop, yCilTop, yCilBot, yDomeBot].map((yy, i) => (
@@ -613,10 +613,9 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
       </div>
 
       {/* ERRORI GEOMETRICI */}
-      {(raccordoError || !geometriaFondoValida) && (
+      {!geometriaFondoValida && (
         <div className="bg-rose-50 border border-rose-300 rounded-xl p-3 space-y-1">
-          {raccordoError && <p className="text-xs font-bold text-rose-900">{raccordoError}</p>}
-          {!geometriaFondoValida && (
+          {(
             <p className="text-xs font-bold text-rose-900">
               I raggi del fondo bombato non sono geometricamente compatibili con il diametro interno.
             </p>
@@ -633,7 +632,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
           </h4>
         </div>
         <div className="grid grid-cols-2 gap-y-1 text-xs font-bold text-neutral-800">
-          <span>Coperchio conico (colletto incluso)</span>
+          <span>Coperchio piano (colletto incluso)</span>
           <span className="text-right font-mono">{fmt(hCoperchio_calc)} mm</span>
           <span>Sezione cilindrica (virola)</span>
           <span className="text-right font-mono">{fmt(lCil)} mm</span>
