@@ -146,9 +146,9 @@ export interface TranslationDict {
 
 export const translations: Record<Language, TranslationDict> = {
   it: {
-    appName: "CON-BOMB TARATURA",
+    appName: "PIANO-BOMB TARATURA",
     appSub: "v1.2 (EXCEL 01 COMPATIBLE)",
-    appTeaser: "Taratura millimetrica professionale per serbatoi cilindrici con fondo bombato standard o custom e coperchio conico. Modello matematico integrato a 7 zone continue (passo 1 mm)",
+    appTeaser: "Taratura millimetrica professionale per serbatoi cilindrici con fondo bombato standard o custom e coperchio piano. Modello matematico integrato a 7 zone continue (passo 1 mm)",
     active: "ATTIVO",
     recalculate: "Ricalcola Taratura",
     calculate: "Calcola Taratura",
@@ -275,9 +275,9 @@ export const translations: Record<Language, TranslationDict> = {
     printStamp: "Timbro della Ditta"
   },
   en: {
-    appName: "CON-BOMB TARATURA",
+    appName: "PIANO-BOMB TARATURA",
     appSub: "v1.2 (EXCEL 01 COMPATIBLE)",
-    appTeaser: "Professional millimeter-by-millimeter calibration for cylindrical tanks with standard or custom dished bottom and conical top. Integrated mathematical model with 7 continuous zones (1 mm steps)",
+    appTeaser: "Professional millimeter-by-millimeter calibration for cylindrical tanks with standard or custom dished bottom and flat top. Integrated mathematical model with 7 continuous zones (1 mm steps)",
     active: "ACTIVE",
     recalculate: "Recalculate Calibration",
     calculate: "Calculate Calibration",
@@ -404,9 +404,9 @@ export const translations: Record<Language, TranslationDict> = {
     printStamp: "Company Stamp"
   },
   es: {
-    appName: "CON-BOMB TARATURA",
+    appName: "PIANO-BOMB TARATURA",
     appSub: "v1.2 (COMPATIBLE CON EXCEL 01)",
-    appTeaser: "Calibración milimétrica profesional para tanques cilíndricos con fondo abombado estándar o personalizado y tapa cónica. Modelo matemático integrado de 7 zonas continuas (pasos de 1 mm)",
+    appTeaser: "Calibración milimétrica profesional para tanques cilíndricos con fondo abombado estándar o personalizado y tapa plana. Modelo matemático integrado de 7 zonas continuas (pasos de 1 mm)",
     active: "ACTIVO",
     recalculate: "Recalcular Calibración",
     calculate: "Calcular Calibración",
@@ -533,9 +533,9 @@ export const translations: Record<Language, TranslationDict> = {
     printStamp: "Sello de la Empresa"
   },
   de: {
-    appName: "CON-BOMB TARATURA",
+    appName: "PIANO-BOMB TARATURA",
     appSub: "v1.2 (EXCEL 01 KOMPATIBEL)",
-    appTeaser: "Professionelle millimetergenaue Kalibrierung für zylindrische Tanks mit Standard- oder kundenspezifischem gewölbtem Boden und konischem Deckel. Integriertes mathematisches 7-Zonen-Modell (1 mm Schritte)",
+    appTeaser: "Professionelle millimetergenaue Kalibrierung für zylindrische Tanks mit Standard- oder kundenspezifischem gewölbtem Boden und Flachdeckel. Integriertes mathematisches 7-Zonen-Modell (1 mm Schritte)",
     active: "AKTIV",
     recalculate: "Kalibrierung Neu Berechnen",
     calculate: "Kalibrierung Berechnen",

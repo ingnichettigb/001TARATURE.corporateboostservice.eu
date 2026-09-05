@@ -433,7 +433,7 @@ export default function App() {
     return (
       <div className="min-h-dvh bg-[#ebf2ee] text-neutral-900 font-sans antialiased flex items-center justify-center p-6">
         <div className="bg-white border-4 border-double border-emerald-800 rounded-xl p-8 max-w-md w-full text-center space-y-4 shadow-xs">
-          <h1 className="text-xl font-black uppercase text-emerald-950">CON-BOMB TARATURA</h1>
+          <h1 className="text-xl font-black uppercase text-emerald-950">PIANO-BOMB TARATURA</h1>
           <p className="text-sm font-semibold text-emerald-900">
             {lang === 'en' ? 'Application closed. You can safely close this browser tab.' :
              lang === 'es' ? 'Aplicación cerrada. Puede cerrar esta pestaña del navegador.' :
@@ -1541,10 +1541,10 @@ export default function App() {
           {/* Small Footer metadata for pages */}
           <div className="pt-4 flex justify-between items-center text-[8px] font-mono text-neutral-400">
             <span>
-              {lang === 'en' ? 'Generated via CON-BOMB TARATURA v1.2' :
-               lang === 'es' ? 'Generado mediante CON-BOMB TARATURA v1.2' :
-               lang === 'de' ? 'Generiert über CON-BOMB TARATURA v1.2' :
-               'Generato tramite CON-BOMB TARATURA v1.2'}
+              {lang === 'en' ? 'Generated via PIANO-BOMB TARATURA v1.2' :
+               lang === 'es' ? 'Generado mediante PIANO-BOMB TARATURA v1.2' :
+               lang === 'de' ? 'Generiert über PIANO-BOMB TARATURA v1.2' :
+               'Generato tramite PIANO-BOMB TARATURA v1.2'}
             </span>
             <span>
               {lang === 'en' ? `Report: ${reportNumber} • Page 2 of 2` :
