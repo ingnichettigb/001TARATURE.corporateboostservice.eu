@@ -230,7 +230,6 @@ export function calculateTank(input: TankInput): CalculationResult {
   const coperchio = calculateHead(dInt, input.coperchio);
 
   const isConicFondo = input.fondo.type === 'conico';
-  const isConicCoperchio = input.coperchio.type === 'conico';
 
 
   // Altezze zone
@@ -300,40 +299,21 @@ export function calculateTank(input: TankInput): CalculationResult {
       // Zone 3, 4, 5 — colletti e parte cilindrica
       rVal = dInt / 2;
     } else if (h <= z6) {
-      if (isConicCoperchio) {
-        // Zona 6 conica — raccordo colletto/cono (arco tangente, speculare al fondo conico)
-        const r_racc = coperchio.r;
-        const R_base = dInt / 2;
-        const dh = h - z5; // 0 in basso, H_racc in cima
-        let sinPhi = r_racc > 0 ? dh / r_racc : 0;
-        if (sinPhi > 1) sinPhi = 1;
-        if (sinPhi < 0) sinPhi = 0;
-        const phi = Math.asin(sinPhi);
-        rVal = R_base - r_racc * (1 - Math.cos(phi));
-      } else {
-        // Zona 6 — raccordo toroidale coperchio
-        const h_zona = h - z5;
-        const BL = coperchio.r - h_zona + 1;
-        let term = BL * (2 * coperchio.r - BL);
-        if (term < 0) term = 0;
-        const BM = Math.sqrt(term);
-        rVal = (dInt / 2 - coperchio.r) + BM;
-      }
+      // Zona 6 — raccordo toroidale coperchio (non attiva con coperchio piano)
+      const h_zona = h - z5;
+      const BL = coperchio.r - h_zona + 1;
+      let term = BL * (2 * coperchio.r - BL);
+      if (term < 0) term = 0;
+      const BM = Math.sqrt(term);
+      rVal = (dInt / 2 - coperchio.r) + BM;
     } else {
-      if (isConicCoperchio) {
-        // Zona 7 — cono retto puro: raggio lineare da Y (a z6) fino a 0 (all'apice)
-        rVal = H3_coperchio > 0 ? coperchio.Y * (1 - (h - z6) / H3_coperchio) : 0;
-        if (rVal < 0) rVal = 0;
-      } else {
-        // Zona 7 — calotta sferica coperchio
-        const h_zona = h - z6;
-        const BN = H3_coperchio - h_zona;
-        let term = BN * (2 * coperchio.R - BN);
-        if (term < 0) term = 0;
-        rVal = Math.sqrt(term);
-      }
+      // Zona 7 — calotta sferica coperchio (non attiva con coperchio piano)
+      const h_zona = h - z6;
+      const BN = H3_coperchio - h_zona;
+      let term = BN * (2 * coperchio.R - BN);
+      if (term < 0) term = 0;
+      rVal = Math.sqrt(term);
     }
-
 
     raggioProfile[h] = rVal;
 
