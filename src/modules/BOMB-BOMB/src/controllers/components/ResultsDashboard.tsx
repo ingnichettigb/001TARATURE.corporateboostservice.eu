@@ -477,7 +477,7 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                 <div className="space-y-2 mt-3 text-xs text-neutral-800">
                   <div className="flex justify-between py-1 border-b border-neutral-200">
                     <span className="font-bold text-neutral-900">
-                      {lang === 'en' ? 'Bottom Cone Volume:' : lang === 'es' ? 'Volumen del Fondo Cónico:' : lang === 'de' ? 'Volumen des Konusbodens:' : 'Volume Fondo Conico:'}
+                      {lang === 'en' ? 'Bottom Dished Head Volume:' : lang === 'es' ? 'Volumen del Fondo Bombeado:' : lang === 'de' ? 'Volumen des gewölbten Bodens:' : 'Volume Fondo Bombato:'}
                     </span>
                     <span className="font-mono font-extrabold text-neutral-950">{formatNum(result.volumeFondo, 2)} {lang === 'en' ? 'liters' : lang === 'es' ? 'litros' : lang === 'de' ? 'Liter' : 'litri'}</span>
                   </div>

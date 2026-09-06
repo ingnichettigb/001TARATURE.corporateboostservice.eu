@@ -108,11 +108,9 @@ export default function App() {
     rho: 0.85,       // Gazole/diesel density
     spVirola: 6,     // spessore lamiera virola (mm)
     fondo: {
-      type: 'conico',
+      type: 'pseudoellittico',
       sp: 8,
       hColletto: 40,
-      hCono: 900, // altezza totale (cono puro + raccordo)
-      rRaccordo: 30, // raccordo cono/colletto (mm)
     },
     coperchio: {
       type: 'pseudoellittico',

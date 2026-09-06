@@ -103,7 +103,7 @@ export async function generateCalibrationPDF(
         
         // Volumes
         volumeTitle: 'Volumi dei Singoli Componenti',
-        bottomVolume: 'Volume Fondo Conico:',
+        bottomVolume: 'Volume Fondo Bombato:',
         cylinderVolume: 'Volume Mantello Cilindrico:',
         topVolume: 'Volume Coperchio Bombato:',
         totalVolume: 'VOLUME TOTALE NOMINALE:',
@@ -391,14 +391,13 @@ export async function generateCalibrationPDF(
       }
     };
 
-    // 1. Fill background: cylindrical body + top dome + bottom cone
-    const coneApexY = y_c + h_c + dome_h + 1.5;
+    // 1. Fill background: cylindrical body + top dome + bottom dome
     doc.setFillColor(240, 253, 244);
     doc.rect(x_c, y_c, w_c, h_c, 'F');
     // Top dome (bombato)
     doc.ellipse(x_c + w_c / 2, y_c, w_c / 2, dome_h, 'F');
-    // Bottom cone (conico)
-    doc.triangle(x_c, y_c + h_c, x_c + w_c, y_c + h_c, x_c + w_c / 2, coneApexY, 'F');
+    // Bottom dome (bombato)
+    doc.ellipse(x_c + w_c / 2, y_c + h_c, w_c / 2, dome_h, 'F');
 
     // 2. Draw tank outlines
     doc.setDrawColor(6, 78, 59);
@@ -409,9 +408,8 @@ export async function generateCalibrationPDF(
     doc.line(x_c + w_c, y_c, x_c + w_c, y_c + h_c);
     // Top dome outline
     drawSemiEllipse(x_c + w_c / 2, y_c, w_c / 2, dome_h, Math.PI, 2 * Math.PI);
-    // Bottom cone outlines (two slanted sides)
-    doc.line(x_c, y_c + h_c, x_c + w_c / 2, coneApexY);
-    doc.line(x_c + w_c, y_c + h_c, x_c + w_c / 2, coneApexY);
+    // Bottom dome outline
+    drawSemiEllipse(x_c + w_c / 2, y_c + h_c, w_c / 2, dome_h, 0, Math.PI);
 
     // 3. Draw horizontal weld junctions (seams)
     doc.setDrawColor(110, 160, 140);
@@ -427,7 +425,7 @@ export async function generateCalibrationPDF(
     // 5. Draw text labels and indicator lines
     const labelTop = lang === 'en' ? 'Top Head' : lang === 'es' ? 'Cúpula Sup.' : lang === 'de' ? 'Obere Kuppe' : 'Coperchio';
     const labelMid = lang === 'en' ? 'Cylinder' : lang === 'es' ? 'Cuerpo Cil.' : lang === 'de' ? 'Zylinder' : 'Mantello';
-    const labelBot = lang === 'en' ? 'Conical Bottom' : lang === 'es' ? 'Fondo Cónico' : lang === 'de' ? 'Konischer Boden' : 'Fondo Conico';
+    const labelBot = lang === 'en' ? 'Dished Bottom' : lang === 'es' ? 'Fondo Bombeado' : lang === 'de' ? 'Gewölbter Boden' : 'Fondo Bombato';
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6.5);
@@ -611,7 +609,7 @@ export async function generateCalibrationPDF(
 
     const grpTop = lang === 'en' ? 'top head' : lang === 'es' ? 'cúpula sup.' : lang === 'de' ? 'obere Kuppe' : 'coperchio bombato';
     const grpCyl = lang === 'en' ? 'cylindrical section' : lang === 'es' ? 'sección cilíndrica' : lang === 'de' ? 'Zylinderteil' : 'sezione cilindrica';
-    const grpCon = lang === 'en' ? 'conical bottom' : lang === 'es' ? 'fondo cónico' : lang === 'de' ? 'Konischer Boden' : 'fondo conico';
+    const grpCon = lang === 'en' ? 'dished bottom' : lang === 'es' ? 'fondo bombeado' : lang === 'de' ? 'Gewölbter Boden' : 'fondo bombato';
     const grpAll = lang === 'en' ? 'Top + cylindrical part + bottom' : lang === 'es' ? 'Cúpula + parte cilíndrica + fondo' : lang === 'de' ? 'Deckel + Zylinderteil + Boden' : 'Coperchio + parte cilindrica + fondo';
 
     const lblRoggio = lang === 'en' ? 'Dish Radius (R_custom) (mm)' : lang === 'es' ? 'Radio Bombeo (R_custom) (mm)' : lang === 'de' ? 'Wölbradius (R_custom) (mm)' : 'Raggio Bombatura (R_custom) (mm)';
@@ -619,9 +617,6 @@ export async function generateCalibrationPDF(
     const lblColletto = lang === 'en' ? 'Collar Height (h_colletto)' : lang === 'es' ? 'Altura Collarín (h_colletto)' : lang === 'de' ? 'Kragenhöhe (h_colletto)' : 'Altezza Colletto (h_colletto)';
     const lblSviluppo = lang === 'en' ? 'Sheet Unrolling Development' : lang === 'es' ? 'Desarrollo Desenrollado Chapa' : lang === 'de' ? 'Blechabwicklung' : 'Sviluppo Srotolamento Lamiera';
     const lblVolCyl = lang === 'en' ? 'Cylindrical Section Volume' : lang === 'es' ? 'Volumen Parte Cilíndrica' : lang === 'de' ? 'Volumen Zylinderteil' : 'Volume parte cilindrica';
-    const lblHcono = lang === 'en' ? 'Cone Height incl. collar (h_cono) (mm)' : lang === 'es' ? 'Altura Cono con collarín (h_cono) (mm)' : lang === 'de' ? 'Konushöhe inkl. Kragen (h_cono) (mm)' : 'Altezza Cono compresa di colletto (h_cono) (mm)';
-    const lblGradi = lang === 'en' ? 'Inclination Degrees (°)' : lang === 'es' ? 'Grados de Inclinación (°)' : lang === 'de' ? 'Neigungswinkel (°)' : 'Gradi di Inclinazione (°)';
-    const lblRracc = lang === 'en' ? 'Fillet Radius (r_raccordo)' : lang === 'es' ? 'Radio Empalme (r_raccordo)' : lang === 'de' ? 'Verrundungsradius (r_raccordo)' : 'Raggio Raccordo (r_raccordo)';
     const lblPesoTotLam = lang === 'en' ? 'Total Sheet Metal Weight' : lang === 'es' ? 'Peso Total Chapa' : lang === 'de' ? 'Gesamtes Blechgewicht' : 'Peso totale lamiera';
     const lblPesoPieno = lang === 'en' ? 'Weight with Full Content' : lang === 'es' ? 'Peso con Contenido Lleno' : lang === 'de' ? 'Gewicht bei Vollfüllung' : 'Peso con Contenuto Pieno';
 
@@ -646,10 +641,9 @@ export async function generateCalibrationPDF(
       [grpCyl, lblSviluppo, `${formatNumPDF(Math.PI * result.input.dInt, 1)} mm`],
       [grpCyl, lblVolCyl, `${formatNumPDF(result.volumeCilindro, 2)} l`],
       [grpCyl, labels[lang].sheetWeight.replace(':',''), `${formatNumPDF(result.pesoLamieraVirola, 1)} kg`],
-      // fondo conico
-      [grpCon, lblHcono, `${formatNumPDF(fon.hCono ?? 0, 1)} mm`],
-      [grpCon, lblGradi, `${formatNumPDF(result.fondo.alfa, 2)} °`],
-      [grpCon, lblRracc, `${formatNumPDF(fon.rRaccordo ?? 0, 1)} mm`],
+      // fondo bombato
+      [grpCon, lblRoggio, `${formatNumPDF(result.fondo.R, 1)} mm`],
+      [grpCon, lblToro, `${formatNumPDF(result.fondo.r, 1)} mm`],
       [grpCon, lblColletto, `${fon.hColletto} mm`],
       [grpCon, labels[lang].thickness.replace(':',''), `${fon.sp} mm`],
       [grpCon, labels[lang].bottomVolume.replace(':',''), `${formatNumPDF(result.volumeFondo, 2)} l`],
