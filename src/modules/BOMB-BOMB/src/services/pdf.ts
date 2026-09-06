@@ -103,7 +103,7 @@ export async function generateCalibrationPDF(
         
         // Volumes
         volumeTitle: 'Volumi dei Singoli Componenti',
-        bottomVolume: 'Volume Fondo Conico:',
+        bottomVolume: 'Volume Fondo Bombato:',
         cylinderVolume: 'Volume Mantello Cilindrico:',
         topVolume: 'Volume Coperchio Bombato:',
         totalVolume: 'VOLUME TOTALE NOMINALE:',
