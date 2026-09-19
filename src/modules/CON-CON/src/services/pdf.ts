@@ -391,12 +391,13 @@ export async function generateCalibrationPDF(
       }
     };
 
-    // 1. Fill background: cylindrical body + top dome + bottom cone
-    const coneApexY = y_c + h_c + dome_h + 1.5;
+    // 1. Fill background: cylindrical body + top cone + bottom cone
+    const coneApexY = y_c + h_c + dome_h + 1.5;      // apice cono inferiore
+    const coneApexTopY = y_c - dome_h - 1.5;         // apice cono superiore
     doc.setFillColor(240, 253, 244);
     doc.rect(x_c, y_c, w_c, h_c, 'F');
-    // Top dome (bombato)
-    doc.ellipse(x_c + w_c / 2, y_c, w_c / 2, dome_h, 'F');
+    // Top cone (conico)
+    doc.triangle(x_c, y_c, x_c + w_c, y_c, x_c + w_c / 2, coneApexTopY, 'F');
     // Bottom cone (conico)
     doc.triangle(x_c, y_c + h_c, x_c + w_c, y_c + h_c, x_c + w_c / 2, coneApexY, 'F');
 
@@ -407,11 +408,13 @@ export async function generateCalibrationPDF(
     doc.line(x_c, y_c, x_c, y_c + h_c);
     // Right vertical line
     doc.line(x_c + w_c, y_c, x_c + w_c, y_c + h_c);
-    // Top dome outline
-    drawSemiEllipse(x_c + w_c / 2, y_c, w_c / 2, dome_h, Math.PI, 2 * Math.PI);
+    // Top cone outlines (two slanted sides)
+    doc.line(x_c, y_c, x_c + w_c / 2, coneApexTopY);
+    doc.line(x_c + w_c, y_c, x_c + w_c / 2, coneApexTopY);
     // Bottom cone outlines (two slanted sides)
     doc.line(x_c, y_c + h_c, x_c + w_c / 2, coneApexY);
     doc.line(x_c + w_c, y_c + h_c, x_c + w_c / 2, coneApexY);
+    void drawSemiEllipse;
 
     // 3. Draw horizontal weld junctions (seams)
     doc.setDrawColor(110, 160, 140);
@@ -422,10 +425,10 @@ export async function generateCalibrationPDF(
     // 4. Draw axis of symmetry (vertical dashed line)
     doc.setDrawColor(180, 180, 180);
     doc.setLineWidth(0.15);
-    drawDashedLine(x_c + w_c / 2, y_c - dome_h - 2, x_c + w_c / 2, y_c + h_c + dome_h + 2);
+    drawDashedLine(x_c + w_c / 2, coneApexTopY - 2, x_c + w_c / 2, y_c + h_c + dome_h + 2);
 
     // 5. Draw text labels and indicator lines
-    const labelTop = lang === 'en' ? 'Top Head' : lang === 'es' ? 'Cúpula Sup.' : lang === 'de' ? 'Obere Kuppe' : 'Coperchio';
+    const labelTop = lang === 'en' ? 'Conical Top' : lang === 'es' ? 'Tapa Cónica' : lang === 'de' ? 'Konischer Deckel' : 'Coperchio Conico';
     const labelMid = lang === 'en' ? 'Cylinder' : lang === 'es' ? 'Cuerpo Cil.' : lang === 'de' ? 'Zylinder' : 'Mantello';
     const labelBot = lang === 'en' ? 'Conical Bottom' : lang === 'es' ? 'Fondo Cónico' : lang === 'de' ? 'Konischer Boden' : 'Fondo Conico';
 
@@ -434,7 +437,7 @@ export async function generateCalibrationPDF(
     doc.setTextColor(107, 114, 128);
 
     // Top Head pointer & text
-    const y_top = y_c - dome_h / 2;
+    const y_top = coneApexTopY + 1.5;
     doc.setDrawColor(209, 213, 219);
     doc.setLineWidth(0.15);
     doc.line(160, y_top, 173, y_top);
