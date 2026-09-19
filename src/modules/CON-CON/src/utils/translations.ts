@@ -277,7 +277,7 @@ export const translations: Record<Language, TranslationDict> = {
   en: {
     appName: "CON-CON TARATURA",
     appSub: "v1.2 (EXCEL 01 COMPATIBLE)",
-    appTeaser: "Professional millimeter-by-millimeter calibration for cylindrical tanks with standard or custom conic bottom and dished top. Integrated mathematical model with 7 continuous zones (1 mm steps)",
+    appTeaser: "Professional millimeter-by-millimeter calibration for cylindrical tanks with conical bottom and conical top. Integrated mathematical model with 7 continuous zones (1 mm steps)",
     active: "ACTIVE",
     recalculate: "Recalculate Calibration",
     calculate: "Calculate Calibration",
@@ -535,7 +535,7 @@ export const translations: Record<Language, TranslationDict> = {
   de: {
     appName: "CON-CON TARATURA",
     appSub: "v1.2 (EXCEL 01 KOMPATIBEL)",
-    appTeaser: "Professionelle millimetergenaue Kalibrierung für zylindrische Tanks mit Standard- oder kundenspezifischem konischem Boden und gewölbtem Deckel. Integriertes mathematisches 7-Zonen-Modell (1 mm Schritte)",
+    appTeaser: "Professionelle millimetergenaue Kalibrierung für zylindrische Tanks mit konischem Boden und konischem Deckel. Integriertes mathematisches 7-Zonen-Modell (1 mm Schritte)",
     active: "AKTIV",
     recalculate: "Kalibrierung Neu Berechnen",
     calculate: "Kalibrierung Berechnen",

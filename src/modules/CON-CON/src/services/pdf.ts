@@ -105,7 +105,7 @@ export async function generateCalibrationPDF(
         volumeTitle: 'Volumi dei Singoli Componenti',
         bottomVolume: 'Volume Fondo Conico:',
         cylinderVolume: 'Volume Mantello Cilindrico:',
-        topVolume: 'Volume Coperchio Bombato:',
+        topVolume: 'Volume Coperchio Conico:',
         totalVolume: 'VOLUME TOTALE NOMINALE:',
         
         // Sheets
@@ -158,7 +158,7 @@ export async function generateCalibrationPDF(
         volumeTitle: 'Volumes of Individual Components',
         bottomVolume: 'Bottom Head Volume:',
         cylinderVolume: 'Cylindrical Shell Volume:',
-        topVolume: 'Top Head Volume:',
+        topVolume: 'Conical Top Volume:',
         totalVolume: 'TOTAL NOMINAL VOLUME:',
         
         sheetTitle: 'Construction & Sheet Metal Details (Steel)',
@@ -207,7 +207,7 @@ export async function generateCalibrationPDF(
         volumeTitle: 'Volúmenes de los Componentes Individuales',
         bottomVolume: 'Volumen del Extremo Inferior:',
         cylinderVolume: 'Volumen del Cuerpo Cilíndrico:',
-        topVolume: 'Volumen del Extremo Superior:',
+        topVolume: 'Volumen de la Tapa Cónica:',
         totalVolume: 'VOLUMEN NOMINAL TOTAL:',
         
         sheetTitle: 'Detalles de Fabricación y Chapa (Acero)',
@@ -256,7 +256,7 @@ export async function generateCalibrationPDF(
         volumeTitle: 'Füllvolumen der einzelnen Komponenten',
         bottomVolume: 'Volumen des unteren Bodens:',
         cylinderVolume: 'Volumen des zylindrischen Mantels:',
-        topVolume: 'Volumen des oberen Deckels:',
+        topVolume: 'Volumen des konischen Deckels:',
         totalVolume: 'GESAMTES NENNFÜLLVOLUMEN:',
         
         sheetTitle: 'Konstruktionsdaten & Zuschnittbleche (Stahl)',
