@@ -1309,12 +1309,21 @@ export default function App() {
                       </div>
                       <div className="flex justify-between border-t border-neutral-200 pt-1 mt-1 text-[8.5px]">
                         <span>
-                          {lang === 'en' ? 'Dish Radius (R):' :
-                           lang === 'es' ? 'Radio bombado (R):' :
-                           lang === 'de' ? 'Wölbungsradius (R):' :
-                           'Raggio bombatura (R):'}
+                          {lang === 'en' ? 'Cone Height (h):' :
+                           lang === 'es' ? 'Altura cono (h):' :
+                           lang === 'de' ? 'Konushöhe (h):' :
+                           'Altezza cono (h):'}
                         </span>
-                        <span className="font-bold">{formatNum(result.fondo.R, 1)} mm</span>
+                        <span className="font-bold">{formatNum(result.input.fondo.hCono ?? 0, 1)} mm</span>
+                      </div>
+                      <div className="flex justify-between text-[8.5px]">
+                        <span>
+                          {lang === 'en' ? 'Cone Angle:' :
+                           lang === 'es' ? 'Inclinación cono:' :
+                           lang === 'de' ? 'Konuswinkel:' :
+                           'Inclinazione cono:'}
+                        </span>
+                        <span className="font-bold">{formatNum(result.fondo.alfa, 2)} °</span>
                       </div>
                       <div className="flex justify-between text-[8.5px]">
                         <span>
