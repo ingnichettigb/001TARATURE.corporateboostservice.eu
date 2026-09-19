@@ -148,7 +148,7 @@ export const translations: Record<Language, TranslationDict> = {
   it: {
     appName: "CON-CON TARATURA",
     appSub: "v1.2 (EXCEL 01 COMPATIBLE)",
-    appTeaser: "Taratura millimetrica professionale per serbatoi cilindrici con fondo conico e coperchio bombato standard o custom. Modello matematico integrato a 7 zone continue (passo 1 mm)",
+    appTeaser: "Taratura millimetrica professionale per serbatoi cilindrici con fondo conico e coperchio conico. Modello matematico integrato a 7 zone continue (passo 1 mm)",
     active: "ATTIVO",
     recalculate: "Ricalcola Taratura",
     calculate: "Calcola Taratura",
@@ -406,7 +406,7 @@ export const translations: Record<Language, TranslationDict> = {
   es: {
     appName: "CON-CON TARATURA",
     appSub: "v1.2 (COMPATIBLE CON EXCEL 01)",
-    appTeaser: "Calibración milimétrica profesional para tanques cilíndricos con fondo cónico estándar o personalizado y tapa bombada. Modelo matemático integrado de 7 zonas continuas (pasos de 1 mm)",
+    appTeaser: "Calibración milimétrica profesional para tanques cilíndricos con fondo cónico y tapa cónica. Modelo matemático integrado de 7 zonas continuas (pasos de 1 mm)",
     active: "ACTIVO",
     recalculate: "Recalcular Calibración",
     calculate: "Calcular Calibración",
