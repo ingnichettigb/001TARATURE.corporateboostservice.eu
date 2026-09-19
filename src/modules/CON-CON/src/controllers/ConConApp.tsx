@@ -115,15 +115,17 @@ export default function App() {
       rRaccordo: 30, // raccordo cono/colletto (mm)
     },
     coperchio: {
-      type: 'pseudoellittico',
-      sp: 6,
-      hColletto: 30,
+      type: 'conico',
+      sp: 8,
+      hColletto: 40,
+      hCono: 900, // altezza totale (cono puro + raccordo)
+      rRaccordo: 30, // raccordo cono/colletto (mm)
     },
     report: {
       cliente: 'Petrolchimica Padana S.p.A.',
       riferimento: 'Parco Serbatoi - Area Stoccaggio Sud',
       nomeSerbatoio: 'Serbatoio Diesel TK-104',
-      numeroDisegno: 'BOMB-TK-104-REV02',
+      numeroDisegno: 'CON-TK-104-REV02',
       data: new Date().toISOString().split('T')[0],
       compilatore: 'Ing. Marco Rossi',
       numeroFabbrica: '24/1098-S',
