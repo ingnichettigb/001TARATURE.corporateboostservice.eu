@@ -612,7 +612,7 @@ export async function generateCalibrationPDF(
     techY += 3;
 
 
-    const grpTop = lang === 'en' ? 'top head' : lang === 'es' ? 'cúpula sup.' : lang === 'de' ? 'obere Kuppe' : 'coperchio bombato';
+    const grpTop = lang === 'en' ? 'conical top' : lang === 'es' ? 'tapa cónica' : lang === 'de' ? 'konischer Deckel' : 'coperchio conico';
     const grpCyl = lang === 'en' ? 'cylindrical section' : lang === 'es' ? 'sección cilíndrica' : lang === 'de' ? 'Zylinderteil' : 'sezione cilindrica';
     const grpCon = lang === 'en' ? 'conical bottom' : lang === 'es' ? 'fondo cónico' : lang === 'de' ? 'Konischer Boden' : 'fondo conico';
     const grpAll = lang === 'en' ? 'Top + cylindrical part + bottom' : lang === 'es' ? 'Cúpula + parte cilíndrica + fondo' : lang === 'de' ? 'Deckel + Zylinderteil + Boden' : 'Coperchio + parte cilindrica + fondo';
