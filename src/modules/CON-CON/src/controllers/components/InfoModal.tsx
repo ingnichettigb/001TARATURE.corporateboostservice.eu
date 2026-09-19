@@ -20,7 +20,7 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
     it: {
       title: "Manuale d'Uso & Informazioni Tecniche",
       subtitle: "Modello Matematico Integrato a 7 Zone",
-      intro: "Questo applicativo professionale esegue la taratura geometrica millimetrica di serbatoi cilindrici ad asse orizzontale dotati di fondo conico e coperchio bombato standard (Klöpper, Korbbogen), piano o completamente personalizzato. Il calcolo volumetrico si basa su una discretizzazione continua a passo di 1 millimetro.",
+      intro: "Questo applicativo professionale esegue la taratura geometrica millimetrica di serbatoi cilindrici verticali dotati di fondo conico e coperchio conico. Il calcolo volumetrico si basa su una discretizzazione continua a passo di 1 millimetro.",
       
       sections: [
         {
@@ -79,7 +79,7 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
     en: {
       title: "User Manual & Technical Info",
       subtitle: "Integrated 7-Zone Mathematical Model",
-      intro: "This professional application performs high-precision millimeter-step strapping and calibration for horizontal cylindrical tanks equipped with standard (Klöpper, Korbbogen), flat, or fully custom torispherical heads. Calculations are computed continuously with 1 mm step resolution.",
+      intro: "This professional application performs high-precision millimeter-step calibration for vertical cylindrical tanks with a conical bottom and a conical top. Calculations are computed continuously with 1 mm step resolution.",
       
       sections: [
         {
@@ -138,7 +138,7 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
     es: {
       title: "Manual de Uso e Información Técnica",
       subtitle: "Modelo Matemático Integrado de 7 Zonas",
-      intro: "Esta herramienta profesional realiza el cálculo geométrico milimétrico de tanques cilíndricos horizontales equipados con fondos abombados estándar (Klöpper, Korbbogen), planos o personalizados. La resolución de cálculo es continua de 1 mm.",
+      intro: "Esta herramienta profesional realiza el cálculo geométrico milimétrico de tanques cilíndricos verticales con fondo cónico y tapa cónica. La resolución de cálculo es continua de 1 mm.",
       
       sections: [
         {
@@ -197,7 +197,7 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
     de: {
       title: "Benutzerhandbuch & Technische Informationen",
       subtitle: "Integriertes 7-Zonen-Mathematikmodell",
-      intro: "Diese Software dient zur millimetergenauen Inhaltsberechnung (Peiltabellen) für liegende zylindrische Behälter mit Standardböden (Klöpper, Korbbogen), flachen oder kundenspezifischen Klöpperböden. Der Berechnungsschritt beträgt kontinuierlich 1 Millimeter.",
+      intro: "Diese Software dient zur millimetergenauen Inhaltsberechnung für stehende zylindrische Behälter mit konischem Boden und konischem Deckel. Der Berechnungsschritt beträgt kontinuierlich 1 Millimeter.",
       
       sections: [
         {
