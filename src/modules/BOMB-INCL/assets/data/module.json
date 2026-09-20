@@ -2,8 +2,8 @@
   "id": "bomb-incl",
   "title": "BOMB-INCL",
   "subtitle": "Coperchio Bombato / Fondo Inclinato",
-  "description": "Cuore logico da importare.",
+  "description": "Taratura completa: geometria, tabella di calibrazione e certificato PDF.",
   "icon": "Cylinder",
   "image": "/__l5e/assets-v1/d8a72d68-eb48-476e-90b1-196efee80b00/icona-bomb-incl.png",
-  "status": "draft"
+  "status": "active"
 }
