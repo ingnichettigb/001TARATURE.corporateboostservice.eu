@@ -545,7 +545,7 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-neutral-800">
                 <div className="space-y-2">
                   <span className="font-black text-neutral-950 border-b-2 border-emerald-900/10 pb-1 block">
-                    {lang === 'en' ? 'Bottom Head:' : lang === 'es' ? 'Extremo Inferior:' : lang === 'de' ? 'Unterer Boden:' : 'Fondo Calotta:'}
+                    {lang === 'en' ? 'Inclined Bottom:' : lang === 'es' ? 'Fondo Inclinado:' : lang === 'de' ? 'Schrägboden:' : 'Fondo Inclinato:'}
                   </span>
                   <div className="flex justify-between py-1">
                     <span className="font-medium text-neutral-700">
@@ -653,56 +653,24 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                 <h4 className="text-xs font-bold text-neutral-900 border-b border-neutral-200 pb-1.5 mb-2 uppercase">Parametri Fondo</h4>
                 <div className="space-y-1 text-xs font-mono">
                   <div className="flex justify-between py-0.5 border-b border-neutral-100">
-                    <span className="text-neutral-500">R:</span>
-                    <span className="font-bold text-neutral-800">{formatNum(result.fondo.R, 1)} mm</span>
+                    <span className="text-neutral-500">Dislivello (Δ):</span>
+                    <span className="font-bold text-neutral-800">{formatNum(result.input.fondo.hDislivello ?? 0, 1)} mm</span>
                   </div>
                   <div className="flex justify-between py-0.5 border-b border-neutral-100">
-                    <span className="text-neutral-500">r:</span>
-                    <span className="font-bold text-neutral-800">{formatNum(result.fondo.r, 1)} mm</span>
-                  </div>
-                  <div className="flex justify-between py-0.5 border-b border-neutral-100">
-                    <span className="text-neutral-500">DR (R - r):</span>
-                    <span className="font-bold text-neutral-800">{formatNum(result.fondo.DR, 2)} mm</span>
-                  </div>
-                  <div className="flex justify-between py-0.5 border-b border-neutral-100">
-                    <span className="text-neutral-500">X (D/2 - r):</span>
-                    <span className="font-bold text-neutral-800">{formatNum(result.fondo.X, 2)} mm</span>
-                  </div>
-                  <div className="flex justify-between py-0.5 border-b border-neutral-100">
-                    <span className="text-neutral-500">Alfa (gradi):</span>
+                    <span className="text-neutral-500">Inclinazione (α):</span>
                     <span className="font-bold text-neutral-800">{formatNum(result.fondo.alfa, 4)}°</span>
                   </div>
                   <div className="flex justify-between py-0.5 border-b border-neutral-100">
-                    <span className="text-neutral-500">Beta (gradi):</span>
-                    <span className="font-bold text-neutral-800">{formatNum(result.fondo.beta, 4)}°</span>
-                  </div>
-                  <div className="flex justify-between py-0.5 border-b border-neutral-100">
-                    <span className="text-neutral-500">H1:</span>
-                    <span className="font-bold text-neutral-800">{formatNum(result.fondo.H1, 2)} mm</span>
-                  </div>
-                  <div className="flex justify-between py-0.5 border-b border-neutral-100">
-                    <span className="text-neutral-500">H_int:</span>
+                    <span className="text-neutral-500">Altezza interna fondo:</span>
                     <span className="font-bold text-neutral-800">{formatNum(result.fondo.H_int, 2)} mm</span>
                   </div>
                   <div className="flex justify-between py-0.5 border-b border-neutral-100">
-                    <span className="text-neutral-500">H2 (toro):</span>
-                    <span className="font-bold text-neutral-800">{formatNum(result.fondo.H2, 2)} mm</span>
+                    <span className="text-neutral-500">Colletto:</span>
+                    <span className="font-bold text-neutral-800">{formatNum(result.input.fondo.hColletto, 1)} mm</span>
                   </div>
                   <div className="flex justify-between py-0.5 border-b border-neutral-100">
-                    <span className="text-neutral-500">H3 (calotta):</span>
-                    <span className="font-bold text-neutral-800">{formatNum(result.fondo.H3, 2)} mm</span>
-                  </div>
-                  <div className="flex justify-between py-0.5 border-b border-neutral-100">
-                    <span className="text-neutral-500">Y:</span>
-                    <span className="font-bold text-neutral-800">{formatNum(result.fondo.Y, 2)} mm</span>
-                  </div>
-                  <div className="flex justify-between py-0.5 border-b border-neutral-100">
-                    <span className="text-neutral-500">Baricentro Toro:</span>
-                    <span className="font-bold text-neutral-800">{formatNum(result.fondo.Baric, 2)} mm</span>
-                  </div>
-                  <div className="flex justify-between py-0.5 border-b border-neutral-100">
-                    <span className="text-neutral-500">K:</span>
-                    <span className="font-bold text-neutral-800">{formatNum(result.fondo.K, 2)} mm</span>
+                    <span className="text-neutral-500">Spessore:</span>
+                    <span className="font-bold text-neutral-800">{formatNum(result.input.fondo.sp, 1)} mm</span>
                   </div>
                   <div className="flex justify-between py-0.5">
                     <span className="text-neutral-500">H Esterna Tot:</span>
