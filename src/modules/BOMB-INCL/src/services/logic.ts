@@ -419,10 +419,11 @@ export function calculateTank(input: TankInput): CalculationResult {
 
     if (h <= z1) {
       if (isInclinedFondo) {
-        // Zona 1 — cuneo del fondo inclinato: sezione = segmento circolare.
-        // Si usa il raggio equivalente (area = π·r_eq²) per mantenere l'integrazione a 1 mm.
-        const A = areaCuneo(dInt / 2, H3_fondo, h);
-        rVal = Math.sqrt(A / Math.PI);
+        // Zona 1 — cuneo inclinato + raccordo: profilo equivalente per area,
+        // calcolato dall'integratore della superficie (quote dal punto più basso reale).
+        const prof = fondo.rEqProfile ?? [];
+        const idx = Math.min(prof.length - 1, Math.max(0, Math.round(h)));
+        rVal = prof.length > 0 ? prof[idx] : 0;
       } else if (isConicFondo) {
         // Cono retto puro: raggio lineare da 0 (a h=0) fino a Y (a h=H_cono)
         rVal = H3_fondo > 0 ? fondo.Y * (h / H3_fondo) : 0;
