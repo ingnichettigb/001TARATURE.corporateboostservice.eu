@@ -69,6 +69,14 @@ export interface HeadCalculated {
   Sviluppo_mm: number;
   Area_disco_da_tagliare_mq: number;
   Peso_lamiera_kg: number;
+  /** Fondo inclinato: punto più basso reale z_min = r·tanα·(1+sinα) (mm). */
+  z_min?: number;
+  /** Fondo inclinato: quota di fine raccordo H_r = Δ + r·(secα − tanα) (mm). */
+  H_r?: number;
+  /** Fondo inclinato: striscia di parete che appartiene alla VIROLA (m²). */
+  Area_striscia_virola_mq?: number;
+  /** Fondo inclinato: raggio equivalente (mm) per ogni mm dal punto più basso. */
+  rEqProfile?: number[];
 }
 
 
