@@ -20,60 +20,196 @@ export function angleFromDislivello(delta: number, dInt: number): number | null 
   return isFinite(a) && a > 0 && a < 90 ? a : null;
 }
 
-/** Area (mm²) della sezione bagnata del cuneo del fondo inclinato alla quota z. */
-function areaCuneo(R: number, delta: number, z: number): number {
-  if (!(R > 0) || !(delta > 0)) return 0;
-  if (z >= delta) return Math.PI * R * R;
-  if (z <= 0) return 0;
-  // posizione della corda: il piano inclinato attraversa il diametro
-  const a = (2 * R * z) / delta - R;
-  const aC = Math.max(-R, Math.min(R, a));
-  return R * R * Math.acos(-aC / R) + aC * Math.sqrt(Math.max(0, R * R - aC * aC));
+/** Raggio di raccordo massimo ammesso: 10% del diametro interno. */
+export function raggioRaccordoMax(dInt: number): number {
+  return Math.max(0, dInt * 0.1);
+}
+
+/** Vincola il raggio di raccordo all'intervallo [0, 10%·Ø] e comunque r < R. */
+export function clampRaggioRaccordo(rIn: number, dInt: number): number {
+  const R = dInt / 2;
+  const max = Math.min(raggioRaccordoMax(dInt), R * 0.999);
+  if (!isFinite(rIn) || rIn < 0) return 0;
+  return Math.min(rIn, Math.max(0, max));
+}
+
+interface InclinedGeom {
+  R: number;
+  alfa: number;         // rad
+  r: number;            // raggio di raccordo effettivo (mm)
+  zMin: number;         // punto più basso reale = r·tanα·(1+sinα)
+  Hr: number;           // quota di fine raccordo = Δ + r·(secα − tanα)
+  rEqProfile: number[]; // raggio equivalente (mm) per mm dal punto più basso
+  volumeCuneoMm3: number;
+  areaPianoMm2: number;
+  areaRaccordoMm2: number;
+  areaStrisciaMm2: number; // striscia di VIROLA fra profilo fondo e quota Hr
+}
+
+/**
+ * Superficie del fondo inclinato con raccordo a raggio costante (sfera rotolante
+ * fra piano inclinato e parete cilindrica). z_b(x,y) = max(piano, envelope raccordo).
+ * Integrazione numerica su griglia: volume, aree bagnate mm per mm.
+ */
+function buildInclinedGeom(dInt: number, delta: number, rIn: number): InclinedGeom {
+  const R = dInt / 2;
+  const alfa = Math.atan(delta / dInt);
+  const m = Math.tan(alfa);
+  const sec = 1 / Math.cos(alfa);
+  const r = clampRaggioRaccordo(rIn, dInt);
+  const rho = R - r;
+
+  const Hr = m * (R + rho) + r * sec;          // = Δ + r(secα − tanα)
+  const zMin = r * m * (1 + Math.sin(alfa));   // punto di tangenza più basso
+
+  const N = 260;
+  const step = (2 * R) / N;
+  const cell = step * step;
+  const PH = 180;
+  const cosT = new Float64Array(PH);
+  const sinT = new Float64Array(PH);
+  const zcT = new Float64Array(PH);
+  for (let k = 0; k < PH; k++) {
+    const phi = (2 * Math.PI * k) / PH;
+    cosT[k] = Math.cos(phi);
+    sinT[k] = Math.sin(phi);
+    zcT[k] = m * (R + rho * Math.cos(phi)) + r * sec;
+  }
+
+  const nBuckets = Math.max(2, Math.ceil(Hr - zMin) + 2);
+  const hist = new Float64Array(nBuckets);
+  let cells = 0;
+  let sumDepth = 0;
+  const r2 = r * r;
+
+  for (let i = 0; i < N; i++) {
+    const x = -R + (i + 0.5) * step;
+    for (let j = 0; j < N; j++) {
+      const y = -R + (j + 0.5) * step;
+      if (x * x + y * y > R * R) continue;
+      cells++;
+      let z = m * (R + x);
+      if (r > 0) {
+        for (let k = 0; k < PH; k++) {
+          const dx = x - rho * cosT[k];
+          const dy = y - rho * sinT[k];
+          const d2 = dx * dx + dy * dy;
+          if (d2 < r2) {
+            const cand = zcT[k] - Math.sqrt(r2 - d2);
+            if (cand > z) z = cand;
+          }
+        }
+      }
+      if (z > Hr) z = Hr;
+      if (z < zMin) z = zMin;
+      sumDepth += Hr - z;
+      let b = Math.floor(z - zMin);
+      if (b < 0) b = 0;
+      if (b >= nBuckets) b = nBuckets - 1;
+      hist[b] += 1;
+    }
+  }
+
+  const areaDisco = Math.PI * R * R;
+  const norm = cells > 0 ? areaDisco / (cells * cell) : 1;
+  const cumul = new Float64Array(nBuckets);
+  let acc = 0;
+  for (let b = 0; b < nBuckets; b++) {
+    acc += hist[b] * cell * norm;
+    cumul[b] = Math.min(acc, areaDisco);
+  }
+
+  // Area bagnata (mm²) alla quota t misurata dal punto più basso reale.
+  // CDF campionata nei punti (b+1, cumul[b]) e interpolata linearmente.
+  const areaAt = (t: number): number => {
+    if (t <= 0) return 0;
+    if (t >= Hr - zMin) return areaDisco;
+    const p = t - 1; // indice reale nella tabella cumul
+    if (p <= 0) return cumul[0] * t;
+    const i0 = Math.min(nBuckets - 1, Math.floor(p));
+    const i1 = Math.min(nBuckets - 1, i0 + 1);
+    const f = p - i0;
+    return cumul[i0] + (cumul[i1] - cumul[i0]) * f;
+  };
+
+  // Area analitica esatta del solo cuneo (segmento circolare), usata quando r = 0
+  const areaCuneoAnalitica = (z: number): number => {
+    if (z <= 0) return 0;
+    if (z >= delta) return areaDisco;
+    const a = Math.max(-R, Math.min(R, (2 * R * z) / delta - R));
+    return R * R * Math.acos(-a / R) + a * Math.sqrt(Math.max(0, R * R - a * a));
+  };
+
+  const hMax = Math.ceil(Hr - zMin);
+  const rEqProfile = new Array<number>(hMax + 1).fill(0);
+  for (let h = 1; h <= hMax; h++) {
+    // area a metà fetta (regola del punto medio): integrazione mm per mm accurata
+    const tMid = h - 0.5;
+    const A = r > 0 ? areaAt(tMid) : areaCuneoAnalitica(tMid);
+    rEqProfile[h] = Math.sqrt(Math.max(0, A) / Math.PI);
+  }
+
+  const volumeCuneoMm3 = r > 0 ? sumDepth * cell * norm : (Math.PI * R * R * delta) / 2;
+
+
+  // Lamiera del FONDO: piano inclinato residuo + fascia di raccordo
+  const s_t = Math.max(0, R - r * (1 + Math.sin(alfa)));
+  const areaPianoMm2 = Math.PI * s_t * s_t * sec;
+  const areaRaccordoMm2 = 2 * Math.PI * ((R + s_t) / 2) * r * (Math.PI / 2 - alfa);
+  // Lamiera di VIROLA: striscia fra il profilo del fondo e la quota Hr
+  const areaStrisciaMm2 = 2 * Math.PI * m * R * rho;
+
+  return { R, alfa, r, zMin, Hr, rEqProfile, volumeCuneoMm3, areaPianoMm2, areaRaccordoMm2, areaStrisciaMm2 };
 }
 
 export function calculateHead(dInt: number, config: HeadConfig): HeadCalculated {
-  // === Fondo inclinato (piano tagliato in obliquo: cuneo cilindrico) ===
+  // === Fondo inclinato (piano tagliato in obliquo + raccordo verso il colletto) ===
   if (config.type === 'inclinato') {
     const R_base = dInt / 2;
     const delta = Math.max(0.1, config.hDislivello ?? dislivelloFromAngle(5, dInt));
     const alfa = angleFromDislivello(delta, dInt) ?? 0;
-    const alfaRad = (alfa * Math.PI) / 180;
+    const geom = buildInclinedGeom(dInt, delta, config.rRaccordo ?? 0);
 
-    // Volume del cuneo = metà del cilindro di altezza pari al dislivello
-    const V_cuneo_L = (Math.PI * R_base * R_base * delta) / 2 / 1e6;
+    const H_fondo = geom.Hr - geom.zMin;     // altezza utile del fondo (senza colletto)
+    const V_cuneo_L = geom.volumeCuneoMm3 / 1e6;
     const V_colletto_L = (Math.PI * R_base * R_base * config.hColletto) / 1e6;
 
-    // Lamiera: ellisse di taglio (πR²/cos α) + colletto cilindrico
-    const Area_ellisse_mq = (Math.PI * R_base * R_base / Math.max(1e-6, Math.cos(alfaRad))) / 1e6;
-    const Area_colletto_mq = (2 * Math.PI * R_base * config.hColletto) / 1e6;
-    const Area_totale_mq = Area_ellisse_mq + Area_colletto_mq;
-    const Peso_lamiera_kg = Area_totale_mq * config.sp * 8;
+    // Lamiera FONDO (spessore fondo): piano + raccordo + colletto
+    const Area_fondo_mm2 = geom.areaPianoMm2 + geom.areaRaccordoMm2 + 2 * Math.PI * R_base * config.hColletto;
+    const Area_fondo_mq = Area_fondo_mm2 / 1e6;
+    const Peso_lamiera_kg = Area_fondo_mq * config.sp * 8;
 
     return {
       R: 0,
-      r: 0,
+      r: geom.r,
       DR: 0,
       X: 0,
       alfa,
       beta: 90 - alfa,
       H1: 0,
-      H_int: delta,
-      H2: 0,            // nessun raccordo
-      H3: delta,        // zona 1 = cuneo inclinato
+      H_int: H_fondo,
+      H2: 0,                // il raccordo è già compreso nella zona 1 integrata
+      H3: H_fondo,          // zona 1 = cuneo inclinato + raccordo
       Y: R_base,
       Baric: 0,
       K: 0,
-      H_esterna_totale: delta + config.hColletto + config.sp,
+      H_esterna_totale: H_fondo + config.hColletto + config.sp,
       V_calotta: V_cuneo_L,
       V_toro: 0,
       V_raccordo: 0,
       V_colletto: V_colletto_L,
       V_testata_LT: V_cuneo_L + V_colletto_L,
-      Sviluppo_mm: 2 * Math.PI * (R_base + config.sp / 2),
-      Area_disco_da_tagliare_mq: Area_totale_mq,
+      // D_eq = diametro equivalente per area (solo area FONDO, striscia esclusa)
+      Sviluppo_mm: 2 * Math.sqrt(Area_fondo_mm2 / Math.PI),
+      Area_disco_da_tagliare_mq: Area_fondo_mq,
       Peso_lamiera_kg,
+      z_min: geom.zMin,
+      H_r: geom.Hr,
+      Area_striscia_virola_mq: geom.areaStrisciaMm2 / 1e6,
+      rEqProfile: geom.rEqProfile,
     };
   }
+
 
   // === Testa conica (fondo conico retto con raccordo cono/colletto) ===
   if (config.type === 'conico') {
@@ -306,10 +442,11 @@ export function calculateTank(input: TankInput): CalculationResult {
 
     if (h <= z1) {
       if (isInclinedFondo) {
-        // Zona 1 — cuneo del fondo inclinato: sezione = segmento circolare.
-        // Si usa il raggio equivalente (area = π·r_eq²) per mantenere l'integrazione a 1 mm.
-        const A = areaCuneo(dInt / 2, H3_fondo, h);
-        rVal = Math.sqrt(A / Math.PI);
+        // Zona 1 — cuneo inclinato + raccordo: profilo equivalente per area,
+        // calcolato dall'integratore della superficie (quote dal punto più basso reale).
+        const prof = fondo.rEqProfile ?? [];
+        const idx = Math.min(prof.length - 1, Math.max(0, Math.round(h)));
+        rVal = prof.length > 0 ? prof[idx] : 0;
       } else if (isConicFondo) {
         // Cono retto puro: raggio lineare da 0 (a h=0) fino a Y (a h=H_cono)
         rVal = H3_fondo > 0 ? fondo.Y * (h / H3_fondo) : 0;
@@ -378,9 +515,15 @@ export function calculateTank(input: TankInput): CalculationResult {
   const pesoLamieraCoperchio = coperchio.Peso_lamiera_kg;
   // Peso lamiera virola: circonferenza media x lunghezza x spessore x densità (8 kg/dm3 acciaio)
   const spVirola = input.spVirola && input.spVirola > 0 ? input.spVirola : input.fondo.sp;
-  const pesoLamieraVirola = (Math.PI * (dInt + spVirola) * lCil * spVirola * 8) / 1e6;
+  const areaVirolaCilindricaMq = (Math.PI * (dInt + spVirola) * lCil) / 1e6;
+  // Striscia di parete tagliata lungo il piano inclinato: è lamiera di VIROLA
+  const areaStrisciaVirolaMq = fondo.Area_striscia_virola_mq ?? 0;
+  const areaVirolaMq = areaVirolaCilindricaMq + areaStrisciaVirolaMq;
+  const pesoStrisciaVirola = areaStrisciaVirolaMq * spVirola * 8;
+  const pesoLamieraVirola = areaVirolaMq * spVirola * 8;
   const sviluppoFondoMq = fondo.Area_disco_da_tagliare_mq;
   const sviluppoCoperchioMq = coperchio.Area_disco_da_tagliare_mq;
+
 
   const pesoContenutoTotale = volumeTotale * rho;
   const pesoContenutoPerCmCilindro = (Math.PI * Math.pow(dInt / 2, 2) * 10 / 1e6) * rho; // 10 mm = 1 cm
@@ -406,6 +549,9 @@ export function calculateTank(input: TankInput): CalculationResult {
     pesoLamieraVirola,
     sviluppoFondoMq,
     sviluppoCoperchioMq,
+    areaVirolaMq,
+    areaStrisciaVirolaMq,
+    pesoStrisciaVirola,
     pesoContenutoTotale,
     pesoContenutoPerCmCilindro,
     litriCumulativi,

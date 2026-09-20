@@ -206,6 +206,37 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
     patchFondo({ hDislivello: Math.round(v * 10) / 10 });
   };
 
+  // RAGGIO DI RACCORDO: min 0, max 10% del diametro interno (r < R)
+  const raggioRaccordo = input.fondo.rRaccordo ?? 0;
+  const raggioRaccordoLimite = Math.round(raggioRaccordoMax(dInt) * 10) / 10;
+  const [raccordoWarning, setRaccordoWarning] = useState<string | null>(null);
+
+  const setRaggioRaccordo = (v: number) => {
+    if (!isFinite(v) || v < 0) return;
+    const clamped = clampRaggioRaccordo(v, dInt);
+    if (v > clamped + 1e-6) {
+      setRaccordoWarning(
+        `Raggio di raccordo limitato a ${raggioRaccordoLimite} mm (10% del diametro interno ${dInt} mm).`,
+      );
+    } else {
+      setRaccordoWarning(null);
+    }
+    patchFondo({ rRaccordo: Math.round(clamped * 10) / 10 });
+  };
+
+  // al variare del diametro il massimo si ricalcola: se superato, riporta al massimo
+  useEffect(() => {
+    const clamped = clampRaggioRaccordo(raggioRaccordo, dInt);
+    if (raggioRaccordo > clamped + 1e-6) {
+      setRaccordoWarning(
+        `Raggio di raccordo riportato al massimo ${raggioRaccordoLimite} mm (10% del diametro interno ${dInt} mm).`,
+      );
+      patchFondo({ rRaccordo: Math.round(clamped * 10) / 10 });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dInt]);
+
+
   /* --- tipo coperchio (preset) --- */
   type Preset = 'klopper' | 'korbbogen' | 'pseudoellittico' | 'custom';
   const presetCoperchio: Preset =
@@ -331,7 +362,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const box1H = 176;
   const boxSumH = 76;
   const box2H = 96;
-  const box3H = 155;
+  const box3H = 181;
   // riquadro 3 (fondo inclinato): fisso in basso
   const box3Y = drawH - box3H - 6;
   // riquadro 1 (coperchio): fisso in alto
@@ -521,6 +552,15 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             </foreignObject>
             <foreignObject x={12} y={box3Y + 52} width={boxW - 18} height="24">
               <MiniField
+                label="Racc. (r)"
+                value={raggioRaccordo}
+                onChange={(v) => setRaggioRaccordo(v)}
+                labelWidth="58px"
+                width="78px"
+              />
+            </foreignObject>
+            <foreignObject x={12} y={box3Y + 78} width={boxW - 18} height="24">
+              <MiniField
                 label="Colletto"
                 value={hCollettoFondo}
                 onChange={(v) => patchFondo({ hColletto: v })}
@@ -528,7 +568,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 width="78px"
               />
             </foreignObject>
-            <foreignObject x={12} y={box3Y + 78} width={boxW - 18} height="24">
+            <foreignObject x={12} y={box3Y + 104} width={boxW - 18} height="24">
               <MiniField
                 label="Sp."
                 value={input.fondo.sp}
@@ -537,12 +577,13 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 width="78px"
               />
             </foreignObject>
-            <text x={6 + boxW / 2} y={box3Y + 124} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+            <text x={6 + boxW / 2} y={box3Y + 150} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
               Fondo inclinato — litri
             </text>
-            <text x={6 + boxW / 2} y={box3Y + 142} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
+            <text x={6 + boxW / 2} y={box3Y + 168} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
               {result ? fmtL0(result.volumeFondo) : '—'}
             </text>
+
 
           </g>
 

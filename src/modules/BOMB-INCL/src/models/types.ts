@@ -69,6 +69,14 @@ export interface HeadCalculated {
   Sviluppo_mm: number;
   Area_disco_da_tagliare_mq: number;
   Peso_lamiera_kg: number;
+  /** Fondo inclinato: punto più basso reale z_min = r·tanα·(1+sinα) (mm). */
+  z_min?: number;
+  /** Fondo inclinato: quota di fine raccordo H_r = Δ + r·(secα − tanα) (mm). */
+  H_r?: number;
+  /** Fondo inclinato: striscia di parete che appartiene alla VIROLA (m²). */
+  Area_striscia_virola_mq?: number;
+  /** Fondo inclinato: raggio equivalente (mm) per ogni mm dal punto più basso. */
+  rEqProfile?: number[];
 }
 
 
@@ -93,6 +101,13 @@ export interface CalculationResult {
   pesoLamieraVirola: number;
   sviluppoFondoMq: number;
   sviluppoCoperchioMq: number;
+  /** Area totale di lamiera virola (cilindro + striscia del fondo inclinato), m². */
+  areaVirolaMq?: number;
+  /** Solo la striscia tagliata lungo il piano inclinato, m². */
+  areaStrisciaVirolaMq?: number;
+  /** Peso della sola striscia di virola, kg (spessore virola). */
+  pesoStrisciaVirola?: number;
+
   pesoContenutoTotale: number;
   pesoContenutoPerCmCilindro: number;
   litriCumulativi: number[]; // index is h (0 to H_tot)
