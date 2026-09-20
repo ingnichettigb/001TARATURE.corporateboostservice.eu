@@ -332,7 +332,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const boxSumH = 76;
   const box2H = 96;
   const box3H = 155;
-  // riquadro 3 (fondo conico): fisso in basso
+  // riquadro 3 (fondo inclinato): fisso in basso
   const box3Y = drawH - box3H - 6;
   // riquadro 1 (coperchio): fisso in alto
   const box1Y = Math.max(4, Math.min(callout1Y - 50, box3Y - box1H - boxSumH - box2H - 36));
@@ -447,11 +447,11 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             </text>
           </g>
 
-          {/* RIQUADRO SOMMA — SEZIONE CILINDRICA + CONICA */}
+          {/* RIQUADRO SOMMA — SEZIONE CILINDRICA + FONDO INCLINATO */}
           <g>
             <rect x={6} y={boxSumY} width={boxW} height={boxSumH} rx="5" fill="#ffffff" stroke="#0f766e" strokeWidth="1.2" />
             <text x={6 + boxW / 2} y={boxSumY + 18} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
-              Sezione cilindrica + conica
+              Sezione cilindrica + fondo inclinato
             </text>
             <text x={6 + boxW / 2} y={boxSumY + 40} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
               Capacità in litri
@@ -583,7 +583,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             </foreignObject>
           </g>
 
-          {/* CATENA DI QUOTE: coperchio + virola + fondo conico */}
+          {/* CATENA DI QUOTE: coperchio + virola + fondo inclinato */}
           <g>
             <line x1={chainX} y1={yDomeTop} x2={chainX} y2={yApex} stroke="#334155" strokeWidth="1" />
             {[yDomeTop, yCilTop, yCilBot, yApex].map((yy, i) => (

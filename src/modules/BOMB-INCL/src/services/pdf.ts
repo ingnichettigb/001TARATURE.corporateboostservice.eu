@@ -645,7 +645,7 @@ export async function generateCalibrationPDF(
       [grpCyl, lblSviluppo, `${formatNumPDF(Math.PI * result.input.dInt, 1)} mm`],
       [grpCyl, lblVolCyl, `${formatNumPDF(result.volumeCilindro, 2)} l`],
       [grpCyl, labels[lang].sheetWeight.replace(':',''), `${formatNumPDF(result.pesoLamieraVirola, 1)} kg`],
-      // fondo conico
+      // fondo inclinato
       [grpCon, lblHcono, `${formatNumPDF(fon.hDislivello ?? 0, 1)} mm`],
       [grpCon, lblGradi, `${formatNumPDF(result.fondo.alfa, 2)} °`],
       [grpCon, lblColletto, `${fon.hColletto} mm`],

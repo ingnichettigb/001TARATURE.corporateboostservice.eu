@@ -253,8 +253,8 @@ export const translations: Record<Language, TranslationDict> = {
     zone5Name: "Colletto cilindrico (Coperchio)",
     zone4Name: "Mantello cilindrico (L_cil)",
     zone3Name: "Colletto cilindrico (Fondo)",
-    zone2Name: "Raccordo calotta (Fondo)",
-    zone1Name: "Calotta inferiore (Fondo)",
+    zone2Name: "Transizione fondo inclinato / colletto",
+    zone1Name: "Fondo inclinato",
     zoneLevelRange: "Intervallo quote h",
     zonePartialVolume: "Volume parziale",
 
@@ -277,7 +277,7 @@ export const translations: Record<Language, TranslationDict> = {
   en: {
     appName: "BOMB-INCL TARATURA",
     appSub: "v1.2 (EXCEL 01 COMPATIBLE)",
-    appTeaser: "Professional millimeter-by-millimeter calibration for cylindrical tanks with standard or custom conic bottom and dished top. Integrated mathematical model with 7 continuous zones (1 mm steps)",
+    appTeaser: "Professional millimeter-by-millimeter calibration for cylindrical tanks with an inclined bottom and a standard or custom dished top. Integrated mathematical model with 7 continuous zones (1 mm steps)",
     active: "ACTIVE",
     recalculate: "Recalculate Calibration",
     calculate: "Calculate Calibration",
@@ -382,8 +382,8 @@ export const translations: Record<Language, TranslationDict> = {
     zone5Name: "Top head straight flange",
     zone4Name: "Cylindrical shell (L_cil)",
     zone3Name: "Bottom head straight flange",
-    zone2Name: "Bottom head knuckle transition",
-    zone1Name: "Bottom head dome (Base)",
+    zone2Name: "Inclined bottom / straight flange transition",
+    zone1Name: "Inclined bottom",
     zoneLevelRange: "Height ranges h",
     zonePartialVolume: "Partial volume",
 
@@ -406,7 +406,7 @@ export const translations: Record<Language, TranslationDict> = {
   es: {
     appName: "BOMB-INCL TARATURA",
     appSub: "v1.2 (COMPATIBLE CON EXCEL 01)",
-    appTeaser: "Calibración milimétrica profesional para tanques cilíndricos con fondo cónico estándar o personalizado y tapa bombada. Modelo matemático integrado de 7 zonas continuas (pasos de 1 mm)",
+    appTeaser: "Calibración milimétrica profesional para tanques cilíndricos con fondo inclinado y tapa bombada estándar o personalizada. Modelo matemático integrado de 7 zonas continuas (pasos de 1 mm)",
     active: "ACTIVO",
     recalculate: "Recalcular Calibración",
     calculate: "Calcular Calibración",
@@ -511,8 +511,8 @@ export const translations: Record<Language, TranslationDict> = {
     zone5Name: "Cuello cilíndrico superior",
     zone4Name: "Cuerpo cilíndrico (L_cil)",
     zone3Name: "Cuello cilíndrico inferior",
-    zone2Name: "Transición de nudillo inferior",
-    zone1Name: "Cúpula inferior (Base)",
+    zone2Name: "Transición fondo inclinado / collarín",
+    zone1Name: "Fondo inclinado",
     zoneLevelRange: "Rangos de altura h",
     zonePartialVolume: "Volumen parcial",
 
@@ -535,7 +535,7 @@ export const translations: Record<Language, TranslationDict> = {
   de: {
     appName: "BOMB-INCL TARATURA",
     appSub: "v1.2 (EXCEL 01 KOMPATIBEL)",
-    appTeaser: "Professionelle millimetergenaue Kalibrierung für zylindrische Tanks mit Standard- oder kundenspezifischem konischem Boden und gewölbtem Deckel. Integriertes mathematisches 7-Zonen-Modell (1 mm Schritte)",
+    appTeaser: "Professionelle millimetergenaue Kalibrierung für zylindrische Tanks mit Schrägboden und Standard- oder kundenspezifischem gewölbtem Deckel. Integriertes mathematisches 7-Zonen-Modell (1 mm Schritte)",
     active: "AKTIV",
     recalculate: "Kalibrierung Neu Berechnen",
     calculate: "Kalibrierung Berechnen",
@@ -640,8 +640,8 @@ export const translations: Record<Language, TranslationDict> = {
     zone5Name: "Oberer zylindrischer Bord",
     zone4Name: "Zylindrischer Mantel (L_cil)",
     zone3Name: "Unterer zylindrischer Bord",
-    zone2Name: "Unterer Krempenübergang",
-    zone1Name: "Untere Kuppel (Basis)",
+    zone2Name: "Übergang Schrägboden / Bord",
+    zone1Name: "Schrägboden",
     zoneLevelRange: "Höhenbereiche h",
     zonePartialVolume: "Teilvolumen",
 
