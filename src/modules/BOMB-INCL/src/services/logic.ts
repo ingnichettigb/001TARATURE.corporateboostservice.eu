@@ -492,9 +492,15 @@ export function calculateTank(input: TankInput): CalculationResult {
   const pesoLamieraCoperchio = coperchio.Peso_lamiera_kg;
   // Peso lamiera virola: circonferenza media x lunghezza x spessore x densità (8 kg/dm3 acciaio)
   const spVirola = input.spVirola && input.spVirola > 0 ? input.spVirola : input.fondo.sp;
-  const pesoLamieraVirola = (Math.PI * (dInt + spVirola) * lCil * spVirola * 8) / 1e6;
+  const areaVirolaCilindricaMq = (Math.PI * (dInt + spVirola) * lCil) / 1e6;
+  // Striscia di parete tagliata lungo il piano inclinato: è lamiera di VIROLA
+  const areaStrisciaVirolaMq = fondo.Area_striscia_virola_mq ?? 0;
+  const areaVirolaMq = areaVirolaCilindricaMq + areaStrisciaVirolaMq;
+  const pesoStrisciaVirola = areaStrisciaVirolaMq * spVirola * 8;
+  const pesoLamieraVirola = areaVirolaMq * spVirola * 8;
   const sviluppoFondoMq = fondo.Area_disco_da_tagliare_mq;
   const sviluppoCoperchioMq = coperchio.Area_disco_da_tagliare_mq;
+
 
   const pesoContenutoTotale = volumeTotale * rho;
   const pesoContenutoPerCmCilindro = (Math.PI * Math.pow(dInt / 2, 2) * 10 / 1e6) * rho; // 10 mm = 1 cm
