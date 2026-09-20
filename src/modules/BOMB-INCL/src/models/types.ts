@@ -16,6 +16,7 @@ export interface HeadConfig {
   r_custom?: number;  // raggio raccordo custom (mm)
   hCono?: number;     // altezza totale (cono + raccordo) (mm) — solo per type='conico'
   rRaccordo?: number; // raggio raccordo cono/colletto (mm) — solo per type='conico'
+  hDislivello?: number; // dislivello fondo inclinato: quota alta − quota bassa (mm) — solo per type='inclinato'
 }
 
 export interface ReportMeta {
