@@ -206,6 +206,37 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
     patchFondo({ hDislivello: Math.round(v * 10) / 10 });
   };
 
+  // RAGGIO DI RACCORDO: min 0, max 10% del diametro interno (r < R)
+  const raggioRaccordo = input.fondo.rRaccordo ?? 0;
+  const raggioRaccordoLimite = Math.round(raggioRaccordoMax(dInt) * 10) / 10;
+  const [raccordoWarning, setRaccordoWarning] = useState<string | null>(null);
+
+  const setRaggioRaccordo = (v: number) => {
+    if (!isFinite(v) || v < 0) return;
+    const clamped = clampRaggioRaccordo(v, dInt);
+    if (v > clamped + 1e-6) {
+      setRaccordoWarning(
+        `Raggio di raccordo limitato a ${raggioRaccordoLimite} mm (10% del diametro interno ${dInt} mm).`,
+      );
+    } else {
+      setRaccordoWarning(null);
+    }
+    patchFondo({ rRaccordo: Math.round(clamped * 10) / 10 });
+  };
+
+  // al variare del diametro il massimo si ricalcola: se superato, riporta al massimo
+  useEffect(() => {
+    const clamped = clampRaggioRaccordo(raggioRaccordo, dInt);
+    if (raggioRaccordo > clamped + 1e-6) {
+      setRaccordoWarning(
+        `Raggio di raccordo riportato al massimo ${raggioRaccordoLimite} mm (10% del diametro interno ${dInt} mm).`,
+      );
+      patchFondo({ rRaccordo: Math.round(clamped * 10) / 10 });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dInt]);
+
+
   /* --- tipo coperchio (preset) --- */
   type Preset = 'klopper' | 'korbbogen' | 'pseudoellittico' | 'custom';
   const presetCoperchio: Preset =
