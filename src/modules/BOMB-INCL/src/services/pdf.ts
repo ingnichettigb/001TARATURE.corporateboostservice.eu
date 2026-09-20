@@ -391,14 +391,15 @@ export async function generateCalibrationPDF(
       }
     };
 
-    // 1. Fill background: cylindrical body + top dome + bottom cone
-    const coneApexY = y_c + h_c + dome_h + 1.5;
+    // 1. Fill background: cylindrical body + top dome + inclined bottom
+    const dropY = dome_h + 1.5;               // dislivello grafico del fondo inclinato
+    const coneApexY = y_c + h_c + dropY;      // quota del punto basso (lato sinistro)
     doc.setFillColor(240, 253, 244);
     doc.rect(x_c, y_c, w_c, h_c, 'F');
     // Top dome (bombato)
     doc.ellipse(x_c + w_c / 2, y_c, w_c / 2, dome_h, 'F');
-    // Bottom cone (conico)
-    doc.triangle(x_c, y_c + h_c, x_c + w_c, y_c + h_c, x_c + w_c / 2, coneApexY, 'F');
+    // Bottom wedge (inclinato): punto alto a destra, punto basso a sinistra
+    doc.triangle(x_c, y_c + h_c, x_c + w_c, y_c + h_c, x_c, coneApexY, 'F');
 
     // 2. Draw tank outlines
     doc.setDrawColor(6, 78, 59);
