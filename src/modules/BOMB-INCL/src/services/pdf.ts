@@ -404,15 +404,14 @@ export async function generateCalibrationPDF(
     // 2. Draw tank outlines
     doc.setDrawColor(6, 78, 59);
     doc.setLineWidth(0.4);
-    // Left vertical line
-    doc.line(x_c, y_c, x_c, y_c + h_c);
+    // Left vertical line (fino al punto basso del fondo inclinato)
+    doc.line(x_c, y_c, x_c, coneApexY);
     // Right vertical line
     doc.line(x_c + w_c, y_c, x_c + w_c, y_c + h_c);
     // Top dome outline
     drawSemiEllipse(x_c + w_c / 2, y_c, w_c / 2, dome_h, Math.PI, 2 * Math.PI);
-    // Bottom cone outlines (two slanted sides)
-    doc.line(x_c, y_c + h_c, x_c + w_c / 2, coneApexY);
-    doc.line(x_c + w_c, y_c + h_c, x_c + w_c / 2, coneApexY);
+    // Bottom inclined plate (dal punto basso sinistro al punto alto destro)
+    doc.line(x_c, coneApexY, x_c + w_c, y_c + h_c);
 
     // 3. Draw horizontal weld junctions (seams)
     doc.setDrawColor(110, 160, 140);
