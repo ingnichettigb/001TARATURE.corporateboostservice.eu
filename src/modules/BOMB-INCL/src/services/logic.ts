@@ -119,15 +119,38 @@ function buildInclinedGeom(dInt: number, delta: number, rIn: number): InclinedGe
     cumul[b] = Math.min(acc, areaDisco);
   }
 
+  // Area bagnata (mm²) alla quota t misurata dal punto più basso reale.
+  // CDF campionata nei punti (b+1, cumul[b]) e interpolata linearmente.
+  const areaAt = (t: number): number => {
+    if (t <= 0) return 0;
+    if (t >= Hr - zMin) return areaDisco;
+    const p = t - 1; // indice reale nella tabella cumul
+    if (p <= 0) return cumul[0] * t;
+    const i0 = Math.min(nBuckets - 1, Math.floor(p));
+    const i1 = Math.min(nBuckets - 1, i0 + 1);
+    const f = p - i0;
+    return cumul[i0] + (cumul[i1] - cumul[i0]) * f;
+  };
+
+  // Area analitica esatta del solo cuneo (segmento circolare), usata quando r = 0
+  const areaCuneoAnalitica = (z: number): number => {
+    if (z <= 0) return 0;
+    if (z >= delta) return areaDisco;
+    const a = Math.max(-R, Math.min(R, (2 * R * z) / delta - R));
+    return R * R * Math.acos(-a / R) + a * Math.sqrt(Math.max(0, R * R - a * a));
+  };
+
   const hMax = Math.ceil(Hr - zMin);
   const rEqProfile = new Array<number>(hMax + 1).fill(0);
-  for (let h = 0; h <= hMax; h++) {
-    const idx = Math.min(nBuckets - 1, Math.max(0, h - 1));
-    const A = h <= 0 ? 0 : cumul[idx];
+  for (let h = 1; h <= hMax; h++) {
+    // area a metà fetta (regola del punto medio): integrazione mm per mm accurata
+    const tMid = h - 0.5;
+    const A = r > 0 ? areaAt(tMid) : areaCuneoAnalitica(tMid);
     rEqProfile[h] = Math.sqrt(Math.max(0, A) / Math.PI);
   }
 
-  const volumeCuneoMm3 = sumDepth * cell * norm;
+  const volumeCuneoMm3 = r > 0 ? sumDepth * cell * norm : (Math.PI * R * R * delta) / 2;
+
 
   // Lamiera del FONDO: piano inclinato residuo + fascia di raccordo
   const s_t = Math.max(0, R - r * (1 + Math.sin(alfa)));
