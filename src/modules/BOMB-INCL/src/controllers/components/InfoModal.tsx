@@ -20,16 +20,17 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
     it: {
       title: "Manuale d'Uso & Informazioni Tecniche",
       subtitle: "Modello Matematico Integrato a 7 Zone",
-      intro: "Questo applicativo professionale esegue la taratura geometrica millimetrica di serbatoi cilindrici ad asse orizzontale dotati di fondo inclinato e coperchio bombato standard (Klöpper, Korbbogen), piano o completamente personalizzato. Il calcolo volumetrico si basa su una discretizzazione continua a passo di 1 millimetro.",
+      intro: "Questo applicativo professionale esegue la taratura geometrica millimetrica di serbatoi cilindrici verticali dotati di fondo inclinato e coperchio bombato standard (Klöpper, Korbbogen) o personalizzato. Il calcolo volumetrico si basa su una discretizzazione continua a passo di 1 millimetro.",
       
       sections: [
         {
           icon: Layers,
           title: "1. Il Modello Matematico a 7 Zone",
-          desc: "Il serbatoio viene scomposto geometricamente in 7 zone d'integrazione continue per gestire con assoluto rigore matematico la variazione di raggio dovuta alla raccordatura e alla bombatura dei fondi:",
+          desc: "Il serbatoio viene scomposto geometricamente in 7 zone d'integrazione continue, mantenendo il flusso di BOMB-CON e sostituendo le zone inferiori con il fondo inclinato:",
           items: [
-            "**Zone 1 & 7 (Calotte sferiche esterne)**: Corrispondono alla porzione bombata centrale di raggio R delle due testate.",
-            "**Zone 2 & 6 (Raccordi torisferici)**: Gestiscono la curvatura di raccordo r (knuckle radius) che unisce la calotta centrale al colletto cilindrico.",
+            "**Zona 1 (Fondo inclinato)**: Integra il cuneo generato dal piano inclinato, dal punto basso al punto alto.",
+            "**Zona 2 (Transizione inferiore) e Zona 6 (Raccordo superiore)**: Raccordano rispettivamente il fondo al colletto e il coperchio bombato al proprio colletto.",
+            "**Zona 7 (Calotta superiore)**: Corrisponde alla porzione bombata centrale del coperchio.",
             "**Zone 3 & 5 (Colletti cilindrici diritti)**: Porzione cilindrica piana (h colletto) che facilita la saldatura delle testate al fasciame.",
             "**Zona 4 (Cilindro centrale / Mantello)**: Il corpo cilindrico principale del serbatoio con lunghezza L_cil."
           ]
@@ -37,8 +38,9 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
         {
           icon: Cylinder,
           title: "2. Geometria delle Testate",
-          desc: "È possibile selezionare diverse tipologie di testate:",
+          desc: "Il fondo è definito da dislivello e inclinazione collegati; il coperchio mantiene le tipologie di BOMB-CON:",
           items: [
+            "**Fondo inclinato**: Dislivello Δ = D × tan(α), con aggiornamento automatico nei due sensi.",
             "**Decinormale**: Raggio calotta R = 1 × D, raggio di raccordo r = D / 10.",
             "**Pseudoellittico**: Raggio calotta R = 0.833 × D, raggio di raccordo r = 0.156 × D.",
             "**Custom**: Consente di definire a piacimento R (Raggio calotta) e r (Raggio raccordo) per coprire misure non standard."
@@ -51,7 +53,7 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
           items: [
             "**Passo A (Anagrafica Collaudatore)**: Cliccando su 'Configura Collaudatore' è possibile personalizzare intestazione, P.IVA, PEC, contatti, logo aziendale o firma grafica da apporre automaticamente sui verbali PDF.",
             "**Passo B (Parametri Principali)**: Inserire il Diametro Interno (mm), la Lunghezza del Cilindro (mm) e la densità del fluido (kg/dm³) per calcolare anche il peso della massa liquida contenuta.",
-            "**Passo C (Configurazione Fondi)**: Definire lo spessore delle lamiere e l'altezza del colletto. Selezionare se le testate sono identiche o se il fondo inferiore differisce da quello superiore.",
+            "**Passo C (Configurazione Geometrica)**: Definire dislivello o inclinazione del fondo, colletto e spessore; configurare separatamente il coperchio bombato.",
             "**Passo D (Dati Identificativi)**: Nel pannello 'Dati Identificativi' compilare i dettagli del cliente, numero di fabbrica, numero disegno e commessa che compariranno nel verbale.",
             "**Passo E (Rapporto di Stampa)**: Utilizzare i pulsanti per scaricare la tabella centimetrica in formato CSV o stampare il PDF. È possibile scegliere la **Stampa PDF Standard** o la **Stampa PDF Condensata** (layout compatto a doppia colonna con bordi verdi elettrici)."
           ]
@@ -79,7 +81,7 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
     en: {
       title: "User Manual & Technical Info",
       subtitle: "Integrated 7-Zone Mathematical Model",
-      intro: "This professional application performs high-precision millimeter-step strapping and calibration for horizontal cylindrical tanks equipped with standard (Klöpper, Korbbogen), flat, or fully custom torispherical heads. Calculations are computed continuously with 1 mm step resolution.",
+      intro: "This professional application performs high-precision millimeter-step calibration for vertical cylindrical tanks with an inclined bottom and a standard or custom dished top. Calculations use a continuous 1 mm step resolution.",
       
       sections: [
         {
@@ -87,8 +89,9 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
           title: "1. The 7-Zone Mathematical Model",
           desc: "The tank volume is dynamically divided into 7 distinct geometric integration zones to strictly solve for the varying radii of the dished heads:",
           items: [
-            "**Zones 1 & 7 (Outer spherical crown)**: Central dished part with radius R of the two heads.",
-            "**Zones 2 & 6 (Torispherical knuckle joints)**: Curved transitions with radius r (knuckle radius) joining the central crown to the straight flange.",
+            "**Zone 1 (Inclined bottom)**: Integrates the wedge from the low point to the high point.",
+            "**Zone 2 (Lower transition) and Zone 6 (Upper knuckle)**: Join the bottom and dished top to their straight flanges.",
+            "**Zone 7 (Top crown)**: Central dished part of the top head.",
             "**Zones 3 & 5 (Straight flanges / Colletti)**: Brief cylindrical sections (hColletto) facilitating welding joints.",
             "**Zone 4 (Central Cylinder)**: Main cylindrical body of the tank with length L_cil."
           ]
@@ -96,8 +99,9 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
         {
           icon: Cylinder,
           title: "2. Dished Head Geometries",
-          desc: "Choose from the following tank heads:",
+          desc: "The bottom uses linked slope drop and angle values; the top retains the BOMB-CON head choices:",
           items: [
+            "**Inclined bottom**: Drop Δ = D × tan(α), updated automatically in both directions.",
             "**Decinormale**: Crown radius R = 1 × D, knuckle radius r = D / 10.",
             "**Pseudoellittico**: Crown radius R = 0.833 × D, knuckle radius r = 0.156 × D.",
             "**Custom**: Input custom R (crown radius) and r (knuckle radius) to match non-standard dimensions."
@@ -110,7 +114,7 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
           items: [
             "**Step A (Inspector Profile)**: Click 'Configure Certifier' to define your company name, tax ID, email, physical address, custom corporate logo, or digital signature overlay.",
             "**Step B (Dimensions)**: Enter Inner Diameter (mm), Cylinder Length (mm), and fluid density (kg/dm³) to calculate fluid mass weight.",
-            "**Step C (Dished Heads)**: Set plate thickness and straight flange height. Enable unequal heads to model distinct upper/lower profiles.",
+            "**Step C (Tank Geometry)**: Enter either bottom drop or slope angle, flange and thickness; configure the dished top separately.",
             "**Step D (Metadata)**: Fill out customer name, job number, factory ID, tag number, and extended validity fields in the 'Identification' panel.",
             "**Step E (Exporting)**: Download the 1-cm grid as CSV or generate PDF reports. Choose between **Standard PDF** or **Condensed PDF** (ecological layout with bright electric green borders)."
           ]
@@ -138,7 +142,7 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
     es: {
       title: "Manual de Uso e Información Técnica",
       subtitle: "Modelo Matemático Integrado de 7 Zonas",
-      intro: "Esta herramienta profesional realiza el cálculo geométrico milimétrico de tanques cilíndricos horizontales equipados con fondos abombados estándar (Klöpper, Korbbogen), planos o personalizados. La resolución de cálculo es continua de 1 mm.",
+      intro: "Esta herramienta profesional realiza la calibración milimétrica de tanques cilíndricos verticales con fondo inclinado y tapa bombada estándar o personalizada. La resolución de cálculo es continua de 1 mm.",
       
       sections: [
         {
@@ -146,8 +150,9 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
           title: "1. El Modelo Matemático de 7 Zonas",
           desc: "La capacidad se integra subdividiendo el volumen en 7 secciones geométricas continuas para asegurar la exactitud:",
           items: [
-            "**Zonas 1 y 7 (Corona central de fondos)**: Parte abombada de radio de abombamiento R.",
-            "**Zonas 2 y 6 (Racor torisférico de fondos)**: Transición curva con radio de acuerdo r.",
+            "**Zona 1 (Fondo inclinado)**: Integra la cuña desde el punto bajo hasta el punto alto.",
+            "**Zona 2 (Transición inferior) y Zona 6 (Racor superior)**: Unen el fondo y la tapa con sus collarines.",
+            "**Zona 7 (Corona superior)**: Parte bombada central de la tapa.",
             "**Zonas 3 y 5 (Collarines rectos)**: Sección cilíndrica de cuello (hColletto) de las cabezas.",
             "**Zona 4 (Cilindro Central)**: Cuerpo de virola del tanque con longitud L_cil."
           ]
@@ -155,8 +160,9 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
         {
           icon: Cylinder,
           title: "2. Geometrías Disponibles",
-          desc: "Admite las normativas de fondos abombados:",
+          desc: "El fondo usa desnivel y ángulo vinculados; la tapa conserva las opciones de BOMB-CON:",
           items: [
+            "**Fondo inclinado**: Desnivel Δ = D × tan(α), actualizado automáticamente en ambos sentidos.",
             "**Decinormale**: Radio de abombamiento R = 1 × D, radio de acuerdo r = D / 10.",
             "**Pseudoellittico**: Radio de abombamiento R = 0.833 × D, radio de acuerdo r = 0.156 × D.",
             "**Custom**: Permite especificar medidas no estándar de R y r a conveniencia para copiar cualquier diseño industrial."
@@ -169,7 +175,7 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
           items: [
             "**Paso A (Datos de Inspector)**: Haga clic en 'Configurar Certificador' para definir los datos de su empresa, firma digital o logotipo personalizado.",
             "**Paso B (Cotas de Tanque)**: Inserte el diámetro interior (mm), longitud cilíndrica (mm) y densidad del fluido (kg/dm³).",
-            "**Paso C (Configuración de Tapas)**: Defina el espesor y la altura del cuello soldado. Active tapas desiguales si es necesario.",
+            "**Paso C (Geometría del Tanque)**: Introduzca desnivel o ángulo del fondo, collarín y espesor; configure la tapa bombada por separado.",
             "**Paso D (Datos Identificativos)**: Registre cliente, dibujo, número de serie y tag del equipo.",
             "**Paso E (Exportación)**: Descargue la tabla en CSV o imprima informes en **PDF estándar** o **PDF Condensado** (doble columna con ribetes verde eléctrico)."
           ]
@@ -197,7 +203,7 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
     de: {
       title: "Benutzerhandbuch & Technische Informationen",
       subtitle: "Integriertes 7-Zonen-Mathematikmodell",
-      intro: "Diese Software dient zur millimetergenauen Inhaltsberechnung (Peiltabellen) für liegende zylindrische Behälter mit Standardböden (Klöpper, Korbbogen), flachen oder kundenspezifischen Klöpperböden. Der Berechnungsschritt beträgt kontinuierlich 1 Millimeter.",
+      intro: "Diese Software dient zur millimetergenauen Kalibrierung vertikaler zylindrischer Behälter mit Schrägboden und standardmäßigem oder kundenspezifischem gewölbtem Deckel. Der Berechnungsschritt beträgt kontinuierlich 1 Millimeter.",
       
       sections: [
         {
@@ -205,8 +211,9 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
           title: "1. Das mathematische 7-Zonen-Modell",
           desc: "Das Gesamtvolumen wird zur Integration präzise in 7 Abschnitte unterteilt, um Knickradien und Wölbungen exakt abzubilden:",
           items: [
-            "**Zonen 1 & 7 (Zentraler Kugelbereich)**: Gewölbter Hauptteil mit Radius R der Behälterböden.",
-            "**Zonen 2 & 6 (Krempenbereich)**: Übergangsradius r (Krempenradius) zur Verbindung mit der zylindrischen Zarge.",
+            "**Zone 1 (Schrägboden)**: Integriert den Keil vom Tiefpunkt bis zum Hochpunkt.",
+            "**Zone 2 (Unterer Übergang) und Zone 6 (Oberer Krempenbereich)**: Verbinden Boden und Deckel mit ihren Borden.",
+            "**Zone 7 (Obere Wölbung)**: Gewölbter Hauptteil des Deckels.",
             "**Zonen 3 & 5 (Zylindrischer Bord)**: Kurzer gerader Flanschabschnitt (hColletto).",
             "**Zone 4 (Hauptzylinder)**: Der zylindrische Mantelbereich des Behälters mit Länge L_cil."
           ]
@@ -214,8 +221,9 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
         {
           icon: Cylinder,
           title: "2. Geometrien der Behälterböden",
-          desc: "Folgende Geometrien stehen zur Auswahl:",
+          desc: "Der Boden nutzt gekoppelte Werte für Höhenunterschied und Neigung; der Deckel behält die BOMB-CON-Auswahl:",
           items: [
+            "**Schrägboden**: Höhenunterschied Δ = D × tan(α), automatische Aktualisierung in beide Richtungen.",
             "**Decinormale**: Wölbungsradius R = 1 × D, Krempenradius r = D / 10.",
             "**Pseudoellittico**: Wölbungsradius R = 0,833 × D, Krempenradius r = 0,156 × D.",
             "**Custom**: Freie Angabe von R und r zur Nachbildung beliebiger nicht standardisierter Maße."
@@ -228,7 +236,7 @@ export default function InfoModal({ isOpen, onClose, lang }: InfoModalProps) {
           items: [
             "**Schritt A (Prüferprofil)**: Klicken Sie auf 'Prüfer konfigurieren', um Ihren Firmennamen, Ihre Steuer-ID, Ihr Logo oder Ihre digitale Unterschrift zu hinterlegen.",
             "**Schritt B (Abmessungen)**: Eingabe von Innendurchmesser (mm), Mantellänge (mm) und Mediendichte (kg/dm³).",
-            "**Schritt C (Behälterböden)**: Eingabe der Wandstärke und Bordhöhe für oberen/unteren Boden.",
+            "**Schritt C (Tank-Geometrie)**: Höhenunterschied oder Neigungswinkel, Bordhöhe und Dicke des Bodens eingeben; den gewölbten Deckel separat konfigurieren.",
             "**Schritt D (Projektmetadaten)**: Eingabe von Projektmetadaten (Kunde, Fabrik-Nr., Zeichnungs-Nr.).",
             "**Schritt E (Datenexport)**: Datenexport per CSV oder PDF. Wählen Sie zwischen **Standard-PDF** oder **Kompakt-PDF** (Doppelspalten-Format mit neongrünen Rändern)."
           ]
