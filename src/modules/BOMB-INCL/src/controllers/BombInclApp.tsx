@@ -1306,21 +1306,21 @@ export default function App() {
                       </div>
                       <div className="flex justify-between border-t border-neutral-200 pt-1 mt-1 text-[8.5px]">
                         <span>
-                          {lang === 'en' ? 'Dish Radius (R):' :
-                           lang === 'es' ? 'Radio bombado (R):' :
-                           lang === 'de' ? 'Wölbungsradius (R):' :
-                           'Raggio bombatura (R):'}
+                          {lang === 'en' ? 'Slope drop (Δ):' :
+                           lang === 'es' ? 'Desnivel (Δ):' :
+                           lang === 'de' ? 'Höhenunterschied (Δ):' :
+                           'Dislivello (Δ):'}
                         </span>
-                        <span className="font-bold">{formatNum(result.fondo.R, 1)} mm</span>
+                        <span className="font-bold">{formatNum(result.input.fondo.hDislivello ?? 0, 1)} mm</span>
                       </div>
                       <div className="flex justify-between text-[8.5px]">
                         <span>
-                          {lang === 'en' ? 'Knuckle Radius (r):' :
-                           lang === 'es' ? 'Radio raccordo (r):' :
-                           lang === 'de' ? 'Krempenradius (r):' :
-                           'Raggio di raccordo (r):'}
+                          {lang === 'en' ? 'Slope angle:' :
+                           lang === 'es' ? 'Ángulo de inclinación:' :
+                           lang === 'de' ? 'Neigungswinkel:' :
+                           'Inclinazione:'}
                         </span>
-                        <span className="font-bold">{formatNum(result.fondo.r, 1)} mm</span>
+                        <span className="font-bold">{formatNum(result.fondo.alfa, 2)} °</span>
                       </div>
                       <div className="flex justify-between text-[8.5px]">
                         <span>
