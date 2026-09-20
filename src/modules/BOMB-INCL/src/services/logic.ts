@@ -8,7 +8,73 @@ import { TankInput, HeadConfig, HeadCalculated, CalculationResult } from '../mod
 /**
  * Calculates geometry and volumes for a single head (coperchio or fondo)
  */
+/** Dislivello (mm) del fondo inclinato in funzione dell'angolo: Δ = Ø · tan(α). */
+export function dislivelloFromAngle(alfaDeg: number, dInt: number): number {
+  return dInt * Math.tan((alfaDeg * Math.PI) / 180);
+}
+
+/** Angolo (gradi) del fondo inclinato in funzione del dislivello: α = atan(Δ / Ø). */
+export function angleFromDislivello(delta: number, dInt: number): number | null {
+  if (!(dInt > 0) || !(delta > 0)) return null;
+  const a = (Math.atan(delta / dInt) * 180) / Math.PI;
+  return isFinite(a) && a > 0 && a < 90 ? a : null;
+}
+
+/** Area (mm²) della sezione bagnata del cuneo del fondo inclinato alla quota z. */
+function areaCuneo(R: number, delta: number, z: number): number {
+  if (!(R > 0) || !(delta > 0)) return 0;
+  if (z >= delta) return Math.PI * R * R;
+  if (z <= 0) return 0;
+  // posizione della corda: il piano inclinato attraversa il diametro
+  const a = (2 * R * z) / delta - R;
+  const aC = Math.max(-R, Math.min(R, a));
+  return R * R * Math.acos(-aC / R) + aC * Math.sqrt(Math.max(0, R * R - aC * aC));
+}
+
 export function calculateHead(dInt: number, config: HeadConfig): HeadCalculated {
+  // === Fondo inclinato (piano tagliato in obliquo: cuneo cilindrico) ===
+  if (config.type === 'inclinato') {
+    const R_base = dInt / 2;
+    const delta = Math.max(0.1, config.hDislivello ?? dislivelloFromAngle(5, dInt));
+    const alfa = angleFromDislivello(delta, dInt) ?? 0;
+    const alfaRad = (alfa * Math.PI) / 180;
+
+    // Volume del cuneo = metà del cilindro di altezza pari al dislivello
+    const V_cuneo_L = (Math.PI * R_base * R_base * delta) / 2 / 1e6;
+    const V_colletto_L = (Math.PI * R_base * R_base * config.hColletto) / 1e6;
+
+    // Lamiera: ellisse di taglio (πR²/cos α) + colletto cilindrico
+    const Area_ellisse_mq = (Math.PI * R_base * R_base / Math.max(1e-6, Math.cos(alfaRad))) / 1e6;
+    const Area_colletto_mq = (2 * Math.PI * R_base * config.hColletto) / 1e6;
+    const Area_totale_mq = Area_ellisse_mq + Area_colletto_mq;
+    const Peso_lamiera_kg = Area_totale_mq * config.sp * 8;
+
+    return {
+      R: 0,
+      r: 0,
+      DR: 0,
+      X: 0,
+      alfa,
+      beta: 90 - alfa,
+      H1: 0,
+      H_int: delta,
+      H2: 0,            // nessun raccordo
+      H3: delta,        // zona 1 = cuneo inclinato
+      Y: R_base,
+      Baric: 0,
+      K: 0,
+      H_esterna_totale: delta + config.hColletto + config.sp,
+      V_calotta: V_cuneo_L,
+      V_toro: 0,
+      V_raccordo: 0,
+      V_colletto: V_colletto_L,
+      V_testata_LT: V_cuneo_L + V_colletto_L,
+      Sviluppo_mm: 2 * Math.PI * (R_base + config.sp / 2),
+      Area_disco_da_tagliare_mq: Area_totale_mq,
+      Peso_lamiera_kg,
+    };
+  }
+
   // === Testa conica (fondo conico retto con raccordo cono/colletto) ===
   if (config.type === 'conico') {
     const R_base = dInt / 2;
