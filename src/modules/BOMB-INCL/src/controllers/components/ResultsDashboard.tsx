@@ -251,7 +251,7 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
 
               {/* 7 Zones Lines indicators (Delimitatori Doppia Riga Verde Oliva Sottile) */}
               {[
-                { label: lang === 'en' ? 'Z1/Z2 (Cone apex end)' : lang === 'es' ? 'Z1/Z2 (Fin del cono)' : lang === 'de' ? 'Z1/Z2 (Konusende)' : 'Z1/Z2 (Fine cono)', val: result.z1 },
+                { label: lang === 'en' ? 'Z1/Z2 (Inclined bottom end)' : lang === 'es' ? 'Z1/Z2 (Fin fondo inclinado)' : lang === 'de' ? 'Z1/Z2 (Ende Schrägboden)' : 'Z1/Z2 (Fine fondo inclinato)', val: result.z1 },
                 { label: lang === 'en' ? 'Z2/Z3 (Bottom flange)' : lang === 'es' ? 'Z2/Z3 (Pestaña inf.)' : lang === 'de' ? 'Z2/Z3 (Unterer Bord)' : 'Z2/Z3 (Colletto f.)', val: result.z2 },
                 { label: lang === 'en' ? 'Z3/Z4 (Bottom shell)' : lang === 'es' ? 'Z3/Z4 (Cuerpo inf.)' : lang === 'de' ? 'Z3/Z4 (Unterer Mantel)' : 'Z3/Z4 (Mantello f.)', val: result.z3 },
                 { label: lang === 'en' ? 'Z4/Z5 (Top flange)' : lang === 'es' ? 'Z4/Z5 (Pestaña sup.)' : lang === 'de' ? 'Z4/Z5 (Oberer Bord)' : 'Z4/Z5 (Colletto c.)', val: result.z4 },
@@ -477,7 +477,7 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                 <div className="space-y-2 mt-3 text-xs text-neutral-800">
                   <div className="flex justify-between py-1 border-b border-neutral-200">
                     <span className="font-bold text-neutral-900">
-                      {lang === 'en' ? 'Bottom Cone Volume:' : lang === 'es' ? 'Volumen del Fondo Cónico:' : lang === 'de' ? 'Volumen des Konusbodens:' : 'Volume Fondo Conico:'}
+                      {lang === 'en' ? 'Inclined Bottom Volume:' : lang === 'es' ? 'Volumen del Fondo Inclinado:' : lang === 'de' ? 'Volumen des Schrägbodens:' : 'Volume Fondo Inclinato:'}
                     </span>
                     <span className="font-mono font-extrabold text-neutral-950">{formatNum(result.volumeFondo, 2)} {lang === 'en' ? 'liters' : lang === 'es' ? 'litros' : lang === 'de' ? 'Liter' : 'litri'}</span>
                   </div>
