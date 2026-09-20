@@ -101,6 +101,13 @@ export interface CalculationResult {
   pesoLamieraVirola: number;
   sviluppoFondoMq: number;
   sviluppoCoperchioMq: number;
+  /** Area totale di lamiera virola (cilindro + striscia del fondo inclinato), m². */
+  areaVirolaMq?: number;
+  /** Solo la striscia tagliata lungo il piano inclinato, m². */
+  areaStrisciaVirolaMq?: number;
+  /** Peso della sola striscia di virola, kg (spessore virola). */
+  pesoStrisciaVirola?: number;
+
   pesoContenutoTotale: number;
   pesoContenutoPerCmCilindro: number;
   litriCumulativi: number[]; // index is h (0 to H_tot)
