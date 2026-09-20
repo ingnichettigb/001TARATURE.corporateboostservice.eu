@@ -6,7 +6,7 @@
 import type { ReportHeader } from '@/common/report-header/types';
 
 
-export type HeadType = 'decinormale' | 'pseudoellittico' | 'custom' | 'conico';
+export type HeadType = 'decinormale' | 'pseudoellittico' | 'custom' | 'conico' | 'inclinato';
 
 export interface HeadConfig {
   type: HeadType;
