@@ -331,7 +331,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const box1H = 176;
   const boxSumH = 76;
   const box2H = 96;
-  const box3H = 155;
+  const box3H = 181;
   // riquadro 3 (fondo inclinato): fisso in basso
   const box3Y = drawH - box3H - 6;
   // riquadro 1 (coperchio): fisso in alto
@@ -521,6 +521,15 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             </foreignObject>
             <foreignObject x={12} y={box3Y + 52} width={boxW - 18} height="24">
               <MiniField
+                label="Racc. (r)"
+                value={raggioRaccordo}
+                onChange={(v) => setRaggioRaccordo(v)}
+                labelWidth="58px"
+                width="78px"
+              />
+            </foreignObject>
+            <foreignObject x={12} y={box3Y + 78} width={boxW - 18} height="24">
+              <MiniField
                 label="Colletto"
                 value={hCollettoFondo}
                 onChange={(v) => patchFondo({ hColletto: v })}
@@ -528,7 +537,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 width="78px"
               />
             </foreignObject>
-            <foreignObject x={12} y={box3Y + 78} width={boxW - 18} height="24">
+            <foreignObject x={12} y={box3Y + 104} width={boxW - 18} height="24">
               <MiniField
                 label="Sp."
                 value={input.fondo.sp}
@@ -537,12 +546,13 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 width="78px"
               />
             </foreignObject>
-            <text x={6 + boxW / 2} y={box3Y + 124} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+            <text x={6 + boxW / 2} y={box3Y + 150} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
               Fondo inclinato — litri
             </text>
-            <text x={6 + boxW / 2} y={box3Y + 142} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
+            <text x={6 + boxW / 2} y={box3Y + 168} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
               {result ? fmtL0(result.volumeFondo) : '—'}
             </text>
+
 
           </g>
 
