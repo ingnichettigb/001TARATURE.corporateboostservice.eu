@@ -305,7 +305,12 @@ export function calculateTank(input: TankInput): CalculationResult {
     let rVal = 0;
 
     if (h <= z1) {
-      if (isConicFondo) {
+      if (isInclinedFondo) {
+        // Zona 1 — cuneo del fondo inclinato: sezione = segmento circolare.
+        // Si usa il raggio equivalente (area = π·r_eq²) per mantenere l'integrazione a 1 mm.
+        const A = areaCuneo(dInt / 2, H3_fondo, h);
+        rVal = Math.sqrt(A / Math.PI);
+      } else if (isConicFondo) {
         // Cono retto puro: raggio lineare da 0 (a h=0) fino a Y (a h=H_cono)
         rVal = H3_fondo > 0 ? fondo.Y * (h / H3_fondo) : 0;
       } else {
