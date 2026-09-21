@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { TankInput, HeadType } from '../../models/types';
-import { calculateTank, dislivelloFromAngle, angleFromDislivello } from '../../services/logic';
+import { calculateTank, dislivelloFromAngle, angleFromDislivello, raggioRaccordoMax, clampRaggioRaccordo } from '../../services/logic';
 import { AlertTriangle, Info } from 'lucide-react';
 
 interface GeometrySchemaProps {
