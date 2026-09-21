@@ -621,6 +621,11 @@ export async function generateCalibrationPDF(
     const lblVolCyl = lang === 'en' ? 'Cylindrical Section Volume' : lang === 'es' ? 'Volumen Parte Cilíndrica' : lang === 'de' ? 'Volumen Zylinderteil' : 'Volume parte cilindrica';
     const lblHcono = lang === 'en' ? 'Slope drop (delta) (mm)' : lang === 'es' ? 'Desnivel (delta) (mm)' : lang === 'de' ? 'Höhenunterschied (delta) (mm)' : 'Dislivello fondo inclinato (delta) (mm)';
     const lblGradi = lang === 'en' ? 'Inclination Degrees (°)' : lang === 'es' ? 'Grados de Inclinación (°)' : lang === 'de' ? 'Neigungswinkel (°)' : 'Gradi di Inclinazione (°)';
+    const lblRaccordo = lang === 'en' ? 'Knuckle Radius (r) (mm)' : lang === 'es' ? 'Radio de Acuerdo (r) (mm)' : lang === 'de' ? 'Übergangsradius (r) (mm)' : 'Raggio di raccordo (r) (mm)';
+    const lblAreaFondo = lang === 'en' ? 'Bottom Sheet Area' : lang === 'es' ? 'Área de Chapa de Fondo' : lang === 'de' ? 'Blechfläche Boden' : 'Area lamiera fondo';
+    const lblAreaVirola = lang === 'en' ? 'Shell Sheet Area' : lang === 'es' ? 'Área de Chapa Virola' : lang === 'de' ? 'Blechfläche Mantel' : 'Area lamiera virola';
+    const lblStriscia = lang === 'en' ? 'of which strip along the sloped plane' : lang === 'es' ? 'de la cual franja según el plano inclinado' : lang === 'de' ? 'davon Streifen entlang der Schrägfläche' : 'di cui striscia sul piano inclinato';
+    const lblDeq = lang === 'en' ? 'Equivalent diameter by area (D_eq)' : lang === 'es' ? 'Diámetro equivalente por área (D_eq)' : lang === 'de' ? 'Flächenäquivalenter Durchmesser (D_eq)' : 'Diametro equivalente per area (D_eq)';
     const lblPesoTotLam = lang === 'en' ? 'Total Sheet Metal Weight' : lang === 'es' ? 'Peso Total Chapa' : lang === 'de' ? 'Gesamtes Blechgewicht' : 'Peso totale lamiera';
     const lblPesoPieno = lang === 'en' ? 'Weight with Full Content' : lang === 'es' ? 'Peso con Contenido Lleno' : lang === 'de' ? 'Gewicht bei Vollfüllung' : 'Peso con Contenuto Pieno';
 
@@ -643,15 +648,21 @@ export async function generateCalibrationPDF(
       [grpCyl, labels[lang].cylinderLength.replace(':',''), `${result.input.lCil} mm`],
       [grpCyl, labels[lang].thickness.replace(':',''), `${result.input.spVirola} mm`],
       [grpCyl, lblSviluppo, `${formatNumPDF(Math.PI * result.input.dInt, 1)} mm`],
+      [grpCyl, lblAreaVirola, `${formatNumPDF(result.areaVirolaMq ?? 0, 3)} m²`],
+      [grpCyl, lblStriscia, `${formatNumPDF(result.areaStrisciaVirolaMq ?? 0, 3)} m² — ${formatNumPDF(result.pesoStrisciaVirola ?? 0, 1)} kg`],
       [grpCyl, lblVolCyl, `${formatNumPDF(result.volumeCilindro, 2)} l`],
       [grpCyl, labels[lang].sheetWeight.replace(':',''), `${formatNumPDF(result.pesoLamieraVirola, 1)} kg`],
       // fondo inclinato
       [grpCon, lblHcono, `${formatNumPDF(fon.hDislivello ?? 0, 1)} mm`],
       [grpCon, lblGradi, `${formatNumPDF(result.fondo.alfa, 2)} °`],
+      [grpCon, lblRaccordo, `${formatNumPDF(fon.rRaccordo ?? 0, 1)} mm`],
       [grpCon, lblColletto, `${fon.hColletto} mm`],
       [grpCon, labels[lang].thickness.replace(':',''), `${fon.sp} mm`],
+      [grpCon, lblAreaFondo, `${formatNumPDF(result.sviluppoFondoMq, 3)} m²`],
+      [grpCon, lblDeq, `${formatNumPDF(result.fondo.Sviluppo_mm, 1)} mm`],
       [grpCon, labels[lang].bottomVolume.replace(':',''), `${formatNumPDF(result.volumeFondo, 2)} l`],
       [grpCon, labels[lang].sheetWeight.replace(':',''), `${formatNumPDF(result.pesoLamieraFondo, 1)} kg`],
+
       // coperchio + virole + fondo
       [grpAll, labels[lang].totalHeight.replace(':',''), `${result.H_tot} mm`],
       [grpAll, labels[lang].density.replace(':',''), `${formatNumPDF(result.input.rho, 3)} kg/dm³`],

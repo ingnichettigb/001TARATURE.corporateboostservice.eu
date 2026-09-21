@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { TankInput, HeadType } from '../../models/types';
-import { calculateTank, dislivelloFromAngle, angleFromDislivello } from '../../services/logic';
+import { calculateTank, dislivelloFromAngle, angleFromDislivello, raggioRaccordoMax, clampRaggioRaccordo } from '../../services/logic';
 import { AlertTriangle, Info } from 'lucide-react';
 
 interface GeometrySchemaProps {
@@ -753,6 +753,13 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
           className="w-32 text-sm font-black border border-neutral-300 rounded-lg px-2 py-1 focus:outline-hidden focus:ring-1 focus:ring-emerald-800"
         />
       </div>
+
+      {/* AVVISO RAGGIO DI RACCORDO */}
+      {raccordoWarning && (
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3">
+          <p className="text-xs font-bold text-amber-900">{raccordoWarning}</p>
+        </div>
+      )}
 
       {/* ERRORI GEOMETRICI */}
       {(raccordoError || !geometriaCoperchioValida) && (
