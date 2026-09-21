@@ -643,15 +643,21 @@ export async function generateCalibrationPDF(
       [grpCyl, labels[lang].cylinderLength.replace(':',''), `${result.input.lCil} mm`],
       [grpCyl, labels[lang].thickness.replace(':',''), `${result.input.spVirola} mm`],
       [grpCyl, lblSviluppo, `${formatNumPDF(Math.PI * result.input.dInt, 1)} mm`],
+      [grpCyl, lblAreaVirola, `${formatNumPDF(result.areaVirolaMq ?? 0, 3)} m²`],
+      [grpCyl, lblStriscia, `${formatNumPDF(result.areaStrisciaVirolaMq ?? 0, 3)} m² — ${formatNumPDF(result.pesoStrisciaVirola ?? 0, 1)} kg`],
       [grpCyl, lblVolCyl, `${formatNumPDF(result.volumeCilindro, 2)} l`],
       [grpCyl, labels[lang].sheetWeight.replace(':',''), `${formatNumPDF(result.pesoLamieraVirola, 1)} kg`],
       // fondo inclinato
       [grpCon, lblHcono, `${formatNumPDF(fon.hDislivello ?? 0, 1)} mm`],
       [grpCon, lblGradi, `${formatNumPDF(result.fondo.alfa, 2)} °`],
+      [grpCon, lblRaccordo, `${formatNumPDF(fon.rRaccordo ?? 0, 1)} mm`],
       [grpCon, lblColletto, `${fon.hColletto} mm`],
       [grpCon, labels[lang].thickness.replace(':',''), `${fon.sp} mm`],
+      [grpCon, lblAreaFondo, `${formatNumPDF(result.sviluppoFondoMq, 3)} m²`],
+      [grpCon, lblDeq, `${formatNumPDF(result.fondo.Sviluppo_mm, 1)} mm`],
       [grpCon, labels[lang].bottomVolume.replace(':',''), `${formatNumPDF(result.volumeFondo, 2)} l`],
       [grpCon, labels[lang].sheetWeight.replace(':',''), `${formatNumPDF(result.pesoLamieraFondo, 1)} kg`],
+
       // coperchio + virole + fondo
       [grpAll, labels[lang].totalHeight.replace(':',''), `${result.H_tot} mm`],
       [grpAll, labels[lang].density.replace(':',''), `${formatNumPDF(result.input.rho, 3)} kg/dm³`],

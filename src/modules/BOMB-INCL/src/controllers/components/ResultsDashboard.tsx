@@ -678,9 +678,22 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                     <span className="font-bold text-neutral-800">{formatNum(result.fondo.alfa, 4)}°</span>
                   </div>
                   <div className="flex justify-between py-0.5 border-b border-neutral-100">
+                    <span className="text-neutral-500">Raggio di raccordo (r):</span>
+                    <span className="font-bold text-neutral-800">{formatNum(result.input.fondo.rRaccordo ?? 0, 1)} mm</span>
+                  </div>
+                  <div className="flex justify-between py-0.5 border-b border-neutral-100">
+                    <span className="text-neutral-500">Punto più basso (z_min):</span>
+                    <span className="font-bold text-neutral-800">{formatNum(result.fondo.z_min ?? 0, 2)} mm</span>
+                  </div>
+                  <div className="flex justify-between py-0.5 border-b border-neutral-100">
+                    <span className="text-neutral-500">Fine raccordo (H_r):</span>
+                    <span className="font-bold text-neutral-800">{formatNum(result.fondo.H_r ?? 0, 2)} mm</span>
+                  </div>
+                  <div className="flex justify-between py-0.5 border-b border-neutral-100">
                     <span className="text-neutral-500">Altezza interna fondo:</span>
                     <span className="font-bold text-neutral-800">{formatNum(result.fondo.H_int, 2)} mm</span>
                   </div>
+
                   <div className="flex justify-between py-0.5 border-b border-neutral-100">
                     <span className="text-neutral-500">Colletto:</span>
                     <span className="font-bold text-neutral-800">{formatNum(result.input.fondo.hColletto, 1)} mm</span>
