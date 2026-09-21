@@ -601,12 +601,29 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                     </span>
                     <span className="font-mono">{formatNum(result.pesoLamieraCoperchio, 1)} kg</span>
                   </div>
+                  <div className="flex justify-between py-1">
+                    <span className="font-medium text-neutral-700">
+                      {lang === 'en' ? 'Shell Sheet Area:' : lang === 'es' ? 'Área de Chapa Virola:' : lang === 'de' ? 'Blechfläche Mantel:' : 'Area Lamiera Virola:'}
+                    </span>
+                    <span className="font-mono font-bold text-neutral-950">{formatNum(result.areaVirolaMq ?? 0, 3)} m²</span>
+                  </div>
+                  {(result.areaStrisciaVirolaMq ?? 0) > 0 && (
+                    <div className="flex justify-between py-1">
+                      <span className="font-medium text-neutral-700">
+                        {lang === 'en' ? 'of which strip cut along the sloped plane:' : lang === 'es' ? 'de la cual franja cortada según el plano inclinado:' : lang === 'de' ? 'davon Streifen entlang der Schrägfläche:' : 'di cui striscia tagliata sul piano inclinato:'}
+                      </span>
+                      <span className="font-mono text-neutral-800">
+                        {formatNum(result.areaStrisciaVirolaMq ?? 0, 3)} m² — {formatNum(result.pesoStrisciaVirola ?? 0, 1)} kg
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between py-1 font-black text-neutral-950 border-t border-neutral-300 pt-1">
                     <span>
                       {lang === 'en' ? 'Shell Sheet Weight:' : lang === 'es' ? 'Peso de Chapa Virola:' : lang === 'de' ? 'Blechgewicht Mantel:' : 'Peso Lamiera Virola:'}
                     </span>
                     <span className="font-mono">{formatNum(result.pesoLamieraVirola, 1)} kg</span>
                   </div>
+
                 </div>
               </div>
             </div>
