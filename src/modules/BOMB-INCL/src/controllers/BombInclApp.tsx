@@ -112,6 +112,7 @@ export default function App() {
       sp: 8,
       hColletto: 40,
       hDislivello: 200, // dislivello fondo inclinato (mm) ≈ 5,2°
+      rRaccordo: 0,     // raggio di raccordo piano inclinato/colletto (mm)
     },
     coperchio: {
       type: 'pseudoellittico',

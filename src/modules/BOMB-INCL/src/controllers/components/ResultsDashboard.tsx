@@ -555,10 +555,11 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                   </div>
                   <div className="flex justify-between py-1">
                     <span className="font-medium text-neutral-700 font-sans">
-                      {lang === 'en' ? 'Sheet Metal Cutting Development (Diameter):' : lang === 'es' ? 'Desarrollo de Corte de Chapa (Diámetro):' : lang === 'de' ? 'Blech-Zuschnittsentwicklung (Durchmesser):' : 'Sviluppo Taglio Lamiera (Diametro):'}
+                      {lang === 'en' ? 'Equivalent diameter by area (D_eq):' : lang === 'es' ? 'Diámetro equivalente por área (D_eq):' : lang === 'de' ? 'Flächenäquivalenter Durchmesser (D_eq):' : 'Diametro equivalente per area (D_eq):'}
                     </span>
                     <span className="font-mono font-bold text-neutral-950">{formatNum(result.fondo.Sviluppo_mm, 1)} mm</span>
                   </div>
+
                   <div className="flex justify-between py-1">
                     <span className="font-medium text-neutral-700">
                       {lang === 'en' ? 'Raw Disc Cutting Area:' : lang === 'es' ? 'Área del Disco Bruto de Corte:' : lang === 'de' ? 'Fläche des rohen Zuschnittsblechs:' : 'Area Disco Grezzo Taglio:'}
