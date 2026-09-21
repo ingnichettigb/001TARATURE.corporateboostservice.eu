@@ -754,6 +754,13 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
         />
       </div>
 
+      {/* AVVISO RAGGIO DI RACCORDO */}
+      {raccordoWarning && (
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3">
+          <p className="text-xs font-bold text-amber-900">{raccordoWarning}</p>
+        </div>
+      )}
+
       {/* ERRORI GEOMETRICI */}
       {(raccordoError || !geometriaCoperchioValida) && (
         <div className="bg-rose-50 border border-rose-300 rounded-xl p-3 space-y-1">
