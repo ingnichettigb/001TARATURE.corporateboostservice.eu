@@ -1113,19 +1113,45 @@ export async function generateCalibrationPDF(
     }
 
     // Suggested Filename Construction:
-    const rawNome = result.input.report.nomeSerbatoio || 'serbatoio';
-    const rawDwg = result.input.report.numeroDisegno || '';
-    
-    const partDesc = rawNome.slice(0, 10);
+    //   <descrizione(10 car.)>_<n° disegno>_<commessa>_<n° fabbrica>.pdf
+    // - la commessa e il numero di fabbrica compaiono sempre (se compilati);
+    // - PDF unico con validità estesa: si scrivono SOLO il primo e l'ultimo numero di fabbrica,
+    //   uniti da "++"  (es. 24-1098-S++24-1100-S); i numeri intermedi non compaiono nel nome;
+    // - stampa multipla: il report contiene già il solo numero di fabbrica del PDF corrente.
+    const report = result.input.report;
     const sanitizeName = (str: string) => {
-      return str.replace(/[\/\\:*?"<>|]/g, '-').replace(/-+/g, '-');
+      return str
+        .replace(/[\/\\:*?"<>|]/g, '-')
+        .replace(/\s+/g, ' ')
+        .replace(/-+/g, '-')
+        .replace(/^[-\s.]+|[-\s.]+$/g, '');   // niente separatori/punti a inizio o fine
     };
-    const sanitizedDesc = sanitizeName(partDesc);
-    const sanitizedDisegno = sanitizeName(rawDwg);
-    let nomeFileProposto = `${sanitizedDesc}${sanitizedDisegno}`.trim();
-    if (isMultiPrint(result.input.report) && result.input.report.numeroFabbrica) {
-      nomeFileProposto += `-${sanitizeName(result.input.report.numeroFabbrica)}`;
+    const rawNome = (report.nomeSerbatoio || 'serbatoio').slice(0, 10);
+
+    const numeriFabbrica: string[] = [];
+    const pushNumero = (n?: string) => {
+      const clean = sanitizeName((n || '').trim());
+      if (clean && !numeriFabbrica.includes(clean)) numeriFabbrica.push(clean);
+    };
+    pushNumero(report.numeroFabbrica);
+    if (!isMultiPrint(report)) {
+      getSelectedExtendedEntries(report).forEach((e) => pushNumero(e.numero));
     }
+
+    const baseParts = [rawNome, report.numeroDisegno, report.commessa]
+      .map((x) => sanitizeName((x || '').trim()))
+      .filter(Boolean);
+    let nomeFileProposto = baseParts.join('_');
+
+    // numeri di fabbrica: uno solo → così com'è; più numeri → primo++ultimo
+    if (numeriFabbrica.length > 0) {
+      const numeriNome =
+        numeriFabbrica.length === 1
+          ? numeriFabbrica[0]
+          : `${numeriFabbrica[0]}++${numeriFabbrica[numeriFabbrica.length - 1]}`;
+      nomeFileProposto += `${nomeFileProposto ? '_' : ''}${numeriNome}`;
+    }
+    if (!nomeFileProposto) nomeFileProposto = 'serbatoio';
     if (!nomeFileProposto.toLowerCase().endsWith('.pdf')) {
       nomeFileProposto += '.pdf';
     }
