@@ -348,13 +348,15 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                 { num: 7, min: result.z6, max: result.H_tot },
               ].map((zone) => {
                 const midH = (zone.min + zone.max) / 2;
-                const yCenter = mapHToY(midH);
+                const yCenter = Math.min(362, mapHToY(midH));
+                // zona 1 = cuneo inclinato: il badge sta a sinistra, dove c'è spazio
+                const cxBadge = zone.num === 1 ? xL + 22 : 160;
                 if (zone.max - zone.min <= 0) return null;
                 return (
                   <g key={zone.num} className="opacity-95">
                     {/* Elegant circular badge centered at X=160 with premium olive theme */}
                     <circle
-                      cx="160"
+                      cx={cxBadge}
                       cy={yCenter}
                       r="6.5"
                       fill="#fbfdf7"
@@ -362,7 +364,7 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                       strokeWidth="1.2"
                     />
                     <text
-                      x="160"
+                      x={cxBadge}
                       y={yCenter + 2.5}
                       textAnchor="middle"
                       className="font-sans text-[7.5px] font-black fill-[#3a471c] select-none"
