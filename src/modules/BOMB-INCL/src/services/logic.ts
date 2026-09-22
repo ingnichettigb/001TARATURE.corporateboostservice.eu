@@ -62,10 +62,10 @@ function buildInclinedGeom(dInt: number, delta: number, rIn: number): InclinedGe
   const Hr = m * (R + rho) + r * sec;          // = Δ + r(secα − tanα)
   const zMin = r * m * (1 + Math.sin(alfa));   // punto di tangenza più basso
 
-  const N = 260;
+  const N = 600;
   const step = (2 * R) / N;
   const cell = step * step;
-  const PH = 180;
+  const PH = 360;
   const cosT = new Float64Array(PH);
   const sinT = new Float64Array(PH);
   const zcT = new Float64Array(PH);
@@ -82,6 +82,11 @@ function buildInclinedGeom(dInt: number, delta: number, rIn: number): InclinedGe
   let sumDepth = 0;
   const r2 = r * r;
 
+  // La curva di tangenza fra piano e raccordo è la circonferenza di raggio rho
+  // centrata in (r·sinα, 0): dentro di essa la superficie è il piano inclinato,
+  // fuori è la faccia INFERIORE dell'inviluppo delle sfere (minimo, non massimo).
+  const xT = r * Math.sin(alfa);
+
   for (let i = 0; i < N; i++) {
     const x = -R + (i + 0.5) * step;
     for (let j = 0; j < N; j++) {
@@ -90,14 +95,19 @@ function buildInclinedGeom(dInt: number, delta: number, rIn: number): InclinedGe
       cells++;
       let z = m * (R + x);
       if (r > 0) {
-        for (let k = 0; k < PH; k++) {
-          const dx = x - rho * cosT[k];
-          const dy = y - rho * sinT[k];
-          const d2 = dx * dx + dy * dy;
-          if (d2 < r2) {
-            const cand = zcT[k] - Math.sqrt(r2 - d2);
-            if (cand > z) z = cand;
+        const sx = x - xT;
+        if (sx * sx + y * y > rho * rho) {
+          let best = Infinity;
+          for (let k = 0; k < PH; k++) {
+            const dx = x - rho * cosT[k];
+            const dy = y - rho * sinT[k];
+            const d2 = dx * dx + dy * dy;
+            if (d2 < r2) {
+              const cand = zcT[k] - Math.sqrt(r2 - d2);
+              if (cand < best) best = cand;
+            }
           }
+          if (isFinite(best) && best > z) z = best;
         }
       }
       if (z > Hr) z = Hr;
@@ -109,6 +119,7 @@ function buildInclinedGeom(dInt: number, delta: number, rIn: number): InclinedGe
       hist[b] += 1;
     }
   }
+
 
   const areaDisco = Math.PI * R * R;
   const norm = cells > 0 ? areaDisco / (cells * cell) : 1;
@@ -152,12 +163,14 @@ function buildInclinedGeom(dInt: number, delta: number, rIn: number): InclinedGe
   const volumeCuneoMm3 = r > 0 ? sumDepth * cell * norm : (Math.PI * R * R * delta) / 2;
 
 
-  // Lamiera del FONDO: piano inclinato residuo + fascia di raccordo
-  const s_t = Math.max(0, R - r * (1 + Math.sin(alfa)));
-  const areaPianoMm2 = Math.PI * s_t * s_t * sec;
-  const areaRaccordoMm2 = 2 * Math.PI * ((R + s_t) / 2) * r * (Math.PI / 2 - alfa);
+  // Lamiera del FONDO: piano inclinato residuo (dentro la curva di tangenza,
+  // raggio rho) + fascia di raccordo (Pappo-Guldino sull'arco di raggio r).
+  const areaPianoMm2 = Math.PI * rho * rho * sec;
+  const areaRaccordoMm2 =
+    2 * Math.PI * r * ((rho - r * Math.sin(alfa)) * (Math.PI / 2 - alfa) + r * Math.cos(alfa));
   // Lamiera di VIROLA: striscia fra il profilo del fondo e la quota Hr
   const areaStrisciaMm2 = 2 * Math.PI * m * R * rho;
+
 
   return { R, alfa, r, zMin, Hr, rEqProfile, volumeCuneoMm3, areaPianoMm2, areaRaccordoMm2, areaStrisciaMm2 };
 }

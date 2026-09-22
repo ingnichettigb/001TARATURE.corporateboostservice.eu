@@ -107,42 +107,73 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
     return 370 - (h / hTot) * 360;
   };
 
-  // Generate SVG path for the tank container
+  // ---- Profilo del serbatoio: fondo INCLINATO rettilineo (punto basso a SX) ----
+  const xAxis = 160;
+  const halfPx = 60;
+  const xL = xAxis - halfPx;
+  const xR = xAxis + halfPx;
+  const hHigh = Math.max(1, result.z1);              // quota del punto alto del piano inclinato
+  const yLow = mapHToY(0);                           // punto basso (sinistra)
+  const yHigh = mapHToY(hHigh);                      // punto alto (destra)
+  // raccordo: piccolo arco al collegamento con la parete, raggio reale in scala
+  const rPx = Math.max(
+    0,
+    Math.min(22, ((result.fondo.r || 0) / (dInt / 2 || 1)) * halfPx)
+  );
+
+  // silhouette (solo sopra il fondo inclinato): parte dalla fine dei raccordi
+  const hPad = (rPx / 360) * hTot;
   const steps = 100;
-  let leftPoints: string[] = [];
-  let rightPoints: string[] = [];
-
+  const upperLeft: string[] = [];
+  const upperRight: string[] = [];
   for (let i = 0; i <= steps; i++) {
-    const hSample = Math.round((i / steps) * hTot);
+    const hSample = Math.round(hHigh + hPad + (i / steps) * (hTot - hHigh - hPad));
     const y = mapHToY(hSample);
     const rSample = result.raggioProfile[hSample] || 0;
-    // Map radius relative to max radius (dInt / 2), scaling max radius to 60px
-    const rScale = dInt > 0 ? (rSample / (dInt / 2)) * 60 : 0;
-    
-    leftPoints.push(`${160 - rScale},${y}`);
-    rightPoints.unshift(`${160 + rScale},${y}`); // unshift to reverse right side points
+    const rScale = dInt > 0 ? (rSample / (dInt / 2)) * halfPx : 0;
+    upperLeft.push(`${xAxis - rScale},${y}`);
+    upperRight.unshift(`${xAxis + rScale},${y}`);
   }
 
-  const tankPathData = `M ${leftPoints.join(' L ')} L ${rightPoints.join(' L ')} Z`;
+  // fondo: piano inclinato RETTILINEO dal punto alto (destra) al punto basso (sinistra),
+  // con un piccolo arco di raccordo agli estremi
+  const segLen = Math.hypot(xR - xL, yLow - yHigh) || 1;
+  const ux = -(xR - xL) / segLen;
+  const uy = (yLow - yHigh) / segLen;
+  const bottomPath =
+    rPx > 0
+      ? `Q ${xR} ${yHigh}, ${xR + ux * rPx} ${yHigh + uy * rPx} ` +
+        `L ${xL - ux * rPx} ${yLow - uy * rPx} Q ${xL} ${yLow}, ${xL} ${yLow - rPx}`
+      : `L ${xL} ${yLow}`;
 
-  // Generate SVG path for the liquid
-  let liquidLeftPoints: string[] = [];
-  let liquidRightPoints: string[] = [];
-  const liquidSteps = Math.max(2, Math.round((clampedFillHeight / hTot) * steps));
-  
-  for (let i = 0; i <= liquidSteps; i++) {
-    const hSample = Math.round((i / liquidSteps) * clampedFillHeight);
-    const y = mapHToY(hSample);
-    const rSample = result.raggioProfile[hSample] || 0;
-    const rScale = dInt > 0 ? (rSample / (dInt / 2)) * 60 : 0;
-    
-    liquidLeftPoints.push(`${160 - rScale},${y}`);
-    liquidRightPoints.unshift(`${160 + rScale},${y}`);
+  const tankPathData = `M ${upperLeft.join(' L ')} L ${upperRight.join(' L ')} ${bottomPath} Z`;
+
+
+  // ---- Liquido: coerente con la geometria reale del cuneo ----
+  const levelY = mapHToY(clampedFillHeight);
+  let liquidPathData = '';
+  if (clampedFillHeight > 0) {
+    if (clampedFillHeight < hHigh) {
+      // il liquido riempie solo parzialmente il cuneo: superficie orizzontale che taglia il piano
+      const f = clampedFillHeight / hHigh;
+      const xCut = xL + (xR - xL) * f;
+      liquidPathData = `M ${xL} ${levelY} L ${xCut} ${levelY} L ${xL} ${yLow} Z`;
+    } else {
+      const upperL: string[] = [];
+      const upperR: string[] = [];
+      const n = 60;
+      for (let i = 0; i <= n; i++) {
+        const hSample = Math.round(hHigh + (i / n) * (clampedFillHeight - hHigh));
+        const y = mapHToY(hSample);
+        const rSample = result.raggioProfile[hSample] || 0;
+        const rScale = dInt > 0 ? (rSample / (dInt / 2)) * halfPx : 0;
+        upperL.push(`${xAxis - rScale},${y}`);
+        upperR.unshift(`${xAxis + rScale},${y}`);
+      }
+      liquidPathData = `M ${upperL.join(' L ')} L ${upperR.join(' L ')} L ${xR} ${yHigh} L ${xL} ${yLow} Z`;
+    }
   }
 
-  const liquidPathData = clampedFillHeight > 0 
-    ? `M ${liquidLeftPoints.join(' L ')} L ${liquidRightPoints.join(' L ')} Z` 
-    : '';
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -249,51 +280,62 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                 />
               )}
 
-              {/* 7 Zones Lines indicators (Delimitatori Doppia Riga Verde Oliva Sottile) */}
-              {[
-                { label: lang === 'en' ? 'Z1/Z2 (Inclined bottom end)' : lang === 'es' ? 'Z1/Z2 (Fin fondo inclinado)' : lang === 'de' ? 'Z1/Z2 (Ende Schrägboden)' : 'Z1/Z2 (Fine fondo inclinato)', val: result.z1 },
-                { label: lang === 'en' ? 'Z2/Z3 (Bottom flange)' : lang === 'es' ? 'Z2/Z3 (Pestaña inf.)' : lang === 'de' ? 'Z2/Z3 (Unterer Bord)' : 'Z2/Z3 (Colletto f.)', val: result.z2 },
-                { label: lang === 'en' ? 'Z3/Z4 (Bottom shell)' : lang === 'es' ? 'Z3/Z4 (Cuerpo inf.)' : lang === 'de' ? 'Z3/Z4 (Unterer Mantel)' : 'Z3/Z4 (Mantello f.)', val: result.z3 },
-                { label: lang === 'en' ? 'Z4/Z5 (Top flange)' : lang === 'es' ? 'Z4/Z5 (Pestaña sup.)' : lang === 'de' ? 'Z4/Z5 (Oberer Bord)' : 'Z4/Z5 (Colletto c.)', val: result.z4 },
-                { label: lang === 'en' ? 'Z5/Z6 (Top trans.)' : lang === 'es' ? 'Z5/Z6 (Trans. sup.)' : lang === 'de' ? 'Z5/Z6 (Oberer Übergang)' : 'Z5/Z6 (Raccordo c.)', val: result.z5 },
-                { label: lang === 'en' ? 'Z6/Z7 (Top crown)' : lang === 'es' ? 'Z6/Z7 (Corona sup.)' : lang === 'de' ? 'Z6/Z7 (Obere Wölbung)' : 'Z6/Z7 (Calotta c.)', val: result.z6 },
-              ].map((zone, idx) => {
-                const y = mapHToY(zone.val);
-                const isRight = idx === 5 || idx === 3 || idx === 2 || idx === 0;
-                const textX = isRight ? 245 : 75;
-                const textAnchor = isRight ? "start" : "end";
-                return (
-                  <g key={idx}>
-                    {/* Doppia riga sottile Verde Oliva Lucido */}
-                    <line
-                      x1="80"
-                      y1={y - 1}
-                      x2="240"
-                      y2={y - 1}
-                      stroke="#708238"
-                      strokeWidth="0.8"
-                      opacity="0.9"
-                    />
-                    <line
-                      x1="80"
-                      y1={y + 1}
-                      x2="240"
-                      y2={y + 1}
-                      stroke="#708238"
-                      strokeWidth="0.8"
-                      opacity="0.9"
-                    />
-                    <text
-                      x={textX}
-                      y={y + 3}
-                      textAnchor={textAnchor}
-                      className="font-mono text-[9.5px] font-black fill-black select-none"
-                    >
-                      {zone.label}
-                    </text>
-                  </g>
-                );
-              })}
+              {/* Delimitatori delle 7 zone — etichette compatte, senza sovrapposizioni */}
+              {(() => {
+                const zones = [
+                  { code: 'Z1/Z2', val: result.z1 },
+                  { code: 'Z2/Z3', val: result.z2 },
+                  { code: 'Z3/Z4', val: result.z3 },
+                  { code: 'Z4/Z5', val: result.z4 },
+                  { code: 'Z5/Z6', val: result.z5 },
+                  { code: 'Z6/Z7', val: result.z6 },
+                ].map((z, idx) => ({ ...z, idx, y: mapHToY(z.val) }));
+
+                // anti-sovrapposizione: separa le etichette su ciascun lato (min 11 px)
+                const place = (list: typeof zones) => {
+                  const sorted = [...list].sort((a, b) => b.y - a.y);
+                  let lastY = 999;
+                  return sorted.map((z) => {
+                    let ty = Math.min(z.y, lastY - 11);
+                    ty = Math.max(20, Math.min(364, ty));
+                    lastY = ty;
+                    return { ...z, ty };
+                  });
+                };
+                const rightZones = place(zones.filter((z) => z.idx % 2 === 0));
+                const leftZones = place(zones.filter((z) => z.idx % 2 === 1));
+
+                return [...rightZones, ...leftZones].map((z) => {
+                  const isRight = z.idx % 2 === 0;
+                  const textX = isRight ? 244 : 76;
+                  return (
+                    <g key={z.idx}>
+                      <line x1="80" y1={z.y - 1} x2="240" y2={z.y - 1} stroke="#708238" strokeWidth="0.8" opacity="0.9" />
+                      <line x1="80" y1={z.y + 1} x2="240" y2={z.y + 1} stroke="#708238" strokeWidth="0.8" opacity="0.9" />
+                      {/* richiamo se l'etichetta è stata spostata */}
+                      {Math.abs(z.ty - (z.y + 3)) > 2 && (
+                        <line
+                          x1={isRight ? 240 : 80}
+                          y1={z.y}
+                          x2={isRight ? 243 : 77}
+                          y2={z.ty - 3}
+                          stroke="#708238"
+                          strokeWidth="0.6"
+                        />
+                      )}
+                      <text
+                        x={textX}
+                        y={z.ty}
+                        textAnchor={isRight ? 'start' : 'end'}
+                        className="font-mono text-[8.5px] font-black fill-black select-none"
+                      >
+                        {z.code}
+                      </text>
+                    </g>
+                  );
+                });
+              })()}
+
 
               {/* Progressive numbering of the 7 zones (1 to 7) inside the tank */}
               {[
@@ -306,13 +348,15 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                 { num: 7, min: result.z6, max: result.H_tot },
               ].map((zone) => {
                 const midH = (zone.min + zone.max) / 2;
-                const yCenter = mapHToY(midH);
+                const yCenter = Math.min(362, mapHToY(midH));
+                // zona 1 = cuneo inclinato: il badge sta a sinistra, dove c'è spazio
+                const cxBadge = zone.num === 1 ? xL + 22 : 160;
                 if (zone.max - zone.min <= 0) return null;
                 return (
                   <g key={zone.num} className="opacity-95">
                     {/* Elegant circular badge centered at X=160 with premium olive theme */}
                     <circle
-                      cx="160"
+                      cx={cxBadge}
                       cy={yCenter}
                       r="6.5"
                       fill="#fbfdf7"
@@ -320,7 +364,7 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                       strokeWidth="1.2"
                     />
                     <text
-                      x="160"
+                      x={cxBadge}
                       y={yCenter + 2.5}
                       textAnchor="middle"
                       className="font-sans text-[7.5px] font-black fill-[#3a471c] select-none"
