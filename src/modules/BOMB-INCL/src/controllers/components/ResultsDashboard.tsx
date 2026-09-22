@@ -107,42 +107,67 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
     return 370 - (h / hTot) * 360;
   };
 
-  // Generate SVG path for the tank container
+  // ---- Profilo del serbatoio: fondo INCLINATO rettilineo (punto basso a SX) ----
+  const xAxis = 160;
+  const halfPx = 60;
+  const xL = xAxis - halfPx;
+  const xR = xAxis + halfPx;
+  const hHigh = Math.max(1, result.z1);              // quota del punto alto del piano inclinato
+  const yLow = mapHToY(0);                           // punto basso (sinistra)
+  const yHigh = mapHToY(hHigh);                      // punto alto (destra)
+  // raccordo: piccolo arco al collegamento con la parete, raggio reale in scala
+  const rPx = Math.max(
+    0,
+    Math.min(22, ((result.fondo.r || 0) / (dInt / 2 || 1)) * halfPx)
+  );
+
+  // silhouette (solo sopra il fondo inclinato): raggio costante fino alla calotta
   const steps = 100;
-  let leftPoints: string[] = [];
-  let rightPoints: string[] = [];
-
+  const upperLeft: string[] = [];
+  const upperRight: string[] = [];
   for (let i = 0; i <= steps; i++) {
-    const hSample = Math.round((i / steps) * hTot);
+    const hSample = Math.round(hHigh + (i / steps) * (hTot - hHigh));
     const y = mapHToY(hSample);
     const rSample = result.raggioProfile[hSample] || 0;
-    // Map radius relative to max radius (dInt / 2), scaling max radius to 60px
-    const rScale = dInt > 0 ? (rSample / (dInt / 2)) * 60 : 0;
-    
-    leftPoints.push(`${160 - rScale},${y}`);
-    rightPoints.unshift(`${160 + rScale},${y}`); // unshift to reverse right side points
+    const rScale = dInt > 0 ? (rSample / (dInt / 2)) * halfPx : 0;
+    upperLeft.push(`${xAxis - rScale},${y}`);
+    upperRight.unshift(`${xAxis + rScale},${y}`);
   }
 
-  const tankPathData = `M ${leftPoints.join(' L ')} L ${rightPoints.join(' L ')} Z`;
+  // fondo: dal punto alto (destra) al punto basso (sinistra), con archi di raccordo
+  const bottomPath =
+    rPx > 0
+      ? `L ${xR} ${yHigh - rPx} Q ${xR} ${yHigh}, ${xR - rPx} ${yHigh - (yHigh - yLow) * (rPx / (xR - xL))} ` +
+        `L ${xL + rPx} ${yLow - (yHigh - yLow) * (rPx / (xR - xL))} Q ${xL} ${yLow}, ${xL} ${yLow - rPx}`
+      : `L ${xR} ${yHigh} L ${xL} ${yLow}`;
 
-  // Generate SVG path for the liquid
-  let liquidLeftPoints: string[] = [];
-  let liquidRightPoints: string[] = [];
-  const liquidSteps = Math.max(2, Math.round((clampedFillHeight / hTot) * steps));
-  
-  for (let i = 0; i <= liquidSteps; i++) {
-    const hSample = Math.round((i / liquidSteps) * clampedFillHeight);
-    const y = mapHToY(hSample);
-    const rSample = result.raggioProfile[hSample] || 0;
-    const rScale = dInt > 0 ? (rSample / (dInt / 2)) * 60 : 0;
-    
-    liquidLeftPoints.push(`${160 - rScale},${y}`);
-    liquidRightPoints.unshift(`${160 + rScale},${y}`);
+  const tankPathData = `M ${upperLeft.join(' L ')} L ${upperRight.join(' L ')} ${bottomPath} Z`;
+
+  // ---- Liquido: coerente con la geometria reale del cuneo ----
+  const levelY = mapHToY(clampedFillHeight);
+  let liquidPathData = '';
+  if (clampedFillHeight > 0) {
+    if (clampedFillHeight < hHigh) {
+      // il liquido riempie solo parzialmente il cuneo: superficie orizzontale che taglia il piano
+      const f = clampedFillHeight / hHigh;
+      const xCut = xL + (xR - xL) * f;
+      liquidPathData = `M ${xL} ${levelY} L ${xCut} ${levelY} L ${xL} ${yLow} Z`;
+    } else {
+      const upperL: string[] = [];
+      const upperR: string[] = [];
+      const n = 60;
+      for (let i = 0; i <= n; i++) {
+        const hSample = Math.round(hHigh + (i / n) * (clampedFillHeight - hHigh));
+        const y = mapHToY(hSample);
+        const rSample = result.raggioProfile[hSample] || 0;
+        const rScale = dInt > 0 ? (rSample / (dInt / 2)) * halfPx : 0;
+        upperL.push(`${xAxis - rScale},${y}`);
+        upperR.unshift(`${xAxis + rScale},${y}`);
+      }
+      liquidPathData = `M ${upperL.join(' L ')} L ${upperR.join(' L ')} L ${xR} ${yHigh} L ${xL} ${yLow} Z`;
+    }
   }
 
-  const liquidPathData = clampedFillHeight > 0 
-    ? `M ${liquidLeftPoints.join(' L ')} L ${liquidRightPoints.join(' L ')} Z` 
-    : '';
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
