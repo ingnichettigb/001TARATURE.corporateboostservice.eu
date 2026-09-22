@@ -6,6 +6,7 @@ import runPianoBomb from "./PIANO-BOMB";
 import runPianoCon from "./PIANO-CON";
 import runBombIncl from "./BOMB-INCL";
 import runBombTroncocon from "./BOMB-TRONCOCON";
+import runBombTronconBocc from "./BOMB-TRONCOCON-BOCC";
 import runConIncl from "./CON-INCL";
 import runPianoIncl from "./PIANO-INCL";
 import runConTroncocon from "./CON-TRONCOCON";
@@ -33,6 +34,7 @@ const runners = [
   runPianoCon,
   runBombIncl,
   runBombTroncocon,
+  runBombTronconBocc,
   runConIncl,
   runPianoIncl,
   runConTroncocon,
