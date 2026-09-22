@@ -121,12 +121,13 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
     Math.min(22, ((result.fondo.r || 0) / (dInt / 2 || 1)) * halfPx)
   );
 
-  // silhouette (solo sopra il fondo inclinato): raggio costante fino alla calotta
+  // silhouette (solo sopra il fondo inclinato): parte dalla fine dei raccordi
+  const hPad = (rPx / 360) * hTot;
   const steps = 100;
   const upperLeft: string[] = [];
   const upperRight: string[] = [];
   for (let i = 0; i <= steps; i++) {
-    const hSample = Math.round(hHigh + (i / steps) * (hTot - hHigh));
+    const hSample = Math.round(hHigh + hPad + (i / steps) * (hTot - hHigh - hPad));
     const y = mapHToY(hSample);
     const rSample = result.raggioProfile[hSample] || 0;
     const rScale = dInt > 0 ? (rSample / (dInt / 2)) * halfPx : 0;
@@ -134,14 +135,19 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
     upperRight.unshift(`${xAxis + rScale},${y}`);
   }
 
-  // fondo: dal punto alto (destra) al punto basso (sinistra), con archi di raccordo
+  // fondo: piano inclinato RETTILINEO dal punto alto (destra) al punto basso (sinistra),
+  // con un piccolo arco di raccordo agli estremi
+  const segLen = Math.hypot(xR - xL, yLow - yHigh) || 1;
+  const ux = -(xR - xL) / segLen;
+  const uy = (yLow - yHigh) / segLen;
   const bottomPath =
     rPx > 0
-      ? `L ${xR} ${yHigh - rPx} Q ${xR} ${yHigh}, ${xR - rPx} ${yHigh - (yHigh - yLow) * (rPx / (xR - xL))} ` +
-        `L ${xL + rPx} ${yLow - (yHigh - yLow) * (rPx / (xR - xL))} Q ${xL} ${yLow}, ${xL} ${yLow - rPx}`
-      : `L ${xR} ${yHigh} L ${xL} ${yLow}`;
+      ? `Q ${xR} ${yHigh}, ${xR + ux * rPx} ${yHigh + uy * rPx} ` +
+        `L ${xL - ux * rPx} ${yLow - uy * rPx} Q ${xL} ${yLow}, ${xL} ${yLow - rPx}`
+      : `L ${xL} ${yLow}`;
 
   const tankPathData = `M ${upperLeft.join(' L ')} L ${upperRight.join(' L ')} ${bottomPath} Z`;
+
 
   // ---- Liquido: coerente con la geometria reale del cuneo ----
   const levelY = mapHToY(clampedFillHeight);
