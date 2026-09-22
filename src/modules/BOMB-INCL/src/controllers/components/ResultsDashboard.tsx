@@ -280,51 +280,62 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                 />
               )}
 
-              {/* 7 Zones Lines indicators (Delimitatori Doppia Riga Verde Oliva Sottile) */}
-              {[
-                { label: lang === 'en' ? 'Z1/Z2 (Inclined bottom end)' : lang === 'es' ? 'Z1/Z2 (Fin fondo inclinado)' : lang === 'de' ? 'Z1/Z2 (Ende Schrägboden)' : 'Z1/Z2 (Fine fondo inclinato)', val: result.z1 },
-                { label: lang === 'en' ? 'Z2/Z3 (Bottom flange)' : lang === 'es' ? 'Z2/Z3 (Pestaña inf.)' : lang === 'de' ? 'Z2/Z3 (Unterer Bord)' : 'Z2/Z3 (Colletto f.)', val: result.z2 },
-                { label: lang === 'en' ? 'Z3/Z4 (Bottom shell)' : lang === 'es' ? 'Z3/Z4 (Cuerpo inf.)' : lang === 'de' ? 'Z3/Z4 (Unterer Mantel)' : 'Z3/Z4 (Mantello f.)', val: result.z3 },
-                { label: lang === 'en' ? 'Z4/Z5 (Top flange)' : lang === 'es' ? 'Z4/Z5 (Pestaña sup.)' : lang === 'de' ? 'Z4/Z5 (Oberer Bord)' : 'Z4/Z5 (Colletto c.)', val: result.z4 },
-                { label: lang === 'en' ? 'Z5/Z6 (Top trans.)' : lang === 'es' ? 'Z5/Z6 (Trans. sup.)' : lang === 'de' ? 'Z5/Z6 (Oberer Übergang)' : 'Z5/Z6 (Raccordo c.)', val: result.z5 },
-                { label: lang === 'en' ? 'Z6/Z7 (Top crown)' : lang === 'es' ? 'Z6/Z7 (Corona sup.)' : lang === 'de' ? 'Z6/Z7 (Obere Wölbung)' : 'Z6/Z7 (Calotta c.)', val: result.z6 },
-              ].map((zone, idx) => {
-                const y = mapHToY(zone.val);
-                const isRight = idx === 5 || idx === 3 || idx === 2 || idx === 0;
-                const textX = isRight ? 245 : 75;
-                const textAnchor = isRight ? "start" : "end";
-                return (
-                  <g key={idx}>
-                    {/* Doppia riga sottile Verde Oliva Lucido */}
-                    <line
-                      x1="80"
-                      y1={y - 1}
-                      x2="240"
-                      y2={y - 1}
-                      stroke="#708238"
-                      strokeWidth="0.8"
-                      opacity="0.9"
-                    />
-                    <line
-                      x1="80"
-                      y1={y + 1}
-                      x2="240"
-                      y2={y + 1}
-                      stroke="#708238"
-                      strokeWidth="0.8"
-                      opacity="0.9"
-                    />
-                    <text
-                      x={textX}
-                      y={y + 3}
-                      textAnchor={textAnchor}
-                      className="font-mono text-[9.5px] font-black fill-black select-none"
-                    >
-                      {zone.label}
-                    </text>
-                  </g>
-                );
-              })}
+              {/* Delimitatori delle 7 zone — etichette compatte, senza sovrapposizioni */}
+              {(() => {
+                const zones = [
+                  { code: 'Z1/Z2', val: result.z1 },
+                  { code: 'Z2/Z3', val: result.z2 },
+                  { code: 'Z3/Z4', val: result.z3 },
+                  { code: 'Z4/Z5', val: result.z4 },
+                  { code: 'Z5/Z6', val: result.z5 },
+                  { code: 'Z6/Z7', val: result.z6 },
+                ].map((z, idx) => ({ ...z, idx, y: mapHToY(z.val) }));
+
+                // anti-sovrapposizione: separa le etichette su ciascun lato (min 11 px)
+                const place = (list: typeof zones) => {
+                  const sorted = [...list].sort((a, b) => b.y - a.y);
+                  let lastY = 999;
+                  return sorted.map((z) => {
+                    let ty = Math.min(z.y, lastY - 11);
+                    ty = Math.max(20, Math.min(364, ty));
+                    lastY = ty;
+                    return { ...z, ty };
+                  });
+                };
+                const rightZones = place(zones.filter((z) => z.idx % 2 === 0));
+                const leftZones = place(zones.filter((z) => z.idx % 2 === 1));
+
+                return [...rightZones, ...leftZones].map((z) => {
+                  const isRight = z.idx % 2 === 0;
+                  const textX = isRight ? 244 : 76;
+                  return (
+                    <g key={z.idx}>
+                      <line x1="80" y1={z.y - 1} x2="240" y2={z.y - 1} stroke="#708238" strokeWidth="0.8" opacity="0.9" />
+                      <line x1="80" y1={z.y + 1} x2="240" y2={z.y + 1} stroke="#708238" strokeWidth="0.8" opacity="0.9" />
+                      {/* richiamo se l'etichetta è stata spostata */}
+                      {Math.abs(z.ty - (z.y + 3)) > 2 && (
+                        <line
+                          x1={isRight ? 240 : 80}
+                          y1={z.y}
+                          x2={isRight ? 243 : 77}
+                          y2={z.ty - 3}
+                          stroke="#708238"
+                          strokeWidth="0.6"
+                        />
+                      )}
+                      <text
+                        x={textX}
+                        y={z.ty}
+                        textAnchor={isRight ? 'start' : 'end'}
+                        className="font-mono text-[8.5px] font-black fill-black select-none"
+                      >
+                        {z.code}
+                      </text>
+                    </g>
+                  );
+                });
+              })()}
+
 
               {/* Progressive numbering of the 7 zones (1 to 7) inside the tank */}
               {[
