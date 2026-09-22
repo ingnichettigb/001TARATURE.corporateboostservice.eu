@@ -676,23 +676,25 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             const angBoxX = Math.min(cx + halfW + 24, drawW - RIGHT_W - SAFE - angBoxW);
             const angBoxY = drawH - BOTTOM_BAND + 14;
 
-            // vertice dell'angolo: punto alto del fondo inclinato (lato destro)
-            const vx = rightX;
-            const vy = yBotHigh;
-            const dxS = leftX - rightX;
-            const dyS = yApex - yBotHigh;
+            // vertice dell'angolo: punto BASSO del fondo inclinato (lato sinistro)
+            const vx = leftX;
+            const vy = yApex;
+            const dxS = rightX - leftX;
+            const dyS = yBotHigh - yApex;
             const lenS = Math.hypot(dxS, dyS) || 1;
             const rArc = 34;
-            const ax = vx - rArc; // direzione orizzontale (verso l'interno)
+            const ax = vx + rArc;                    // riferimento orizzontale
             const ay = vy;
-            const bx = vx + (dxS / lenS) * rArc;
+            const bx = vx + (dxS / lenS) * rArc;     // direzione del piano inclinato
             const by = vy + (dyS / lenS) * rArc;
-            const labX = vx - rArc * 0.72;
-            const labY = vy + rArc * 0.46;
+            const labX = vx + rArc * 0.78;
+            const labY = vy - rArc * 0.22;
             return (
               <g>
                 {/* linea inclinata di riferimento */}
                 <line x1={leftX} y1={yApex} x2={rightX} y2={yBotHigh} stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,3" />
+                {/* breve orizzontale tratteggiata di riferimento nel vertice basso */}
+                <line x1={vx} y1={vy} x2={vx + rArc + 18} y2={vy} stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,3" />
                 {/* semicerchio dell'angolo */}
                 <path
                   d={`M ${ax} ${ay} A ${rArc} ${rArc} 0 0 0 ${bx} ${by}`}
@@ -704,16 +706,17 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 <text x={labX} y={labY} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
                   {angolo != null ? `${angolo.toFixed(1)}°` : ''}
                 </text>
-                {/* richiamo dal riquadro al vertice */}
+                {/* richiamo dal riquadro all'arco dell'angolo */}
                 <line
                   x1={angBoxX + angBoxW / 2}
                   y1={angBoxY}
-                  x2={vx}
-                  y2={vy}
+                  x2={vx + rArc * 0.95}
+                  y2={vy - 3}
                   stroke="#0f766e"
                   strokeWidth="1"
                   strokeDasharray="4,3"
                 />
+
                 <rect x={angBoxX} y={angBoxY} width={angBoxW} height={angBoxH} rx="5" fill="#ffffff" stroke="#0f766e" strokeWidth="1.2" />
                 <text x={angBoxX + 7} y={angBoxY + 14} fontSize="10" fontWeight="700" fill="#000000">Inclin. fondo</text>
                 <foreignObject x={angBoxX + 5} y={angBoxY + 18} width={angBoxW - 10} height="22">
