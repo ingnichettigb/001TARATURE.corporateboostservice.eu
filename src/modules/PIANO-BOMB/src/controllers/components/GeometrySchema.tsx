@@ -135,6 +135,9 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const lCil = input.lCil;
   const hCollettoCoperchio = input.coperchio.hColletto;
   const hCollettoFondo = input.fondo.hColletto;
+  const rCoperchio = input.coperchio.r_custom ?? 0;
+  // coperchio piano: unico raggio da verificare è il raccordo r (0 ≤ r ≤ D/2)
+  const raccordoCoperchioValido = rCoperchio >= 0 && rCoperchio <= dInt / 2;
 
   const result = useMemo(() => {
     try {
@@ -259,11 +262,23 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   // curva fondo bombato (in BASSO): peak reale della bezier = 0.75 * rise
   const domeRise = Math.max(hFondo_px / 0.75, 18);
 
+  // raggio grafico del raccordo del coperchio piano (proporzionale a r/(D/2), limitato all'altezza del blocco)
+  const rCoperchioValido = Math.min(Math.max(0, rCoperchio), dInt / 2);
+  const cornerPx =
+    rCoperchioValido > 0
+      ? Math.min(hCoperchio_px, Math.max(8, (rCoperchioValido / (dInt / 2 || 1)) * halfW))
+      : 0;
+
+  // profilo: coperchio PIANO in alto (bordo superiore rettilineo, con angoli raccordati
+  // se r > 0), calotta bombata in basso
   const pathData = `
-    M ${leftX} ${yTop}
-    L ${rightX} ${yTop}
+    M ${leftX + cornerPx} ${yTop}
+    L ${rightX - cornerPx} ${yTop}
+    ${cornerPx > 0 ? `A ${cornerPx} ${cornerPx} 0 0 1 ${rightX} ${yTop + cornerPx}` : `L ${rightX} ${yTop}`}
     L ${rightX} ${yCilBot}
     C ${rightX} ${yCilBot + domeRise}, ${leftX} ${yCilBot + domeRise}, ${leftX} ${yCilBot}
+    L ${leftX} ${yTop + cornerPx}
+    ${cornerPx > 0 ? `A ${cornerPx} ${cornerPx} 0 0 1 ${leftX + cornerPx} ${yTop}` : ''}
     Z
   `;
 
@@ -295,7 +310,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const box1H = 176;
   const boxSumH = 76;
   const box2H = 96;
-  const box3H = 155;
+  const box3H = 162; // coperchio piano (in alto, ha il campo "Raccordo r")
   // riquadro 1 (fondo bombato): fisso in basso
   const box1Y = drawH - box1H - 6;
   // riquadro 3 (coperchio piano): fisso in alto
@@ -461,7 +476,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
           </g>
 
 
-          {/* RIQUADRO 3 — COPERCHIO CONICO */}
+          {/* RIQUADRO 3 — COPERCHIO PIANO */}
           <g>
             <rect x={6} y={box3Y} width={boxW} height={box3H} rx="5" fill="#ffffff" stroke="#0f766e" strokeWidth="1.2" />
             <line
@@ -478,6 +493,15 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             </text>
             <foreignObject x={12} y={box3Y + 30} width={boxW - 18} height="24">
               <MiniField
+                label="Raccordo r"
+                value={rCoperchio}
+                onChange={(v) => patchCoperchio({ r_custom: v })}
+                labelWidth="58px"
+                width="78px"
+              />
+            </foreignObject>
+            <foreignObject x={12} y={box3Y + 56} width={boxW - 18} height="24">
+              <MiniField
                 label="Colletto"
                 value={hCollettoCoperchio}
                 onChange={(v) => patchCoperchio({ hColletto: v })}
@@ -485,7 +509,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 width="78px"
               />
             </foreignObject>
-            <foreignObject x={12} y={box3Y + 56} width={boxW - 18} height="24">
+            <foreignObject x={12} y={box3Y + 82} width={boxW - 18} height="24">
               <MiniField
                 label="Sp."
                 value={input.coperchio.sp}
@@ -494,10 +518,10 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 width="78px"
               />
             </foreignObject>
-            <text x={6 + boxW / 2} y={box3Y + 104} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+            <text x={6 + boxW / 2} y={box3Y + 130} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
               Coperchio piano — litri
             </text>
-            <text x={6 + boxW / 2} y={box3Y + 122} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
+            <text x={6 + boxW / 2} y={box3Y + 148} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
               {result ? fmtL0(result.volumeCoperchio) : '—'}
             </text>
 
@@ -613,11 +637,17 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
       </div>
 
       {/* ERRORI GEOMETRICI */}
-      {!geometriaFondoValida && (
+      {(!geometriaFondoValida || !raccordoCoperchioValido) && (
         <div className="bg-rose-50 border border-rose-300 rounded-xl p-3 space-y-1">
-          {(
+          {!geometriaFondoValida && (
             <p className="text-xs font-bold text-rose-900">
               I raggi del fondo bombato non sono geometricamente compatibili con il diametro interno.
+            </p>
+          )}
+          {!raccordoCoperchioValido && (
+            <p className="text-xs font-bold text-rose-900">
+              Il raggio di raccordo del coperchio piano deve essere compreso tra 0 e metà del diametro interno
+              (max {fmt(dInt / 2)} mm).
             </p>
           )}
         </div>
