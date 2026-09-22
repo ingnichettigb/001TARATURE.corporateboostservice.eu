@@ -62,10 +62,10 @@ function buildInclinedGeom(dInt: number, delta: number, rIn: number): InclinedGe
   const Hr = m * (R + rho) + r * sec;          // = Δ + r(secα − tanα)
   const zMin = r * m * (1 + Math.sin(alfa));   // punto di tangenza più basso
 
-  const N = 260;
+  const N = 600;
   const step = (2 * R) / N;
   const cell = step * step;
-  const PH = 180;
+  const PH = 360;
   const cosT = new Float64Array(PH);
   const sinT = new Float64Array(PH);
   const zcT = new Float64Array(PH);
