@@ -344,15 +344,10 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const callout1X = domePtX - 15;
   const callout1Y = domePtY - 6;
 
-  // callout 3 — 50% della lunghezza del piano inclinato del fondo
-  const coneT = 0.5;
-  const coneVX = rightX - leftX;
-  const coneVY = yBotHigh - yApex;
-  const coneLen = Math.sqrt(coneVX * coneVX + coneVY * coneVY) || 1;
-  const conePointX = leftX + coneVX * coneT;
-  const conePointY = yApex + coneVY * coneT;
-  const callout3X = conePointX + (-coneVY / coneLen) * 16;
-  const callout3Y = conePointY + (coneVX / coneLen) * 16;
+  // callout 3 — ancorato alla parete verticale sinistra, nella fascia del fondo inclinato
+  // (stesso stile di ancoraggio dei callout 1 e 2, per non incrociare le linee dell'angolo)
+  const callout3X = leftX - 15;
+  const callout3Y = Math.min(Math.max((yCilBot + yApex) / 2, yCilBot + 10), yApex - 10);
 
   // colonna quote (destra, larghezza fissa)
   const chainX = drawW - RIGHT_W + 16;   // 706
@@ -676,25 +671,26 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             const angBoxX = Math.min(cx + halfW + 24, drawW - RIGHT_W - SAFE - angBoxW);
             const angBoxY = drawH - BOTTOM_BAND + 14;
 
-            // vertice dell'angolo: punto BASSO del fondo inclinato (lato sinistro)
-            const vx = leftX;
-            const vy = yApex;
-            const dxS = rightX - leftX;
-            const dyS = yBotHigh - yApex;
+            // vertice dell'angolo: punto ALTO del fondo inclinato (lato destro),
+            // dove la parete verticale finisce e il piano comincia realmente a scendere
+            const vx = rightX;
+            const vy = yBotHigh;
+            const dxS = leftX - rightX;
+            const dyS = yApex - yBotHigh;
             const lenS = Math.hypot(dxS, dyS) || 1;
             const rArc = 34;
-            const ax = vx + rArc;                    // riferimento orizzontale
+            const ax = vx - rArc;                    // riferimento orizzontale (verso sinistra)
             const ay = vy;
             const bx = vx + (dxS / lenS) * rArc;     // direzione del piano inclinato
             const by = vy + (dyS / lenS) * rArc;
-            const labX = vx + rArc * 0.78;
+            const labX = vx - rArc * 0.78;
             const labY = vy - rArc * 0.22;
             return (
               <g>
                 {/* linea inclinata di riferimento */}
                 <line x1={leftX} y1={yApex} x2={rightX} y2={yBotHigh} stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,3" />
-                {/* breve orizzontale tratteggiata di riferimento nel vertice basso */}
-                <line x1={vx} y1={vy} x2={vx + rArc + 18} y2={vy} stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,3" />
+                {/* breve orizzontale tratteggiata di riferimento nel vertice alto/destro */}
+                <line x1={vx} y1={vy} x2={vx - (rArc + 18)} y2={vy} stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,3" />
                 {/* semicerchio dell'angolo */}
                 <path
                   d={`M ${ax} ${ay} A ${rArc} ${rArc} 0 0 0 ${bx} ${by}`}
@@ -710,7 +706,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 <line
                   x1={angBoxX + angBoxW / 2}
                   y1={angBoxY}
-                  x2={vx + rArc * 0.95}
+                  x2={vx - rArc * 0.95}
                   y2={vy - 3}
                   stroke="#0f766e"
                   strokeWidth="1"
