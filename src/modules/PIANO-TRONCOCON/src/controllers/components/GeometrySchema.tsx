@@ -251,7 +251,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const LEFT_W = 220;    // colonna riquadri dati
   const RIGHT_W = 110;   // colonna quote
   const TOP_BAND = 28;   // fascia superiore incomprimibile (nessun riquadro angolo: il coperchio è piano)
-  const BOTTOM_BAND = 40; // fascia inferiore
+  const BOTTOM_BAND = 84; // fascia riquadro "Inclin. fondo" inferiore (il fondo resta troncoconico, con angolo)
   const SAFE = 24;       // margine di sicurezza
 
   const zoneX0 = LEFT_W + SAFE;
