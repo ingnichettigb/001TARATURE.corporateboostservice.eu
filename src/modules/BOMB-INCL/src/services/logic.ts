@@ -163,12 +163,14 @@ function buildInclinedGeom(dInt: number, delta: number, rIn: number): InclinedGe
   const volumeCuneoMm3 = r > 0 ? sumDepth * cell * norm : (Math.PI * R * R * delta) / 2;
 
 
-  // Lamiera del FONDO: piano inclinato residuo + fascia di raccordo
-  const s_t = Math.max(0, R - r * (1 + Math.sin(alfa)));
-  const areaPianoMm2 = Math.PI * s_t * s_t * sec;
-  const areaRaccordoMm2 = 2 * Math.PI * ((R + s_t) / 2) * r * (Math.PI / 2 - alfa);
+  // Lamiera del FONDO: piano inclinato residuo (dentro la curva di tangenza,
+  // raggio rho) + fascia di raccordo (Pappo-Guldino sull'arco di raggio r).
+  const areaPianoMm2 = Math.PI * rho * rho * sec;
+  const areaRaccordoMm2 =
+    2 * Math.PI * r * ((rho - r * Math.sin(alfa)) * (Math.PI / 2 - alfa) + r * Math.cos(alfa));
   // Lamiera di VIROLA: striscia fra il profilo del fondo e la quota Hr
   const areaStrisciaMm2 = 2 * Math.PI * m * R * rho;
+
 
   return { R, alfa, r, zMin, Hr, rEqProfile, volumeCuneoMm3, areaPianoMm2, areaRaccordoMm2, areaStrisciaMm2 };
 }
