@@ -82,6 +82,11 @@ function buildInclinedGeom(dInt: number, delta: number, rIn: number): InclinedGe
   let sumDepth = 0;
   const r2 = r * r;
 
+  // La curva di tangenza fra piano e raccordo è la circonferenza di raggio rho
+  // centrata in (r·sinα, 0): dentro di essa la superficie è il piano inclinato,
+  // fuori è la faccia INFERIORE dell'inviluppo delle sfere (minimo, non massimo).
+  const xT = r * Math.sin(alfa);
+
   for (let i = 0; i < N; i++) {
     const x = -R + (i + 0.5) * step;
     for (let j = 0; j < N; j++) {
@@ -90,14 +95,19 @@ function buildInclinedGeom(dInt: number, delta: number, rIn: number): InclinedGe
       cells++;
       let z = m * (R + x);
       if (r > 0) {
-        for (let k = 0; k < PH; k++) {
-          const dx = x - rho * cosT[k];
-          const dy = y - rho * sinT[k];
-          const d2 = dx * dx + dy * dy;
-          if (d2 < r2) {
-            const cand = zcT[k] - Math.sqrt(r2 - d2);
-            if (cand > z) z = cand;
+        const sx = x - xT;
+        if (sx * sx + y * y > rho * rho) {
+          let best = Infinity;
+          for (let k = 0; k < PH; k++) {
+            const dx = x - rho * cosT[k];
+            const dy = y - rho * sinT[k];
+            const d2 = dx * dx + dy * dy;
+            if (d2 < r2) {
+              const cand = zcT[k] - Math.sqrt(r2 - d2);
+              if (cand < best) best = cand;
+            }
           }
+          if (isFinite(best) && best > z) z = best;
         }
       }
       if (z > Hr) z = Hr;
@@ -109,6 +119,7 @@ function buildInclinedGeom(dInt: number, delta: number, rIn: number): InclinedGe
       hist[b] += 1;
     }
   }
+
 
   const areaDisco = Math.PI * R * R;
   const norm = cells > 0 ? areaDisco / (cells * cell) : 1;
