@@ -9,27 +9,53 @@ import { TankInput, HeadConfig, HeadCalculated, CalculationResult } from '../mod
  * Calculates geometry and volumes for a single head (coperchio or fondo)
  */
 export function calculateHead(dInt: number, config: HeadConfig): HeadCalculated {
-  // === Testata PIANA (disco piano di lamiera) ===
+  // === Testata PIANA (disco piano di lamiera, con raccordo toroidale opzionale) ===
+  // Il coperchio è un disco piano di raggio X = R_base - r, raccordato alla parete
+  // con un arco a quarto di toro di raggio r (config.r_custom), poi colletto.
+  // r_custom = 0 (o assente) → disco piano puro (nessun raccordo), come in precedenza.
   if (config.type === 'piano') {
     const R_base = dInt / 2;
-    const Area_mq = (Math.PI * R_base * R_base) / 1e6;          // superficie disco (m2)
+    const r_racc = Math.min(Math.max(0, config.r_custom ?? 0), R_base); // 0 ≤ r ≤ D/2
+    const X = R_base - r_racc;                                   // raggio del disco piano
+    const betaDeg = r_racc > 0 ? 90 : 0;                         // angolo dell'arco di raccordo
+
+    // Baricentro del quarto di cerchio di raccordo (Pappo-Guldino): X + 4r/(3π)
+    const Baric = r_racc > 0 ? X + (4 * r_racc) / (3 * Math.PI) : X;
+
+    // Volumi (mm in ingresso, litri in uscita)
+    //  - V_toro     : cilindro di raggio X e altezza r (parte sotto l'arco)
+    //  - V_raccordo : anello generato dal quarto di cerchio di raccordo (Pappo-Guldino)
+    const V_toro_L = (Math.PI * X * X * r_racc) / 1e6;
+    const V_raccordo_L = (r_racc * r_racc * Math.PI / 4 * Baric * 2 * Math.PI) / 1e6;
     const V_colletto_L = (Math.PI * R_base * R_base * config.hColletto) / 1e6;
+
+    // Sviluppo lamiera: raggio del disco grezzo = disco piano + arco di raccordo
+    // (linea media) + colletto. Con r = 0 il bordo vale metà spessore.
+    const arco_mm = r_racc > 0 ? (r_racc + config.sp / 2) * (Math.PI / 2) : config.sp / 2;
+    const Sviluppo_mm = 2 * (X + arco_mm + config.hColletto);   // diametro disco da tagliare
+    const Area_mq = Math.pow(Sviluppo_mm / 2000, 2) * Math.PI;   // area disco grezzo (m2)
+
     return {
-      R: 0, r: 0, DR: 0, X: 0, alfa: 0, beta: 0,
+      R: 0,
+      r: r_racc,
+      DR: 0,
+      X,
+      alfa: 0,
+      beta: betaDeg,
       H1: 0,
-      H_int: 0,          // il piano non aggiunge altezza interna oltre al colletto
-      H2: 0,
-      H3: 0,
-      Y: R_base,
-      Baric: 0,
-      K: 0,
-      H_esterna_totale: config.hColletto + config.sp,
+      H_int: r_racc,     // altezza interna della testata = altezza del raccordo (+ colletto a parte)
+      H2: r_racc,        // zona raccordo toroidale del coperchio piano
+      H3: 0,             // il disco piano non aggiunge altezza oltre al raccordo
+      Y: X,
+      Baric,
+      K: r_racc,
+      H_esterna_totale: r_racc + config.hColletto + config.sp,
       V_calotta: 0,
-      V_toro: 0,
-      V_raccordo: 0,
+      V_toro: V_toro_L,
+      V_raccordo: V_raccordo_L,
       V_colletto: V_colletto_L,
-      V_testata_LT: V_colletto_L,
-      Sviluppo_mm: dInt + config.sp,                            // diametro disco da tagliare
+      V_testata_LT: V_toro_L + V_raccordo_L + V_colletto_L,
+      Sviluppo_mm,
       Area_disco_da_tagliare_mq: Area_mq,
       Peso_lamiera_kg: Area_mq * config.sp * 8,                 // area x spessore x densita acciaio
     };
@@ -298,20 +324,17 @@ export function calculateTank(input: TankInput): CalculationResult {
       // Zone 3, 4, 5 — colletti e parte cilindrica
       rVal = dInt / 2;
     } else if (h <= z6) {
-      // Zona 6 — raccordo toroidale coperchio
-      const h_zona = h - z5;
-      const BL = coperchio.r - h_zona + 1;
+      // Zona 6 — raccordo toroidale del coperchio piano (quarto di toro, speculare
+      // alla zona 2 del fondo piano): il raggio scende da R_base (a z5) a X (a z6).
+      const h_zona = z6 - h;
+      const BL = h_zona; // il raccordo del piano parte dal disco (h = z6)
       let term = BL * (2 * coperchio.r - BL);
       if (term < 0) term = 0;
-      const BM = Math.sqrt(term);
-      rVal = (dInt / 2 - coperchio.r) + BM;
+      rVal = Math.sqrt(term) + coperchio.X;
     } else {
-      // Zona 7 — calotta sferica coperchio
-      const h_zona = h - z6;
-      const BN = H3_coperchio - h_zona;
-      let term = BN * (2 * coperchio.R - BN);
-      if (term < 0) term = 0;
-      rVal = Math.sqrt(term);
+      // Zona 7 — disco piano del coperchio (H3_coperchio = 0: z7 coincide con z6,
+      // questo ramo non viene mai raggiunto dal loop ma resta come fallback sicuro).
+      rVal = coperchio.X;
     }
 
     raggioProfile[h] = rVal;

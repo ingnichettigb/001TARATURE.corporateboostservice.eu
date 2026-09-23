@@ -9,7 +9,10 @@ import { TankInput, HeadConfig, HeadCalculated, CalculationResult } from '../mod
  * Calculates geometry and volumes for a single head (coperchio or fondo)
  */
 export function calculateHead(dInt: number, config: HeadConfig): HeadCalculated {
-  // === Testata PIANA (disco piano di lamiera, con eventuale raccordo toroidale al bordo) ===
+  // === Testata PIANA (disco piano di lamiera, con raccordo toroidale opzionale) ===
+  // Il coperchio è un disco piano di raggio X = R_base - r, raccordato alla parete
+  // con un arco a quarto di toro di raggio r (config.r_custom), poi colletto.
+  // r_custom = 0 (o assente) → disco piano puro (nessun raccordo), come in precedenza.
   if (config.type === 'piano') {
     const R_base = dInt / 2;
     const r_racc = Math.min(Math.max(0, config.r_custom ?? 0), R_base); // 0 ≤ r ≤ D/2
@@ -325,7 +328,7 @@ export function calculateTank(input: TankInput): CalculationResult {
       // Zona 6 — raccordo toroidale del coperchio piano (quarto di toro, speculare
       // alla zona 2 del fondo piano): il raggio scende da R_base (a z5) a X (a z6).
       const h_zona = z6 - h;
-      const BL = h_zona; // BI_coperchio = 0: il raccordo del piano parte dal disco (h = z6)
+      const BL = h_zona; // il raccordo del piano parte dal disco (h = z6)
       let term = BL * (2 * coperchio.r - BL);
       if (term < 0) term = 0;
       rVal = Math.sqrt(term) + coperchio.X;

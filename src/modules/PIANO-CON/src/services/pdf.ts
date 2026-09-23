@@ -376,12 +376,34 @@ export async function generateCalibrationPDF(
       }
     };
 
-    // 1. Fill background: cylindrical body + top dome + bottom cone
+    // 1. Fill background: cylindrical body + top flat plate + bottom cone
     const coneApexY = y_c + h_c + dome_h + 1.5;
     doc.setFillColor(240, 253, 244);
     doc.rect(x_c, y_c, w_c, h_c, 'F');
-    // Top flat cover (piano)
-    doc.rect(x_c, y_c - dome_h, w_c, dome_h, 'F');
+    // Top flat plate (piano) — angoli superiori raccordati se il coperchio ha raggio di raccordo r > 0
+    const copR = result.coperchio.r;
+    const crTop = copR > 0 ? Math.min(2.4, Math.max(0.9, (copR / (result.input.dInt / 2)) * (w_c / 2) * 3)) : 0;
+    const flatTopPath = (): [number, number][] => {
+      // segmenti relativi (dx, dy) a partire da (x_c, y_c), senso orario
+      const pts: [number, number][] = [];
+      const yt = dome_h;                 // spessore grafico del blocco piano
+      const arc = 8;                     // passi per ogni angolo raccordato
+      let px = 0, py = 0;
+      const push = (x: number, y: number) => { pts.push([x - px, y - py]); px = x; py = y; };
+      push(0, -(yt - crTop));
+      for (let i = 1; i <= arc && crTop > 0; i++) {
+        const a = (Math.PI / 2) * (i / arc);
+        push(crTop - crTop * Math.cos(a), -(yt - crTop + crTop * Math.sin(a)));
+      }
+      push(w_c - crTop, -yt);
+      for (let i = 1; i <= arc && crTop > 0; i++) {
+        const a = (Math.PI / 2) * (i / arc);
+        push(w_c - crTop + crTop * Math.sin(a), -(yt - crTop + crTop * Math.cos(a)));
+      }
+      push(w_c, 0);
+      return pts;
+    };
+    doc.lines(flatTopPath(), x_c, y_c, [1, 1], 'F', true);
     // Bottom cone (conico)
     doc.triangle(x_c, y_c + h_c, x_c + w_c, y_c + h_c, x_c + w_c / 2, coneApexY, 'F');
 
@@ -392,11 +414,12 @@ export async function generateCalibrationPDF(
     doc.line(x_c, y_c, x_c, y_c + h_c);
     // Right vertical line
     doc.line(x_c + w_c, y_c, x_c + w_c, y_c + h_c);
-    // Top flat cover outline
-    doc.rect(x_c, y_c - dome_h, w_c, dome_h, 'S');
+    // Top flat plate outline
+    doc.lines(flatTopPath(), x_c, y_c, [1, 1], 'S', true);
     // Bottom cone outlines (two slanted sides)
     doc.line(x_c, y_c + h_c, x_c + w_c / 2, coneApexY);
     doc.line(x_c + w_c, y_c + h_c, x_c + w_c / 2, coneApexY);
+
 
     // 3. Draw horizontal weld junctions (seams)
     doc.setDrawColor(110, 160, 140);
@@ -609,6 +632,7 @@ export async function generateCalibrationPDF(
     const lblPesoPieno = lang === 'en' ? 'Weight with Full Content' : lang === 'es' ? 'Peso con Contenido Lleno' : lang === 'de' ? 'Gewicht bei Vollfüllung' : 'Peso con Contenuto Pieno';
 
     const lblAreaPiano = lang === 'en' ? 'Flat plate area (m²)' : lang === 'es' ? 'Superficie disco plano (m²)' : lang === 'de' ? 'Fläche Flachdeckel (m²)' : 'Superficie disco piano (m²)';
+    const lblRraccTop = lang === 'en' ? 'Knuckle Radius (r_custom) (mm)' : lang === 'es' ? 'Radio Empalme (r_custom) (mm)' : lang === 'de' ? 'Krempenradius (r_custom) (mm)' : 'Raggio di Raccordo (r_custom) (mm)';
 
     const cop = result.input.coperchio;
     const fon = result.input.fondo;
@@ -618,6 +642,7 @@ export async function generateCalibrationPDF(
       // coperchio piano
       [grpTop, labels[lang].internalDiameter.replace(':',''), `${result.input.dInt} mm`],
       [grpTop, labels[lang].thickness.replace(':',''), `${cop.sp} mm`],
+      [grpTop, lblRraccTop, `${formatNumPDF(result.coperchio.r, 1)} mm`],
       [grpTop, lblAreaPiano, `${formatNumPDF(result.coperchio.Area_disco_da_tagliare_mq, 3)} m²`],
       [grpTop, lblColletto, `${cop.hColletto} mm`],
       [grpTop, labels[lang].topVolume.replace(':',''), `${formatNumPDF(result.volumeCoperchio, 2)} l`],

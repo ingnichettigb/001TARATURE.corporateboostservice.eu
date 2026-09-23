@@ -116,6 +116,7 @@ export default function App() {
       type: 'piano',
       sp: 8,
       hColletto: 0,
+      r_custom: 0, // raggio di raccordo disco/parete (mm); 0 = nessun raccordo (comportamento precedente)
     },
 
     report: {
@@ -1232,8 +1233,8 @@ export default function App() {
                   <div><strong>Zone 3:</strong> {lang === 'en' ? 'Bottom straight flange' : lang === 'es' ? 'Cuello fondo (cilíndrico)' : lang === 'de' ? 'Bodenbord (zylindrisch)' : 'Colletto cilindrico Fondo'}</div>
                   <div><strong>Zone 4:</strong> {lang === 'en' ? 'Cylindrical shell' : lang === 'es' ? 'Cuerpo cilíndrico' : lang === 'de' ? 'Zylindrischer Mantel' : 'Mantello cilindrico Centrale'}</div>
                   <div><strong>Zone 5:</strong> {lang === 'en' ? 'Top straight flange' : lang === 'es' ? 'Cuello tapa (cilíndrico)' : lang === 'de' ? 'Deckelbord (zylindrisch)' : 'Colletto cilindrico Coperchio'}</div>
-                  <div><strong>Zone 6:</strong> {lang === 'en' ? 'Top knuckle (toroidal)' : lang === 'es' ? 'Raccordo tapa (toroidal)' : lang === 'de' ? 'Deckelkrempe (toroidal)' : 'Raccordo toroidale Coperchio'}</div>
-                  <div><strong>Zone 7:</strong> {lang === 'en' ? 'Top dome (spherical)' : lang === 'es' ? 'Cúpula tapa (esférica)' : lang === 'de' ? 'Deckelkuppel (sphärisch)' : 'Calotta Coperchio sferica'}</div>
+                  <div><strong>Zone 6:</strong> {lang === 'en' ? 'Flange/disc knuckle (toroidal, active only if r > 0)' : lang === 'es' ? 'Raccordo collarín/disco (toroidal, activo solo si r > 0)' : lang === 'de' ? 'Krempe Bord/Scheibe (toroidal, nur aktiv bei r > 0)' : 'Raccordo toroidale colletto/disco Coperchio (attivo solo se r > 0)'}</div>
+                  <div><strong>Zone 7:</strong> {lang === 'en' ? 'Flat disc Top' : lang === 'es' ? 'Disco plano Tapa' : lang === 'de' ? 'Flache Scheibe Deckel' : 'Disco piano Coperchio'}</div>
                 </div>
               </div>
 
@@ -1355,6 +1356,15 @@ export default function App() {
                            'Superficie disco piano:'}
                         </span>
                         <span className="font-bold">{formatNum(result.coperchio.Area_disco_da_tagliare_mq, 3)} m²</span>
+                      </div>
+                      <div className="flex justify-between text-[8.5px]">
+                        <span>
+                          {lang === 'en' ? 'Knuckle Radius (r):' :
+                           lang === 'es' ? 'Radio raccordo (r):' :
+                           lang === 'de' ? 'Krempenradius (r):' :
+                           'Raggio di raccordo (r):'}
+                        </span>
+                        <span className="font-bold">{formatNum(result.coperchio.r, 1)} mm</span>
                       </div>
                       <div className="flex justify-between text-[8.5px]">
                         <span>
