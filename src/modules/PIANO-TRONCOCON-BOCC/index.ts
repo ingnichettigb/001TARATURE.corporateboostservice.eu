@@ -3,11 +3,11 @@ import type { ModuleDefinition, ModuleEntry } from "@/common/module-types";
 import definition from "./assets/data/module.json";
 
 /**
- * Punto di ingresso autonomo del modulo PIANO-TRONCOCON.
+ * Punto di ingresso autonomo del modulo PIANO-TRONCOCON-BOCC (segnaposto).
  * Il router centrale conosce solo questa funzione: nessuna logica di carta
  * vive fuori da questa cartella.
  */
-export function runPianoTroncocon(): ModuleEntry {
+export function runPianoTronconBocc(): ModuleEntry {
   return {
     id: (definition as ModuleDefinition).id,
     definition: definition as ModuleDefinition,
@@ -15,4 +15,4 @@ export function runPianoTroncocon(): ModuleEntry {
   };
 }
 
-export default runPianoTroncocon;
+export default runPianoTronconBocc;

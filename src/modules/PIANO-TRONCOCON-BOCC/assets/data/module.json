@@ -1,9 +1,9 @@
 {
-  "id": "piano-troncocon",
-  "title": "PIANO-TRONCOCON",
-  "subtitle": "Coperchio Piano / Fondo Troncoconico",
-  "description": "Serbatoio cilindrico verticale con coperchio piano raccordato e fondo troncoconico. Taratura millimetrica a 7 zone.",
+  "id": "piano-troncocon-bocc",
+  "title": "PIANO-TRONCOCON-BOCC",
+  "subtitle": "Coperchio Piano / Fondo Troncoconico con Bocchello",
+  "description": "Serbatoio cilindrico verticale con coperchio piano e fondo troncoconico con bocchello (tronchetto cilindrico). Carta segnaposto in preparazione.",
   "icon": "Cylinder",
   "image": "/__l5e/assets-v1/25b78c06-e553-40ad-8915-85bc4b2bdd10/icona-piano-troncocon.png",
-  "status": "active"
+  "status": "draft"
 }
