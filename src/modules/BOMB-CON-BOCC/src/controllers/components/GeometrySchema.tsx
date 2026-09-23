@@ -409,11 +409,11 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const box1H = 176;
   const boxSumH = 76;
   const box2H = 96;
-  const box3H = 230;
-  // riquadro 3 (fondo conico): fisso in basso
+  const box3H = 242;
+  // riquadro 3 (fondo troncoconico): fisso in basso
   const box3Y = drawH - box3H - 6;
-  // riquadro 1 (coperchio): fisso in alto
-  const box1Y = Math.max(4, Math.min(callout1Y - 50, box3Y - box1H - boxSumH - box2H - 36));
+  // riquadro 1 (coperchio): fisso in alto; lascia almeno ~20 px tra i riquadri di sinistra
+  const box1Y = Math.max(4, Math.min(callout1Y - 50, box3Y - box1H - boxSumH - box2H - 60));
   // i due riquadri centrali si redistribuiscono con spazio verticale uguale
   const boxGapV = (box3Y - (box1Y + box1H) - boxSumH - box2H) / 3;
   const boxSumY = box1Y + box1H + boxGapV;
@@ -642,14 +642,14 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 width="78px"
               />
             </foreignObject>
-            <text x={6 + boxW / 2} y={box3Y + 178} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+            <text x={6 + boxW / 2} y={box3Y + 200} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
               Fondo troncoconico — litri
             </text>
-            <text x={6 + boxW / 2} y={box3Y + 196} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
+            <text x={6 + boxW / 2} y={box3Y + 218} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
               {result ? fmtL0(result.volumeFondo) : '—'}
             </text>
             {boccholloError && (
-              <text x={6 + boxW / 2} y={box3Y + 210} textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#dc2626">
+              <text x={6 + boxW / 2} y={box3Y + 234} textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#dc2626">
                 Ø tronchetto ≤ Ø min.
               </text>
             )}
@@ -663,16 +663,36 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
 
           {/* QUOTA Ø BASE MINORE (fondo piano del tronco di cono) */}
           {(() => {
-            const yDim = yBottom + 12;
+            const hasNeck = hBocc_px > 0;
+            const INP_W = 92;
+            const LBL_W = 46;
+            const GAP = 6;
+            const blockW = LBL_W + 4 + INP_W;
             const xL = cx - Math.max(rMinPx, 14);
             const xR = cx + Math.max(rMinPx, 14);
+            // con il tronchetto la quota Ø min. va di LATO (sinistra, o destra se manca spazio),
+            // così input ed etichetta non si sovrappongono a Ø tronch. né al tronchetto stesso;
+            // in ultima istanza va sotto Ø tronch., su una riga separata.
+            const roomLeft = xL - GAP - blockW >= LEFT_W;
+            const roomRight = xR + GAP + blockW <= dim4X - 6;
+            const side: 'left' | 'right' | 'below' = !hasNeck
+              ? 'below'
+              : roomLeft ? 'left' : roomRight ? 'right' : 'below';
+            const yDim = side === 'below'
+              ? (hasNeck ? yBottomBocc + 12 + 40 : yBottom + 12)
+              : yBottom + 10;
+            const inpY = side === 'below' ? yDim + 4 : yDim - 12;
+            const inpX = side === 'left' ? xL - GAP - INP_W : side === 'right' ? xR + GAP + LBL_W + 4 : cx - 46;
+            const lblX = side === 'left' ? inpX - 4 : side === 'right' ? xR + GAP : cx - 50;
+            const lblAnchor = side === 'right' ? 'start' : 'end';
+            const lblY = side === 'below' ? yDim + 20 : yDim + 5;
             return (
               <g>
                 <line x1={xL} y1={yBottom + 2} x2={xL} y2={yDim + 6} stroke="#334155" strokeWidth="1" />
                 <line x1={xR} y1={yBottom + 2} x2={xR} y2={yDim + 6} stroke="#334155" strokeWidth="1" />
                 <line x1={xL} y1={yDim} x2={xR} y2={yDim} stroke="#334155" strokeWidth="1" />
-                <text x={cx - 50} y={yDim + 20} textAnchor="end" fontSize="13" fontWeight="700" fill="#000000">Ø min.</text>
-                <foreignObject x={cx - 46} y={yDim + 4} width="92" height="24">
+                <text x={lblX} y={lblY} textAnchor={lblAnchor} fontSize="13" fontWeight="700" fill="#000000">Ø min.</text>
+                <foreignObject x={inpX} y={inpY} width={INP_W} height="24">
                   <input
                     type="number"
                     value={dMin}
