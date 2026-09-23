@@ -211,7 +211,8 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
 
   const hConoFondo_calc = hConoFondo;
   const hConoCoperchio_calc = hConoCoperchio;
-  const hTot = result ? result.H_tot : hConoCoperchio_calc + lCil + hConoFondo_calc;
+  const hBocchello = (input.dBocchello ?? 0) > 0 ? Math.max(0, input.hBocchello ?? 0) : 0;
+  const hTot = result ? result.H_tot : hBocchello + hConoCoperchio_calc + lCil + hConoFondo_calc;
 
   const raccordoError =
     (angoloFondo == null && !baseMinoreError) || angoloCoperchio == null
@@ -810,6 +811,12 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
           </h4>
         </div>
         <div className="grid grid-cols-2 gap-y-1 text-xs font-bold text-neutral-800">
+          {hBocchello > 0 && (
+            <>
+              <span>Bocchello di fondo</span>
+              <span className="text-right font-mono">{fmt(hBocchello)} mm</span>
+            </>
+          )}
           <span>Coperchio conico (colletto incluso)</span>
           <span className="text-right font-mono">{fmt(hConoCoperchio_calc)} mm</span>
           <span>Sezione cilindrica (virola)</span>
@@ -818,19 +825,19 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
           <span className="text-right font-mono">{fmt(hConoFondo_calc)} mm</span>
           <span className="border-t border-emerald-300 pt-1">Somma</span>
           <span className="text-right font-mono border-t border-emerald-300 pt-1">
-            {fmt(hConoCoperchio_calc + lCil + hConoFondo_calc)} mm
+            {fmt(hBocchello + hConoCoperchio_calc + lCil + hConoFondo_calc)} mm
           </span>
           <span className="font-black">Altezza totale interna (H_tot)</span>
           <span className="text-right font-mono font-black">{fmt(hTot)} mm</span>
         </div>
         <p
           className={`mt-2 text-xs font-black ${
-            Math.abs(hConoCoperchio_calc + lCil + hConoFondo_calc - hTot) <= 1.5
+            Math.abs(hBocchello + hConoCoperchio_calc + lCil + hConoFondo_calc - hTot) <= 1.5
               ? 'text-emerald-800'
               : 'text-rose-800'
           }`}
         >
-          {Math.abs(hConoCoperchio_calc + lCil + hConoFondo_calc - hTot) <= 1.5
+          {Math.abs(hBocchello + hConoCoperchio_calc + lCil + hConoFondo_calc - hTot) <= 1.5
             ? '✓ Altezze coerenti (scarto ≤ 1,5 mm per arrotondamento)'
             : '⚠ Scarto rilevato: verifica i parametri geometrici'}
         </p>
