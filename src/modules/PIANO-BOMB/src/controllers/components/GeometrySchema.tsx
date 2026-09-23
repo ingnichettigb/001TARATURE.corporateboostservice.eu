@@ -135,9 +135,6 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const lCil = input.lCil;
   const hCollettoCoperchio = input.coperchio.hColletto;
   const hCollettoFondo = input.fondo.hColletto;
-  const rCoperchio = input.coperchio.r_custom ?? 0;
-  // coperchio piano: unico raggio da verificare è il raccordo r (0 ≤ r ≤ D/2)
-  const raccordoCoperchioValido = rCoperchio >= 0 && rCoperchio <= dInt / 2;
 
   const result = useMemo(() => {
     try {
@@ -263,18 +260,17 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const domeRise = Math.max(hFondo_px / 0.75, 18);
 
   // raggio grafico del raccordo del coperchio piano (proporzionale a r/(D/2), limitato all'altezza del blocco)
-  const rCoperchioValido = Math.min(Math.max(0, rCoperchio), dInt / 2);
+  const rCoperchio = input.coperchio.r_custom ?? 0;
+  const rCoperchioValido = rCoperchio >= 0 && rCoperchio <= dInt / 2;
   const cornerPx =
-    rCoperchioValido > 0
-      ? Math.min(hCoperchio_px, Math.max(8, (rCoperchioValido / (dInt / 2 || 1)) * halfW))
+    rCoperchio > 0
+      ? Math.min(hCoperchio_px, Math.max(8, (Math.min(Math.max(0, rCoperchio), dInt / 2) / (dInt / 2 || 1)) * halfW))
       : 0;
 
-  // profilo: coperchio PIANO in alto (bordo superiore rettilineo, con angoli raccordati
-  // se r > 0), calotta bombata in basso
   const pathData = `
     M ${leftX + cornerPx} ${yTop}
     L ${rightX - cornerPx} ${yTop}
-    ${cornerPx > 0 ? `A ${cornerPx} ${cornerPx} 0 0 1 ${rightX} ${yTop + cornerPx}` : `L ${rightX} ${yTop}`}
+    ${cornerPx > 0 ? `A ${cornerPx} ${cornerPx} 0 0 1 ${rightX} ${yTop + cornerPx}` : ''}
     L ${rightX} ${yCilBot}
     C ${rightX} ${yCilBot + domeRise}, ${leftX} ${yCilBot + domeRise}, ${leftX} ${yCilBot}
     L ${leftX} ${yTop + cornerPx}
@@ -310,7 +306,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const box1H = 176;
   const boxSumH = 76;
   const box2H = 96;
-  const box3H = 162; // coperchio piano (in alto, ha il campo "Raccordo r")
+  const box3H = 182; // coperchio piano (ha anche il campo "Raccordo r")
   // riquadro 1 (fondo bombato): fisso in basso
   const box1Y = drawH - box1H - 6;
   // riquadro 3 (coperchio piano): fisso in alto
@@ -496,8 +492,8 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 label="Raccordo r"
                 value={rCoperchio}
                 onChange={(v) => patchCoperchio({ r_custom: v })}
-                labelWidth="58px"
-                width="78px"
+                labelWidth="62px"
+                width="74px"
               />
             </foreignObject>
             <foreignObject x={12} y={box3Y + 56} width={boxW - 18} height="24">
@@ -505,8 +501,8 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 label="Colletto"
                 value={hCollettoCoperchio}
                 onChange={(v) => patchCoperchio({ hColletto: v })}
-                labelWidth="58px"
-                width="78px"
+                labelWidth="62px"
+                width="74px"
               />
             </foreignObject>
             <foreignObject x={12} y={box3Y + 82} width={boxW - 18} height="24">
@@ -514,8 +510,8 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 label="Sp."
                 value={input.coperchio.sp}
                 onChange={(v) => patchCoperchio({ sp: v })}
-                labelWidth="58px"
-                width="78px"
+                labelWidth="62px"
+                width="74px"
               />
             </foreignObject>
             <text x={6 + boxW / 2} y={box3Y + 130} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
@@ -637,17 +633,16 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
       </div>
 
       {/* ERRORI GEOMETRICI */}
-      {(!geometriaFondoValida || !raccordoCoperchioValido) && (
+      {(!geometriaFondoValida || !rCoperchioValido) && (
         <div className="bg-rose-50 border border-rose-300 rounded-xl p-3 space-y-1">
           {!geometriaFondoValida && (
             <p className="text-xs font-bold text-rose-900">
               I raggi del fondo bombato non sono geometricamente compatibili con il diametro interno.
             </p>
           )}
-          {!raccordoCoperchioValido && (
+          {!rCoperchioValido && (
             <p className="text-xs font-bold text-rose-900">
-              Il raggio di raccordo del coperchio piano deve essere compreso tra 0 e metà del diametro interno
-              (max {fmt(dInt / 2)} mm).
+              Il raggio di raccordo del coperchio piano deve essere compreso tra 0 e metà del diametro interno.
             </p>
           )}
         </div>

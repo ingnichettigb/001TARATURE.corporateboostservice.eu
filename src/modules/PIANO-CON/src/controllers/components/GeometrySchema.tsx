@@ -270,15 +270,26 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const rightX = cx + halfW;
   const yCilMid = (yCilTop + yCilBot) / 2;
 
-  // coperchio PIANO (in ALTO): nessuna bombatura, profilo rettilineo
+  // coperchio PIANO (in ALTO): profilo rettilineo, con angoli raccordati se r_custom > 0
   const domeRise = 0;
 
+  // raggio grafico del raccordo del coperchio piano (proporzionale a r/(D/2), limitato all'altezza del blocco)
+  const rCoperchio = input.coperchio.r_custom ?? 0;
+  const rCoperchioValido = rCoperchio >= 0 && rCoperchio <= dInt / 2;
+  const cornerPx =
+    rCoperchio > 0
+      ? Math.min(hCoperchio_px, Math.max(8, (Math.min(Math.max(0, rCoperchio), dInt / 2) / (dInt / 2 || 1)) * halfW))
+      : 0;
+
   const pathData = `
-    M ${leftX} ${yDomeTop}
-    L ${rightX} ${yDomeTop}
+    M ${leftX + cornerPx} ${yDomeTop}
+    L ${rightX - cornerPx} ${yDomeTop}
+    ${cornerPx > 0 ? `A ${cornerPx} ${cornerPx} 0 0 1 ${rightX} ${yDomeTop + cornerPx}` : ''}
     L ${rightX} ${yCilBot}
     L ${cx} ${yApex}
     L ${leftX} ${yCilBot}
+    L ${leftX} ${yDomeTop + cornerPx}
+    ${cornerPx > 0 ? `A ${cornerPx} ${cornerPx} 0 0 1 ${leftX + cornerPx} ${yDomeTop}` : ''}
     Z
   `;
   void domeRise;
@@ -312,7 +323,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const dim4X = drawW - RIGHT_W - 8;     // 682 (quota totale, testo verso sinistra)
 
   const boxW = 208;
-  const box1H = 132;
+  const box1H = 158; // coperchio piano (ha anche il campo "Raccordo r")
   const boxSumH = 76;
   const box2H = 96;
   const box3H = 155;
@@ -382,15 +393,18 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
               Coperchio piano (disco)
             </text>
             <foreignObject x={12} y={box1Y + 30} width={boxW - 18} height="24">
-              <MiniField label="Colletto" value={hCollettoCoperchio} onChange={(v) => patchCoperchio({ hColletto: v })} />
+              <MiniField label="Raccordo r" value={rCoperchio} onChange={(v) => patchCoperchio({ r_custom: v })} />
             </foreignObject>
             <foreignObject x={12} y={box1Y + 56} width={boxW - 18} height="24">
+              <MiniField label="Colletto" value={hCollettoCoperchio} onChange={(v) => patchCoperchio({ hColletto: v })} />
+            </foreignObject>
+            <foreignObject x={12} y={box1Y + 82} width={boxW - 18} height="24">
               <MiniField label="Sp." value={input.coperchio.sp} onChange={(v) => patchCoperchio({ sp: v })} />
             </foreignObject>
-            <text x={6 + boxW / 2} y={box1Y + 104} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+            <text x={6 + boxW / 2} y={box1Y + 130} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
               Coperchio piano — litri
             </text>
-            <text x={6 + boxW / 2} y={box1Y + 122} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
+            <text x={6 + boxW / 2} y={box1Y + 148} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
               {result ? fmtL0(result.volumeCoperchio) : '—'}
             </text>
           </g>
@@ -662,9 +676,14 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
       </div>
 
       {/* ERRORI GEOMETRICI */}
-      {raccordoError && (
+      {(raccordoError || !rCoperchioValido) && (
         <div className="bg-rose-50 border border-rose-300 rounded-xl p-3 space-y-1">
-          <p className="text-xs font-bold text-rose-900">{raccordoError}</p>
+          {raccordoError && <p className="text-xs font-bold text-rose-900">{raccordoError}</p>}
+          {!rCoperchioValido && (
+            <p className="text-xs font-bold text-rose-900">
+              Il raggio di raccordo del coperchio piano deve essere compreso tra 0 e metà del diametro interno.
+            </p>
+          )}
         </div>
       )}
 
