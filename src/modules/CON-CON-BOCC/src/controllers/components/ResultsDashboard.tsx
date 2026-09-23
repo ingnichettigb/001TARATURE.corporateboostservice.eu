@@ -249,17 +249,18 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                 />
               )}
 
-              {/* 7 Zones Lines indicators (Delimitatori Doppia Riga Verde Oliva Sottile) */}
+              {/* Zone Lines indicators (Delimitatori Doppia Riga Verde Oliva Sottile) */}
               {[
-                { label: lang === 'en' ? 'Z1/Z2 (End of truncated cone)' : lang === 'es' ? 'Z1/Z2 (Fin del tronco de cono)' : lang === 'de' ? 'Z1/Z2 (Ende Kegelstumpf)' : 'Z1/Z2 (Fine tronco di cono)', val: result.z1 },
-                { label: lang === 'en' ? 'Z2/Z3 (Bottom flange)' : lang === 'es' ? 'Z2/Z3 (Pestaña inf.)' : lang === 'de' ? 'Z2/Z3 (Unterer Bord)' : 'Z2/Z3 (Colletto f.)', val: result.z2 },
-                { label: lang === 'en' ? 'Z3/Z4 (Bottom shell)' : lang === 'es' ? 'Z3/Z4 (Cuerpo inf.)' : lang === 'de' ? 'Z3/Z4 (Unterer Mantel)' : 'Z3/Z4 (Mantello f.)', val: result.z3 },
-                { label: lang === 'en' ? 'Z4/Z5 (Top flange)' : lang === 'es' ? 'Z4/Z5 (Pestaña sup.)' : lang === 'de' ? 'Z4/Z5 (Oberer Bord)' : 'Z4/Z5 (Colletto c.)', val: result.z4 },
-                { label: lang === 'en' ? 'Z5/Z6 (Top trans.)' : lang === 'es' ? 'Z5/Z6 (Trans. sup.)' : lang === 'de' ? 'Z5/Z6 (Oberer Übergang)' : 'Z5/Z6 (Raccordo c.)', val: result.z5 },
-                { label: lang === 'en' ? 'Z6/Z7 (Top crown)' : lang === 'es' ? 'Z6/Z7 (Corona sup.)' : lang === 'de' ? 'Z6/Z7 (Obere Wölbung)' : 'Z6/Z7 (Calotta c.)', val: result.z6 },
+                ...(result.z0 > 0 ? [{ label: lang === 'en' ? 'Z0/Z1 (End of bottom nozzle)' : lang === 'es' ? 'Z0/Z1 (Fin de la boquilla)' : lang === 'de' ? 'Z0/Z1 (Ende Bodenstutzen)' : 'Z0/Z1 (Fine bocchello)', val: result.z0, right: true }] : []),
+                { label: lang === 'en' ? 'Z1/Z2 (End of truncated cone)' : lang === 'es' ? 'Z1/Z2 (Fin del tronco de cono)' : lang === 'de' ? 'Z1/Z2 (Ende Kegelstumpf)' : 'Z1/Z2 (Fine tronco di cono)', val: result.z1, right: true },
+                { label: lang === 'en' ? 'Z2/Z3 (Bottom flange)' : lang === 'es' ? 'Z2/Z3 (Pestaña inf.)' : lang === 'de' ? 'Z2/Z3 (Unterer Bord)' : 'Z2/Z3 (Colletto f.)', val: result.z2, right: false },
+                { label: lang === 'en' ? 'Z3/Z4 (Bottom shell)' : lang === 'es' ? 'Z3/Z4 (Cuerpo inf.)' : lang === 'de' ? 'Z3/Z4 (Unterer Mantel)' : 'Z3/Z4 (Mantello f.)', val: result.z3, right: true },
+                { label: lang === 'en' ? 'Z4/Z5 (Top flange)' : lang === 'es' ? 'Z4/Z5 (Pestaña sup.)' : lang === 'de' ? 'Z4/Z5 (Oberer Bord)' : 'Z4/Z5 (Colletto c.)', val: result.z4, right: true },
+                { label: lang === 'en' ? 'Z5/Z6 (Top trans.)' : lang === 'es' ? 'Z5/Z6 (Trans. sup.)' : lang === 'de' ? 'Z5/Z6 (Oberer Übergang)' : 'Z5/Z6 (Raccordo c.)', val: result.z5, right: false },
+                { label: lang === 'en' ? 'Z6/Z7 (Top crown)' : lang === 'es' ? 'Z6/Z7 (Corona sup.)' : lang === 'de' ? 'Z6/Z7 (Obere Wölbung)' : 'Z6/Z7 (Calotta c.)', val: result.z6, right: true },
               ].map((zone, idx) => {
                 const y = mapHToY(zone.val);
-                const isRight = idx === 5 || idx === 3 || idx === 2 || idx === 0;
+                const isRight = zone.right;
                 const textX = isRight ? 245 : 75;
                 const textAnchor = isRight ? "start" : "end";
                 return (
@@ -295,9 +296,10 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                 );
               })}
 
-              {/* Progressive numbering of the 7 zones (1 to 7) inside the tank */}
+              {/* Progressive numbering of the zones inside the tank (0 = bottom nozzle, when present; 1 to 7 = tank body) */}
               {[
-                { num: 1, min: 0, max: result.z1 },
+                ...(result.z0 > 0 ? [{ num: 0, min: 0, max: result.z0 }] : []),
+                { num: 1, min: result.z0, max: result.z1 },
                 { num: 2, min: result.z1, max: result.z2 },
                 { num: 3, min: result.z2, max: result.z3 },
                 { num: 4, min: result.z3, max: result.z4 },
