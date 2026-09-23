@@ -60,6 +60,10 @@ const angleFromHTot = (
 const fmt = (n: number): string =>
   !isFinite(n) ? '—' : Number.isInteger(n) ? String(n) : n.toFixed(1);
 
+// volumi piccoli (es. bocchello): due decimali
+const fmtL = (n: number): string =>
+  !isFinite(n) ? '—' : n.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 // capacità nei riquadri: numero intero, senza decimali
 const fmtL0 = (n: number): string =>
   !isFinite(n) ? '—' : Math.round(n).toLocaleString('it-IT', { maximumFractionDigits: 0 });
@@ -196,6 +200,17 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
       ? 'Il diametro della base minore deve essere inferiore al diametro interno meno il doppio del raggio di raccordo (Ø base minore < Ø − 2·R racc.).'
       : null;
 
+  // BOCCHELLO di fondo (tronchetto cilindrico sotto la base minore): Ø e altezza stanno
+  // nell'input a livello di serbatoio (dBocchello / hBocchello). Vincolo: Ø bocchello <= Ø base minore.
+  const dBocc = Math.max(0, input.dBocchello ?? 0);
+  const rBocc = dBocc / 2;
+  const hBocc = dBocc > 0 ? Math.max(0, input.hBocchello ?? 0) : 0;
+  const hasBocc = dBocc > 0 && hBocc > 0;
+  const boccError =
+    dBocc > dMin
+      ? 'Il diametro del bocchello non può essere maggiore del diametro della base minore del tronco di cono (Ø bocchello ≤ Ø base minore).'
+      : null;
+
   const angoloCoperchio = useMemo(() => {
     const a = angleFromHTot(hConoCoperchio, dInt / 2, rRaccCoperchio, hCollettoCoperchio);
     return a != null ? Math.round(a * 10) / 10 : null;
@@ -211,8 +226,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
 
   const hConoFondo_calc = hConoFondo;
   const hConoCoperchio_calc = hConoCoperchio;
-  const hBocchello = (input.dBocchello ?? 0) > 0 ? Math.max(0, input.hBocchello ?? 0) : 0;
-  const hTot = result ? result.H_tot : hBocchello + hConoCoperchio_calc + lCil + hConoFondo_calc;
+  const hTot = result ? result.H_tot : hConoCoperchio_calc + lCil + hConoFondo_calc + hBocc;
 
   const raccordoError =
     (angoloFondo == null && !baseMinoreError) || angoloCoperchio == null
@@ -225,6 +239,9 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
     onChange({ ...input, fondo: { ...input.fondo, ...p } });
   const patchCoperchio = (p: Partial<TankInput['coperchio']>) =>
     onChange({ ...input, coperchio: { ...input.coperchio, ...p } });
+  // il bocchello non può essere più largo della base minore del cono
+  const patchDBocc = (v: number) => patch({ dBocchello: Math.max(0, Math.min(dMin, v)) });
+  const patchHBocc = (v: number) => patch({ hBocchello: Math.max(0, v) });
 
   const setDInt = (v: number) => {
     if (!(v > 0)) return;
@@ -280,7 +297,9 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const lCil_px = 190;
 
   // i due coni sono scalati proporzionalmente al Ø, con tetto sullo spazio disponibile
-  const maxConiPx = Math.max(80, availH - lCil_px);
+  // bocchello: piccola estensione grafica scalata (con un minimo visibile)
+  const hBocc_px = hasBocc ? Math.max(hBocc * scaleBase, 14) : 0;
+  const maxConiPx = Math.max(80, availH - lCil_px - hBocc_px);
   const idealTop = hConoCoperchio_calc * scaleBase;
   const idealBot = hConoFondo_calc * scaleBase;
   const idealTot = idealTop + idealBot || 1;
@@ -288,12 +307,13 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const hConoTop_px = Math.max(30, idealTop * shrink);
   const hConoBot_px = Math.max(30, idealBot * shrink);
 
-  const totalDrawn = hConoTop_px + lCil_px + hConoBot_px;
+  const totalDrawn = hConoTop_px + lCil_px + hConoBot_px + hBocc_px;
   // spazio in eccesso: disegno centrato verticalmente
   const yApexTop = zoneY0 + Math.max(0, (availH - totalDrawn) / 2);
   const yCilTop = yApexTop + hConoTop_px;
   const yCilBot = yCilTop + lCil_px;
   const yApexBot = yCilBot + hConoBot_px; // quota della base minore (fondo piano, se dMin > 0)
+  const yBottomBocc = yApexBot + hBocc_px; // quota della punta del bocchello (fondo reale)
 
   const leftX = cx - halfW;
   const rightX = cx + halfW;
@@ -302,7 +322,23 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   // semi-larghezza grafica della base minore del tronco di cono (proporzionale al Ø)
   const rMinPx = Math.max(0, Math.min(halfW * 0.96, rMin * scaleBase));
 
-  const pathData = `
+  // semi-larghezza grafica del bocchello (sempre <= rMinPx, come nel vincolo reale)
+  const rBoccPx = Math.max(0, Math.min(rMinPx, rBocc * scaleBase));
+
+  const pathData = hBocc_px > 0 ? `
+    M ${leftX} ${yCilTop}
+    L ${cx} ${yApexTop}
+    L ${rightX} ${yCilTop}
+    L ${rightX} ${yCilBot}
+    L ${cx + rMinPx} ${yApexBot}
+    L ${cx + rBoccPx} ${yApexBot}
+    L ${cx + rBoccPx} ${yBottomBocc}
+    L ${cx - rBoccPx} ${yBottomBocc}
+    L ${cx - rBoccPx} ${yApexBot}
+    L ${cx - rMinPx} ${yApexBot}
+    L ${leftX} ${yCilBot}
+    Z
+  ` : `
     M ${leftX} ${yCilTop}
     L ${cx} ${yApexTop}
     L ${rightX} ${yCilTop}
@@ -336,11 +372,11 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const box3H = 155; // coperchio conico (in alto)
   const boxSumH = 76;
   const box2H = 96;
-  const box1H = 181; // fondo troncoconico (in basso) — +26px per il campo Ø min.
+  const box1H = 262; // fondo troncoconico (in basso): 6 campi + litri fondo + litri bocchello
   // riquadro fondo troncoconico: fisso in basso
   const box1Y = drawH - box1H - 6;
   // riquadro coperchio conico: fisso in alto
-  const box3Y = Math.max(4, Math.min(callout3Y - 40, box1Y - box3H - boxSumH - box2H - 36));
+  const box3Y = Math.max(4, Math.min(callout3Y - 40, box1Y - box3H - boxSumH - box2H - 60));
   // i due riquadri centrali si redistribuiscono con spazio verticale uguale
   const boxGapV = (box1Y - (box3Y + box3H) - boxSumH - box2H) / 3;
   const boxSumY = box3Y + box3H + boxGapV;
@@ -380,7 +416,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             x1={cx}
             y1={yApexTop - 20}
             x2={cx}
-            y2={yApexBot + 20}
+            y2={yBottomBocc + 8}
             stroke="#94a3b8"
             strokeWidth="1"
             strokeDasharray="6,4"
@@ -533,12 +569,41 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 width="78px"
               />
             </foreignObject>
-            <text x={6 + boxW / 2} y={box1Y + 150} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+            <foreignObject x={12} y={box1Y + 130} width={boxW - 18} height="24">
+              <MiniField
+                label="Ø bocc."
+                value={dBocc}
+                onChange={(v) => patchDBocc(v)}
+                labelWidth="58px"
+                width="78px"
+              />
+            </foreignObject>
+            <foreignObject x={12} y={box1Y + 156} width={boxW - 18} height="24">
+              <MiniField
+                label="H bocc."
+                value={input.hBocchello ?? 0}
+                onChange={(v) => patchHBocc(v)}
+                labelWidth="58px"
+                width="78px"
+              />
+            </foreignObject>
+            <text x={6 + boxW / 2} y={box1Y + 205} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
               Fondo troncoconico — litri
             </text>
-            <text x={6 + boxW / 2} y={box1Y + 168} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
+            <text x={6 + boxW / 2} y={box1Y + 221} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
               {result ? fmtL0(result.volumeFondo) : '—'}
             </text>
+            <text x={6 + boxW / 2} y={box1Y + 239} textAnchor="middle" fontSize="11" fontWeight="600" fill="#000000">
+              Bocchello — litri
+            </text>
+            <text x={6 + boxW / 2} y={box1Y + 255} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f766e">
+              {result ? fmtL(result.volumeBocchello) : '—'}
+            </text>
+            {boccError && (
+              <text x={6 + boxW / 2} y={box1Y + 192} textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#dc2626">
+                Ø bocc. ≤ Ø min.
+              </text>
+            )}
           </g>
 
           {/* PROFILO SERBATOIO */}
@@ -546,25 +611,92 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
           <line x1={leftX} y1={yCilTop} x2={rightX} y2={yCilTop} stroke="#1e293b" strokeWidth="1" />
           <line x1={leftX} y1={yCilBot} x2={rightX} y2={yCilBot} stroke="#1e293b" strokeWidth="1" />
 
-          {/* QUOTA Ø MIN. (base minore del tronco di cono / bocchello) */}
-          {rMinPx > 2 && (
-            <g>
-              <line x1={cx - rMinPx} y1={yApexBot + 34} x2={cx + rMinPx} y2={yApexBot + 34} stroke="#334155" strokeWidth="1" />
-              <line x1={cx - rMinPx} y1={yApexBot + 28} x2={cx - rMinPx} y2={yApexBot + 40} stroke="#334155" strokeWidth="1" />
-              <line x1={cx + rMinPx} y1={yApexBot + 28} x2={cx + rMinPx} y2={yApexBot + 40} stroke="#334155" strokeWidth="1" />
-              <text x={cx - rMinPx - 12} y={yApexBot + 21} textAnchor="end" fontSize="12" fontWeight="700" fill="#000000">Ø min.</text>
-              <foreignObject x={cx - 46} y={yApexBot + 2} width="92" height="24">
-                <input
-                  type="number"
-                  value={dMin}
-                  onChange={(e) => patchFondo({ dMin: Math.max(0, Number(e.target.value)) })}
-                  style={editableDimStyle}
-                  className="editable-dim"
-                  title="Diametro base minore del tronco di cono / bocchello (mm)"
-                />
-              </foreignObject>
-            </g>
-          )}
+          {/* QUOTA Ø MIN. (base minore del tronco di cono) */}
+          {rMinPx > 2 && (() => {
+            const INP_W = 92;
+            const LBL_W = 46;
+            const GAP = 6;
+            const blockW = LBL_W + 4 + INP_W;
+            const xL = cx - Math.max(rMinPx, 14);
+            const xR = cx + Math.max(rMinPx, 14);
+            // con il bocchello la quota Ø min. va di LATO (sinistra, o destra se manca spazio),
+            // così input ed etichetta non si sovrappongono a Ø bocc. né al bocchello stesso;
+            // in ultima istanza va sotto Ø bocc., su una riga separata.
+            const roomLeft = xL - GAP - blockW >= LEFT_W;
+            const roomRight = xR + GAP + blockW <= dim4X - 6;
+            const side: 'left' | 'right' | 'below' = !(hBocc_px > 0)
+              ? 'below'
+              : roomLeft ? 'left' : roomRight ? 'right' : 'below';
+            const yDim = side === 'below'
+              ? (hBocc_px > 0 ? yBottomBocc + 12 + 40 : yApexBot + 12)
+              : yApexBot + 10;
+            const inpY = side === 'below' ? yDim + 4 : yDim - 12;
+            const inpX = side === 'left' ? xL - GAP - INP_W : side === 'right' ? xR + GAP + LBL_W + 4 : cx - 46;
+            const lblX = side === 'left' ? inpX - 4 : side === 'right' ? xR + GAP : cx - 50;
+            const lblAnchor = side === 'right' ? 'start' : 'end';
+            const lblY = side === 'below' ? yDim + 20 : yDim + 5;
+            return (
+              <g>
+                <line x1={xL} y1={yApexBot + 2} x2={xL} y2={yDim + 6} stroke="#334155" strokeWidth="1" />
+                <line x1={xR} y1={yApexBot + 2} x2={xR} y2={yDim + 6} stroke="#334155" strokeWidth="1" />
+                <line x1={xL} y1={yDim} x2={xR} y2={yDim} stroke="#334155" strokeWidth="1" />
+                <text x={lblX} y={lblY} textAnchor={lblAnchor} fontSize="13" fontWeight="700" fill="#000000">Ø min.</text>
+                <foreignObject x={inpX} y={inpY} width={INP_W} height="24">
+                  <input
+                    type="number"
+                    value={dMin}
+                    onChange={(e) => patchFondo({ dMin: Math.max(0, Number(e.target.value)) })}
+                    style={editableDimStyle}
+                    className="editable-dim"
+                    title="Diametro interno della base minore del tronco di cono (mm)"
+                  />
+                </foreignObject>
+              </g>
+            );
+          })()}
+
+          {/* BOCCHELLO DI FONDO — Ø e altezza (solo se presente) */}
+          {hBocc_px > 0 && (() => {
+            const yDim = yBottomBocc + 12;
+            const xL = cx - Math.max(rBoccPx, 10);
+            const xR = cx + Math.max(rBoccPx, 10);
+            // il campo dell'altezza non deve toccare quello dell'altezza del fondo (stessa colonna)
+            const coneInputBottom = (yCilBot + yApexBot) / 2 + 12;
+            const hInputY = Math.max((yApexBot + yBottomBocc) / 2 - 12, coneInputBottom + 2);
+            return (
+              <g>
+                {/* contorno del bocchello già incluso in pathData; qui solo le quote */}
+                <line x1={xL} y1={yBottomBocc + 2} x2={xL} y2={yDim + 6} stroke="#334155" strokeWidth="1" />
+                <line x1={xR} y1={yBottomBocc + 2} x2={xR} y2={yDim + 6} stroke="#334155" strokeWidth="1" />
+                <line x1={xL} y1={yDim} x2={xR} y2={yDim} stroke="#334155" strokeWidth="1" />
+                <text x={cx - 50} y={yDim + 20} textAnchor="end" fontSize="13" fontWeight="700" fill="#000000">Ø bocc.</text>
+                <foreignObject x={cx - 46} y={yDim + 4} width="92" height="24">
+                  <input
+                    type="number"
+                    value={dBocc}
+                    onChange={(e) => patchDBocc(Number(e.target.value))}
+                    style={editableDimStyle}
+                    className="editable-dim"
+                    title="Diametro interno del bocchello (mm) — deve essere ≤ Ø base minore"
+                  />
+                </foreignObject>
+                {/* quota altezza bocchello, nella colonna delle quote a destra */}
+                <line x1={chainX} y1={yApexBot} x2={chainX} y2={yBottomBocc} stroke="#334155" strokeWidth="1" />
+                <line x1={chainX - 7} y1={yApexBot} x2={chainX + 7} y2={yApexBot} stroke="#334155" strokeWidth="1" />
+                <line x1={chainX - 7} y1={yBottomBocc} x2={chainX + 7} y2={yBottomBocc} stroke="#334155" strokeWidth="1" />
+                <foreignObject x={chainX + 8} y={hInputY} width="86" height="24">
+                  <input
+                    type="number"
+                    value={input.hBocchello ?? 0}
+                    onChange={(e) => patchHBocc(Number(e.target.value))}
+                    style={editableDimStyle}
+                    className="editable-dim"
+                    title="Altezza del bocchello (mm)"
+                  />
+                </foreignObject>
+              </g>
+            );
+          })()}
 
           {/* CALLOUTS */}
           <g>
@@ -637,7 +769,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
           </g>
 
           {/* QUOTA TOTALE */}
-          <DimLine x={dim4X} y1={yApexTop} y2={yApexBot} label={fmt(hTot)} />
+          <DimLine x={dim4X} y1={yApexTop} y2={yBottomBocc} label={fmt(hTot)} />
 
           {/* CAPACITÀ TOTALE */}
           <g>
@@ -796,6 +928,11 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
           <p className="text-xs font-bold text-rose-900">{baseMinoreError}</p>
         </div>
       )}
+      {boccError && (
+        <div className="bg-rose-50 border border-rose-300 rounded-xl p-3 space-y-1">
+          <p className="text-xs font-bold text-rose-900">{boccError}</p>
+        </div>
+      )}
       {raccordoError && (
         <div className="bg-rose-50 border border-rose-300 rounded-xl p-3 space-y-1">
           <p className="text-xs font-bold text-rose-900">{raccordoError}</p>
@@ -811,33 +948,33 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
           </h4>
         </div>
         <div className="grid grid-cols-2 gap-y-1 text-xs font-bold text-neutral-800">
-          {hBocchello > 0 && (
-            <>
-              <span>Bocchello di fondo</span>
-              <span className="text-right font-mono">{fmt(hBocchello)} mm</span>
-            </>
-          )}
           <span>Coperchio conico (colletto incluso)</span>
           <span className="text-right font-mono">{fmt(hConoCoperchio_calc)} mm</span>
           <span>Sezione cilindrica (virola)</span>
           <span className="text-right font-mono">{fmt(lCil)} mm</span>
           <span>Fondo troncoconico (colletto incluso)</span>
           <span className="text-right font-mono">{fmt(hConoFondo_calc)} mm</span>
+          {hBocc > 0 && (
+            <>
+              <span>Bocchello di fondo</span>
+              <span className="text-right font-mono">{fmt(hBocc)} mm</span>
+            </>
+          )}
           <span className="border-t border-emerald-300 pt-1">Somma</span>
           <span className="text-right font-mono border-t border-emerald-300 pt-1">
-            {fmt(hBocchello + hConoCoperchio_calc + lCil + hConoFondo_calc)} mm
+            {fmt(hConoCoperchio_calc + lCil + hConoFondo_calc + hBocc)} mm
           </span>
           <span className="font-black">Altezza totale interna (H_tot)</span>
           <span className="text-right font-mono font-black">{fmt(hTot)} mm</span>
         </div>
         <p
           className={`mt-2 text-xs font-black ${
-            Math.abs(hBocchello + hConoCoperchio_calc + lCil + hConoFondo_calc - hTot) <= 1.5
+            Math.abs(hConoCoperchio_calc + lCil + hConoFondo_calc + hBocc - hTot) <= 1.5
               ? 'text-emerald-800'
               : 'text-rose-800'
           }`}
         >
-          {Math.abs(hBocchello + hConoCoperchio_calc + lCil + hConoFondo_calc - hTot) <= 1.5
+          {Math.abs(hConoCoperchio_calc + lCil + hConoFondo_calc + hBocc - hTot) <= 1.5
             ? '✓ Altezze coerenti (scarto ≤ 1,5 mm per arrotondamento)'
             : '⚠ Scarto rilevato: verifica i parametri geometrici'}
         </p>
