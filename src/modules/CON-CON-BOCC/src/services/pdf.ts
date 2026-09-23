@@ -400,6 +400,13 @@ export async function generateCalibrationPDF(
       : 0;
     const xMinL = x_c + w_c / 2 - (dMinRatio * w_c) / 2;
     const xMinR = x_c + w_c / 2 + (dMinRatio * w_c) / 2;
+    // Bocchello cilindrico sotto la base minore (Ø bocchello <= Ø base minore)
+    const dBoccPdf = Math.min(result.input.fondo.dMin ?? 0, Math.max(0, result.input.dBocchello ?? 0));
+    const hasBocc = dBoccPdf > 0 && (result.input.hBocchello ?? 0) > 0;
+    const dBoccRatio = result.input.dInt > 0 ? Math.min(dMinRatio, dBoccPdf / result.input.dInt) : 0;
+    const xBoccL = x_c + w_c / 2 - (dBoccRatio * w_c) / 2;
+    const xBoccR = x_c + w_c / 2 + (dBoccRatio * w_c) / 2;
+    const boccApexY = coneApexY + (hasBocc ? 1.6 : 0); // piccola estensione grafica fissa
     doc.setFillColor(240, 253, 244);
     doc.rect(x_c, y_c, w_c, h_c, 'F');
     // Top cone (conico)
@@ -407,6 +414,10 @@ export async function generateCalibrationPDF(
     // Bottom truncated cone (troncoconico): due triangoli = trapezio pieno
     doc.triangle(x_c, y_c + h_c, x_c + w_c, y_c + h_c, xMinR, coneApexY, 'F');
     doc.triangle(x_c, y_c + h_c, xMinR, coneApexY, xMinL, coneApexY, 'F');
+    // Bocchello: piccolo rettangolo sotto la base minore
+    if (hasBocc) {
+      doc.rect(xBoccL, coneApexY, xBoccR - xBoccL, boccApexY - coneApexY, 'F');
+    }
 
     // 2. Draw tank outlines
     doc.setDrawColor(6, 78, 59);
@@ -421,7 +432,16 @@ export async function generateCalibrationPDF(
     // Bottom truncated cone outlines (two slanted sides + flat minor base)
     doc.line(x_c, y_c + h_c, xMinL, coneApexY);
     doc.line(x_c + w_c, y_c + h_c, xMinR, coneApexY);
-    doc.line(xMinL, coneApexY, xMinR, coneApexY);
+    if (hasBocc) {
+      // anello piano di riduzione (se il bocchello è più stretto) + contorno del bocchello
+      doc.line(xMinL, coneApexY, xBoccL, coneApexY);
+      doc.line(xBoccR, coneApexY, xMinR, coneApexY);
+      doc.line(xBoccL, coneApexY, xBoccL, boccApexY);
+      doc.line(xBoccR, coneApexY, xBoccR, boccApexY);
+      doc.line(xBoccL, boccApexY, xBoccR, boccApexY);
+    } else {
+      doc.line(xMinL, coneApexY, xMinR, coneApexY);
+    }
     void drawSemiEllipse;
 
     // 3. Draw horizontal weld junctions (seams)
