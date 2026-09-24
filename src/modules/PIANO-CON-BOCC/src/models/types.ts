@@ -3,99 +3,136 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/**
- * Modelli dati interni del modulo PIANO-CON-BOCC.
- *
- * NOTA: questi tipi sono usati SOLO internamente da `services/logic.ts` per
- * organizzare il calcolo. Il contratto verso `ModuleTemplatePage` resta
- * quello piatto definito in `@/common/module-types` (FieldDef / ModuleValues
- * / ModuleCalcOutput) — questo file non lo modifica e non lo estende.
- *
- * Geometria del modulo:
- *  - Coperchio: PIANO, senza bombatura (R infinita) — piastra piana +
- *    eventuale colletto.
- *  - Fondo: CONICO come in BOMB-CON (cono retto + raccordo toroidale
- *    cono/colletto + colletto), ma il cono NON termina a punta: viene
- *    troncato al diametro del BOCCHELLO e prosegue con un tratto
- *    cilindrico (il bocchello di scarico) di diametro e altezza propri.
- *    Il cono retto diventa quindi un tronco di cono.
- */
+import type { ReportHeader } from '@/common/report-header/types';
+
+
+export type HeadType = 'decinormale' | 'pseudoellittico' | 'custom' | 'conico' | 'piano';
+
+export interface HeadConfig {
+  type: HeadType;
+  sp: number;         // spessore lamiera (mm)
+  hColletto: number;  // altezza colletto (mm)
+  R_custom?: number;  // raggio bombatura custom (mm)
+  r_custom?: number;  // raggio raccordo custom (mm)
+  hCono?: number;     // altezza totale (cono + raccordo) (mm) — solo per type='conico'
+  rRaccordo?: number; // raggio raccordo cono/colletto (mm) — solo per type='conico'
+  /**
+   * PIANO-CON-BOCC: Ø del bocchello di fondo (mm), iniettato automaticamente
+   * da calculateTank a partire da TankInput.dBocchello. Solo per type='conico'.
+   * 0 / assente = cono a punta (comportamento identico a BOMB-CON/PIANO-CON).
+   */
+  dBocchello?: number;
+}
+
+export interface ReportMeta {
+  cliente: string;
+  riferimento: string;
+  nomeSerbatoio: string;
+  numeroDisegno: string;
+  data: string;
+  compilatore?: string;
+  numeroFabbrica?: string;
+  tagNumber?: string;
+  validitaEstesa?: string;
+  /** Elenco gestito dei numeri di fabbrica a cui è estesa la validità. */
+  numeriFabbricaEstesi?: { numero: string; tag?: string; incluso: boolean }[];
+  /** 'unico' = un solo PDF con tutti i numeri; 'multiplo' = un PDF per numero. */
+  modalitaStampa?: 'unico' | 'multiplo';
+  commessa?: string;
+}
 
 export interface TankInput {
-  dInt: number; // diametro interno serbatoio (mm)
-  lCil: number; // altezza sezione cilindrica / virola (mm)
-  spVirola: number; // spessore lamiera virola (mm)
-  rho: number; // peso specifico contenuto (kg/dm3)
-
-  // --- fondo conico con bocchello ---
-  spFondo: number; // spessore lamiera fondo (mm)
-  rRaccordoFondo: number; // raggio raccordo cono/colletto (mm)
-  hCollettoFondo: number; // altezza colletto fondo (mm)
-  hConoFondo: number; // altezza "virtuale" fondo conico, colletto incluso, fino alla punta IDEALE del cono (mm) — serve solo a fissare l'inclinazione
-  diametroBocchello: number; // diametro bocchello di scarico (mm)
-  altezzaBocchello: number; // altezza bocchello di scarico (mm)
-
-  // --- coperchio piano ---
-  spCoperchio: number; // spessore lamiera coperchio piano (mm)
-  hCollettoCoperchio: number; // altezza colletto coperchio piano (mm), 0 = nessun colletto
-
-  // --- tabella di taratura ---
-  passoTabella: number; // passo di campionamento della tabella (mm)
+  dInt: number;       // diametro interno serbatoio (mm)
+  lCil: number;       // lunghezza/altezza parte cilindrica (mm)
+  spVirola: number;   // spessore lamiera virola (mm)
+  rho: number;        // peso specifico contenuto (kg/dm3)
+  fondo: HeadConfig;
+  coperchio: HeadConfig;
+  report: ReportMeta;
+  /**
+   * PIANO-CON-BOCC: bocchello cilindrico applicato sotto il fondo conico
+   * (tronchetto di scarico/attacco). Il suo diametro è anche il diametro
+   * della base minore a cui viene troncata la punta del cono: per questo
+   * la sua sola presenza trasforma il cono retto in un tronco di cono.
+   * Ø interno del bocchello (mm). 0 / assente = cono a punta, nessun bocchello.
+   */
+  dBocchello?: number;
+  /** Altezza del bocchello (mm). 0 / assente = nessun bocchello. */
+  hBocchello?: number;
 }
 
-/** Esito del calcolo geometria fondo conico + bocchello (tronco di cono). */
-export interface FondoConicoBoccResult {
-  R_base: number; // raggio interno serbatoio (mm)
-  r_racc: number; // raggio di raccordo cono/colletto (mm)
-  alfa: number; // semiangolo al vertice del cono ideale (gradi)
-  beta: number; // 90 - alfa (gradi)
-  Y: number; // raggio alla sommità del tronco (= raggio base raccordo) (mm)
-  r_bocc: number; // raggio del bocchello (mm)
-  H_cono_ideale: number; // altezza del cono PIENO ideale (punta -> raccordo), usata solo per calcolare l'angolo (mm)
-  h_taglio: number; // altezza (dalla punta ideale) alla quale il cono viene tagliato dal bocchello (mm)
-  H_tronco: number; // altezza reale del tronco di cono (dal taglio al raccordo) (mm)
-  H_racc: number; // altezza verticale del raccordo toroidale (mm)
-  Xr: number; // ascissa baricentro raccordo (mm)
-  Baric: number; // baricentro Pappo-Guldino del raccordo (mm)
-
-  // quote cumulative dal FONDO del bocchello (nuovo zero della taratura)
-  z1: number; // fine bocchello (fondo tronco)
-  z2: number; // fine tronco (inizio raccordo)
-  z3: number; // fine raccordo (inizio colletto)
-  z4: number; // fine colletto fondo (inizio virola)
-
-  V_bocchello_L: number;
-  V_tronco_L: number;
-  V_raccordo_L: number;
-  V_spicchio_L: number;
-  V_colletto_L: number;
-  V_fondo_totale_L: number;
-
+export interface HeadCalculated {
+  R: number;
+  r: number;
+  DR: number;
+  X: number;
+  /**
+   * Raggio della base minore del tronco di cono (mm), imposto dal bocchello
+   * di fondo (dBocchello / 2). 0 per cono a punta e per le teste non coniche.
+   */
+  rMin: number;
+  alfa: number;
+  beta: number;
+  H1: number;
+  H_int: number;
+  H2: number;
+  H3: number;
+  Y: number;
+  Baric: number;
+  K: number;
+  H_esterna_totale: number;
+  V_calotta: number;
+  V_toro: number;
+  V_raccordo: number;
+  V_colletto: number;
+  V_testata_LT: number;
+  Sviluppo_mm: number;
+  /** Area del disco piano che chiude la base minore del tronco di cono (m²). 0 se non presente. */
+  Area_fondo_piatto_mq: number;
+  Area_disco_da_tagliare_mq: number;
   Peso_lamiera_kg: number;
-  Sviluppo_area_mq: number;
 }
 
-/** Esito del calcolo geometria coperchio piano. */
-export interface CoperchioPianoResult {
-  V_colletto_L: number;
-  Peso_lamiera_kg: number;
-  Area_mq: number;
-}
 
 export interface CalculationResult {
   input: TankInput;
-  fondo: FondoConicoBoccResult;
-  coperchio: CoperchioPianoResult;
+  fondo: HeadCalculated;
+  coperchio: HeadCalculated;
+  z1: number;
+  z2: number;
+  z3: number;
+  z4: number;
+  z5: number;
+  z6: number;
+  z7: number;
   H_tot: number;
+  /** Quota di fine bocchello (= altezza bocchello). 0 se non presente. */
+  z0: number;
   volumeFondo: number;
-  volumeCilindro: number;
   volumeCoperchio: number;
-  volumeTotale: number; // da integrazione profilo 1 mm (autorevole, coerente con tabella)
+  volumeCilindro: number;
+  /** Volume del bocchello cilindrico di fondo (litri). 0 se non presente. */
+  volumeBocchello: number;
+  volumeTotale: number;
   pesoLamieraFondo: number;
-  pesoLamieraVirola: number;
   pesoLamieraCoperchio: number;
+  pesoLamieraVirola: number;
+  sviluppoFondoMq: number;
+  sviluppoCoperchioMq: number;
   pesoContenutoTotale: number;
   pesoContenutoPerCmCilindro: number;
-  litriCumulativi: number[]; // indice = h (mm), 0..H_tot, zero = fondo bocchello
-  raggioProfile: number[];
+  litriCumulativi: number[]; // index is h (0 to H_tot)
+  raggioProfile: number[];   // index is h (0 to H_tot), where 0 is 0
 }
+
+export interface SavedTank {
+  id: string;
+  name: string;
+  date: string;
+  input: TankInput;
+  compilerInfo?: CompilerInfo;
+}
+
+// L'intestazione report è un DATO COMUNE: vive in src/shared/report-header.
+export type CompilerInfo = ReportHeader;
+
