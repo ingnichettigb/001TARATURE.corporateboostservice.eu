@@ -1,9 +1,9 @@
 {
   "id": "orizz-con",
   "title": "ORIZZ-CON",
-  "subtitle": "Serbatoio Orizzontale / Fondo Conico",
-  "description": "Cuore logico da importare.",
+  "subtitle": "Serbatoio Orizzontale / Teste Coniche",
+  "description": "Serbatoio cilindrico orizzontale con due teste coniche, anche inclinato. Taratura millimetrica per livello (segmento circolare).",
   "icon": "Cylinder",
   "image": "/__l5e/assets-v1/8a1539f5-cdd5-46ab-a25b-22b57ea02fd8/icona-orizz-con.png",
-  "status": "draft"
+  "status": "active"
 }
