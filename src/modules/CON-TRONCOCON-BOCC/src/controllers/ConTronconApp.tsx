@@ -115,6 +115,8 @@ export default function App() {
       rRaccordo: 30, // raccordo cono/colletto (mm)
       dMin: 300, // diametro interno della base minore del tronco di cono (mm)
     },
+    dBocchello: 100, // Ø bocchello cilindrico di fondo (mm) — 0 = nessun bocchello
+    hBocchello: 100, // altezza bocchello (mm)
     coperchio: {
       type: 'conico',
       sp: 8,
@@ -453,7 +455,8 @@ export default function App() {
       const hSample = Math.round((i / steps) * hTot);
       const y = mapHToYPrint(hSample);
       // a h = 0 il profilo parte dal raggio della base minore (fondo piano del tronco di cono)
-      const rSample = hSample === 0 ? result.fondo.rMin : (result.raggioProfile[hSample] || 0);
+      const rBocchelloSample = (result.input.dBocchello ?? 0) > 0 ? (result.input.dBocchello ?? 0) / 2 : result.fondo.rMin;
+      const rSample = hSample === 0 ? rBocchelloSample : (result.raggioProfile[hSample] || 0);
       const rScale = dInt > 0 ? (rSample / (dInt / 2)) * 60 : 0;
       leftPoints.push(`${160 - rScale},${y}`);
       rightPoints.unshift(`${160 + rScale},${y}`);
