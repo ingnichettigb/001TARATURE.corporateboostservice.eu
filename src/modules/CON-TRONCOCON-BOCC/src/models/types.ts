@@ -50,6 +50,15 @@ export interface TankInput {
   fondo: HeadConfig;
   coperchio: HeadConfig;
   report: ReportMeta;
+  /**
+   * CON-TRONCOCON-BOCC: bocchello cilindrico applicato sotto il fondo
+   * (tronchetto di scarico/attacco), aggiunto come ulteriore zona di taratura
+   * al di sotto della base minore del tronco di cono.
+   * Ø interno del bocchello (mm). 0 / assente = nessun bocchello.
+   */
+  dBocchello?: number;
+  /** Altezza del bocchello (mm). 0 / assente = nessun bocchello. */
+  hBocchello?: number;
 }
 
 export interface HeadCalculated {
