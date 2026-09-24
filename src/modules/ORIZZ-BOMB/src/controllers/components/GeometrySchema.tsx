@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { TankInput, HeadType } from '../../models/types';
 import { calculateTank } from '../../services/logic';
 import { AlertTriangle, Info } from 'lucide-react';
-import { COPERCHIO_A_SINISTRA } from '../../constants';
+import { COPERCHIO_A_SINISTRA, INCLINAZIONE_MAX } from '../../constants';
 
 interface GeometrySchemaProps {
   input: TankInput;
@@ -103,27 +103,46 @@ function MiniField({
   );
 }
 
-function DimLine({
-  y,
-  x1,
-  x2,
-  label,
+function TiltInput({
+  value,
+  max,
+  onCommit,
 }: {
-  y: number;
-  x1: number;
-  x2: number;
-  label: string;
+  value: number;
+  max: number;
+  onCommit: (v: number) => void;
 }) {
-  const midX = (x1 + x2) / 2;
+  const [txt, setTxt] = useState<string>(String(value));
+  useEffect(() => {
+    setTxt(String(value));
+  }, [value]);
   return (
-    <g>
-      <line x1={x1} y1={y - 7} x2={x1} y2={y + 7} stroke="#334155" strokeWidth="1" />
-      <line x1={x2} y1={y - 7} x2={x2} y2={y + 7} stroke="#334155" strokeWidth="1" />
-      <line x1={x1} y1={y} x2={x2} y2={y} stroke="#334155" strokeWidth="1" />
-      <text x={midX} y={y - 10} fontSize="13" fontWeight={700} fill="#000000" textAnchor="middle">
-        {label}
-      </text>
-    </g>
+    <input
+      type="text"
+      inputMode="decimal"
+      value={txt}
+      onChange={(e) => {
+        setTxt(e.target.value);
+        const n = parseFloat(e.target.value.replace(',', '.'));
+        if (Number.isFinite(n)) onCommit(Math.max(-max, Math.min(max, n)));
+      }}
+      onBlur={() => setTxt(String(value))}
+      className="editable-dim"
+      title={`Inclinazione dell'asse in gradi (da −${max} a +${max}). Positivo = coperchio più alto`}
+      style={{
+        width: '78px',
+        fontSize: '14px',
+        fontWeight: 700,
+        color: '#000000',
+        background: '#ffffff',
+        border: '1px solid #94a3b8',
+        borderRadius: '3px',
+        padding: '1px 4px',
+        outline: 'none',
+        fontFamily: 'inherit',
+        flexShrink: 0,
+      }}
+    />
   );
 }
 
@@ -215,14 +234,22 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const isCustomCoperchio = input.coperchio.type === 'custom';
   const isCustomFondo = input.fondo.type === 'custom';
 
-  /* ---------- layout disegno (serbatoio ORIZZONTALE) ---------- */
+  /* ---------- layout disegno (serbatoio ORIZZONTALE, eventualmente inclinato) ---------- */
   const drawW = 900;
-  const drawH = 545;
 
   // Rotazione di 90° in senso orario rispetto a BOMB-BOMB: il fondo (quota 0 della
   // taratura) sta a sinistra, il coperchio a destra. Per invertire: constants.ts.
   const leftKey: HeadKey = COPERCHIO_A_SINISTRA ? 'coperchio' : 'fondo';
   const rightKey: HeadKey = leftKey === 'fondo' ? 'coperchio' : 'fondo';
+
+  // inclinazione: positivo = lato coperchio più alto. Angolo di rotazione SVG (orario = +)
+  const incl = result ? result.inclinazione : 0;
+  const isTilted = Math.abs(incl) > 0.001;
+  const aDeg = COPERCHIO_A_SINISTRA ? incl : -incl;
+  const aRad = (aDeg * Math.PI) / 180;
+  const sinA = Math.sin(aRad);
+  const cosA = Math.cos(aRad);
+  const sinAbs = Math.abs(sinA);
 
   // testate e virola: lunghezze GRAFICHE FISSE (rappresentative)
   const headPx = 96;
@@ -230,18 +257,28 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const halfH = 80;
 
   const totalDrawn = headPx * 2 + cilPx;
+  const halfLen = totalDrawn / 2;
   const xL0 = (drawW - totalDrawn) / 2; // punta testata sinistra
   const xL1 = xL0 + headPx;             // inizio virola
   const xR1 = xL1 + cilPx;              // fine virola
   const xR0 = xR1 + headPx;             // punta testata destra
   const xMid = (xL1 + xR1) / 2;
+  const cxT = (xL0 + xR0) / 2;          // centro del serbatoio (perno della rotazione)
 
-  const yc = 205; // asse del serbatoio
+  // spazio verticale che serve quando il serbatoio è inclinato
+  const upExtent = halfLen * sinAbs + 173 * cosA + 30;
+  const yc = Math.max(205, upExtent); // asse (centro) del serbatoio
   const yTop = yc - halfH;
   const yBot = yc + halfH;
+  const yTotal = yc - 163; // quota totale
+  const yChain = yc - 105; // catena di quote
 
-  const yTotal = 42; // quota totale
-  const yChain = 100; // catena di quote
+  // rotazione di un punto attorno al centro del serbatoio
+  const rot = (x: number, y: number) => ({
+    x: cxT + (x - cxT) * cosA - (y - yc) * sinA,
+    y: yc + (x - cxT) * sinA + (y - yc) * cosA,
+  });
+  const rotTransform = isTilted ? `rotate(${aDeg} ${cxT} ${yc})` : undefined;
 
   // curve bombate: peak reale della bezier = 0.75 * rise
   const rise = Math.max(headPx / 0.75, 18);
@@ -263,17 +300,16 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const tCall = 0.18;
   const dxCall = bez(tCall, 0, rise, rise, 0); // sporgenza orizzontale al punto di callout
   const yCallCurve = bez(tCall, yBot, yBot, yTop, yTop);
-  const callLeftX = xL1 - dxCall - 10;
-  const callRightX = xR1 + dxCall + 10;
-  const callHeadY = yCallCurve + 10;
+  const callLeft = rot(xL1 - dxCall - 10, yCallCurve + 10);
+  const callRight = rot(xR1 + dxCall + 10, yCallCurve + 10);
 
   // riquadri in fila sotto il serbatoio (stesso ordine del serbatoio ruotato)
   const boxW = 208;
   const box1H = 176;
   const boxSumH = 76;
   const box2H = 96;
-  const box3H = 176;
-  const boxY = 335;
+  const boxY = yc + halfLen * sinAbs + 80 * cosA + 50;
+  const drawH = boxY + box1H + 34;
   const slots: BoxName[] =
     leftKey === 'fondo'
       ? ['fondo', 'virola', 'somma', 'coperchio']
@@ -282,8 +318,10 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const boxX = (name: BoxName) => 6 + slots.indexOf(name) * (boxW + slotGap);
   const boxCx = (name: BoxName) => boxX(name) + boxW / 2;
 
-  const virolaCallX = Math.min(Math.max(boxCx('virola'), xL1 + 30), xR1 - 30);
-  const virolaCallY = yBot + 20;
+  const virolaCall = rot(
+    Math.min(Math.max(boxCx('virola'), xL1 + 30), xR1 - 30),
+    yBot + 20
+  );
 
   const hLeftCalc = leftKey === 'fondo' ? hFondo_calc : hCoperchio_calc;
   const hRightCalc = rightKey === 'fondo' ? hFondo_calc : hCoperchio_calc;
@@ -291,10 +329,21 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const dLineX = xR1 - 26;
   const boxCapTotW = 178;
   const boxCapTotH = 60;
-  const boxCapTotX = xL1 + 14;
-  const boxCapTotY = yc - boxCapTotH / 2;
+  const capCenter0 = { x: xL1 + 14 + boxCapTotW / 2, y: yc };
+  const capCenter = rot(capCenter0.x, capCenter0.y);
+  const boxCapTotX = capCenter.x - boxCapTotW / 2;
+  const boxCapTotY = capCenter.y - boxCapTotH / 2;
 
   const tickStyle = { stroke: '#334155', strokeWidth: 1 } as const;
+
+  // punti (upright) di testi e campi: sempre dritti, posizionati sul punto ruotato
+  const pLeftLab = rot((xL0 + xL1) / 2, yChain - 10);
+  const pRightLab = rot((xR1 + xR0) / 2, yChain - 10);
+  const pCil = rot(xMid, yChain - 24);
+  const pTotLab = rot(cxT, yTotal - 10);
+  const pDiaIn = rot(dLineX - 54, yc);
+  const pDiaTxt = rot(dLineX - 108, yc);
+  const tipR = rot(xR0, yc);
 
   /* ---------- riquadro testata (fondo o coperchio) ---------- */
   const headBox = (key: HeadKey) => {
@@ -309,15 +358,15 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
     const cfg = isFondo ? input.fondo : input.coperchio;
     const hCol = isFondo ? hCollettoFondo : hCollettoCoperchio;
     const vol = result ? (isFondo ? result.volumeFondo : result.volumeCoperchio) : NaN;
-    const cx0 = key === leftKey ? callLeftX : callRightX;
+    const call = key === leftKey ? callLeft : callRight;
     return (
       <g>
         <rect x={bx} y={by} width={boxW} height={box1H} rx="5" fill="#ffffff" stroke="#0f766e" strokeWidth="1.2" />
         <line
           x1={bx + boxW / 2}
           y1={by}
-          x2={cx0}
-          y2={callHeadY + 13}
+          x2={call.x}
+          y2={call.y + 13}
           stroke="#0f766e"
           strokeWidth="1"
           strokeDasharray="3,3"
@@ -378,7 +427,8 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
         <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
         <p className="text-xs font-bold text-amber-900">
           Tutte le misure da inserire (diametro, lunghezze, ecc.) sono <span className="underline">misure interne</span>.
-          Serbatoio orizzontale: il livello si misura dal punto più basso del cilindro (0) fino al diametro.
+          Serbatoio orizzontale: il livello si misura in verticale dal punto interno più basso (0) fino al punto più alto.
+          L&apos;inclinazione dell&apos;asse (da −{INCLINAZIONE_MAX}° a +{INCLINAZIONE_MAX}°, positivo = coperchio più alto) modifica la taratura.
           Clicca direttamente sui valori nello schema per modificarli.
         </p>
       </div>
@@ -389,16 +439,31 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
           className="w-full h-auto min-w-[760px]"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* asse del serbatoio */}
-          <line
-            x1={xL0 - 24}
-            y1={yc}
-            x2={xR0 + 24}
-            y2={yc}
-            stroke="#94a3b8"
-            strokeWidth="1"
-            strokeDasharray="6,4"
-          />
+          {/* CAMPO INCLINAZIONE */}
+          <text x={6} y={23} fontSize="11" fill="#000000">Inclinazione °</text>
+          <foreignObject x={92} y={6} width="90" height="24">
+            <TiltInput
+              value={incl}
+              max={INCLINAZIONE_MAX}
+              onCommit={(v) => patch({ inclinazione: v })}
+            />
+          </foreignObject>
+
+          {/* orizzontale di riferimento (solo se inclinato) */}
+          {isTilted && (
+            <g>
+              <line x1={tipR.x} y1={tipR.y} x2={tipR.x + 120} y2={tipR.y} stroke="#64748b" strokeWidth="1" strokeDasharray="2,3" />
+              <path
+                d={`M ${tipR.x + 70} ${tipR.y} A 70 70 0 0 ${aDeg > 0 ? 1 : 0} ${tipR.x + 70 * cosA} ${tipR.y + 70 * sinA}`}
+                fill="none"
+                stroke="#0f766e"
+                strokeWidth="1.6"
+              />
+              <text x={tipR.x + 78} y={tipR.y + (aDeg > 0 ? 18 : -10)} fontSize="13" fontWeight="700" fill="#0f766e">
+                {`${incl > 0 ? '+' : ''}${fmt(incl)}°`}
+              </text>
+            </g>
+          )}
 
           {/* RIQUADRI (in fila sotto il serbatoio) */}
           {headBox(leftKey)}
@@ -424,8 +489,8 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             <line
               x1={boxCx('virola')}
               y1={boxY}
-              x2={virolaCallX}
-              y2={virolaCallY + 13}
+              x2={virolaCall.x}
+              y2={virolaCall.y + 13}
               stroke="#0f766e"
               strokeWidth="1"
               strokeDasharray="3,3"
@@ -450,16 +515,52 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             </foreignObject>
           </g>
 
-          {/* PROFILO SERBATOIO */}
-          <path d={pathData} fill="#f8fafc" stroke="#1e293b" strokeWidth="1.6" />
-          <line x1={xL1} y1={yTop} x2={xL1} y2={yBot} stroke="#1e293b" strokeWidth="1" />
-          <line x1={xR1} y1={yTop} x2={xR1} y2={yBot} stroke="#1e293b" strokeWidth="1" />
+          {/* GRUPPO RUOTATO: profilo, asse, quote lungo l'asse */}
+          <g transform={rotTransform}>
+            {/* asse del serbatoio */}
+            <line
+              x1={xL0 - 24}
+              y1={yc}
+              x2={xR0 + 40}
+              y2={yc}
+              stroke="#94a3b8"
+              strokeWidth="1"
+              strokeDasharray="6,4"
+            />
+
+            {/* PROFILO SERBATOIO */}
+            <path d={pathData} fill="#f8fafc" stroke="#1e293b" strokeWidth="1.6" />
+            <line x1={xL1} y1={yTop} x2={xL1} y2={yBot} stroke="#1e293b" strokeWidth="1" />
+            <line x1={xR1} y1={yTop} x2={xR1} y2={yBot} stroke="#1e293b" strokeWidth="1" />
+
+            {/* QUOTA DIAMETRO (linea) */}
+            <line x1={dLineX} y1={yTop} x2={dLineX} y2={yBot} {...tickStyle} />
+            <line x1={dLineX - 6} y1={yTop} x2={dLineX + 6} y2={yTop} {...tickStyle} />
+            <line x1={dLineX - 6} y1={yBot} x2={dLineX + 6} y2={yBot} {...tickStyle} />
+
+            {/* CATENA DI QUOTE (linee) */}
+            {[xL0, xR0].map((xx, i) => (
+              <line key={`ext${i}`} x1={xx} y1={yTotal} x2={xx} y2={yc} stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4,4" />
+            ))}
+            {[xL1, xR1].map((xx, i) => (
+              <line key={`ext2${i}`} x1={xx} y1={yChain} x2={xx} y2={yTop} stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4,4" />
+            ))}
+            <line x1={xL0} y1={yChain} x2={xR0} y2={yChain} {...tickStyle} />
+            {[xL0, xL1, xR1, xR0].map((xx, i) => (
+              <line key={i} x1={xx} y1={yChain - 7} x2={xx} y2={yChain + 7} {...tickStyle} />
+            ))}
+
+            {/* QUOTA TOTALE (linea): lunghezza interna lungo l'asse */}
+            <line x1={xL0} y1={yTotal} x2={xR0} y2={yTotal} {...tickStyle} />
+            <line x1={xL0} y1={yTotal - 7} x2={xL0} y2={yTotal + 7} {...tickStyle} />
+            <line x1={xR0} y1={yTotal - 7} x2={xR0} y2={yTotal + 7} {...tickStyle} />
+          </g>
 
           {/* CALLOUTS */}
           {[
-            { n: leftKey === 'coperchio' ? 1 : 3, x: callLeftX, y: callHeadY },
-            { n: 2, x: virolaCallX, y: virolaCallY },
-            { n: rightKey === 'coperchio' ? 1 : 3, x: callRightX, y: callHeadY },
+            { n: leftKey === 'coperchio' ? 1 : 3, x: callLeft.x, y: callLeft.y },
+            { n: 2, x: virolaCall.x, y: virolaCall.y },
+            { n: rightKey === 'coperchio' ? 1 : 3, x: callRight.x, y: callRight.y },
           ].map((c, i) => (
             <g key={i}>
               <circle cx={c.x} cy={c.y} r="13" fill="#ffffff" stroke="#0f766e" strokeWidth="1.4" />
@@ -469,23 +570,18 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             </g>
           ))}
 
-          {/* QUOTA DIAMETRO (verticale, dentro la virola) */}
-          <g>
-            <line x1={dLineX} y1={yTop} x2={dLineX} y2={yBot} {...tickStyle} />
-            <line x1={dLineX - 6} y1={yTop} x2={dLineX + 6} y2={yTop} {...tickStyle} />
-            <line x1={dLineX - 6} y1={yBot} x2={dLineX + 6} y2={yBot} {...tickStyle} />
-            <text x={dLineX - 108} y={yc + 5} textAnchor="end" fontSize="13" fontWeight="700" fill="#000000">Ø</text>
-            <foreignObject x={dLineX - 100} y={yc - 12} width="92" height="24">
-              <input
-                type="number"
-                value={dInt}
-                onChange={(e) => setDInt(Number(e.target.value))}
-                style={editableDimStyle}
-                className="editable-dim"
-                title="Diametro interno (mm) = livello massimo"
-              />
-            </foreignObject>
-          </g>
+          {/* DIAMETRO: etichetta e campo (dritti) */}
+          <text x={pDiaTxt.x} y={pDiaTxt.y + 5} textAnchor="end" fontSize="13" fontWeight="700" fill="#000000">Ø</text>
+          <foreignObject x={pDiaIn.x - 46} y={pDiaIn.y - 12} width="92" height="24">
+            <input
+              type="number"
+              value={dInt}
+              onChange={(e) => setDInt(Number(e.target.value))}
+              style={editableDimStyle}
+              className="editable-dim"
+              title="Diametro interno (mm)"
+            />
+          </foreignObject>
 
           {/* CAPACITÀ TOTALE */}
           <g>
@@ -498,38 +594,26 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             </text>
           </g>
 
-          {/* CATENA DI QUOTE (sopra): testata sinistra + virola + testata destra */}
-          <g>
-            {[xL0, xR0].map((xx, i) => (
-              <line key={`ext${i}`} x1={xx} y1={yTotal} x2={xx} y2={yc} stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4,4" />
-            ))}
-            {[xL1, xR1].map((xx, i) => (
-              <line key={`ext2${i}`} x1={xx} y1={yChain} x2={xx} y2={yTop} stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4,4" />
-            ))}
-            <line x1={xL0} y1={yChain} x2={xR0} y2={yChain} {...tickStyle} />
-            {[xL0, xL1, xR1, xR0].map((xx, i) => (
-              <line key={i} x1={xx} y1={yChain - 7} x2={xx} y2={yChain + 7} {...tickStyle} />
-            ))}
-            <text x={(xL0 + xL1) / 2} y={yChain - 10} textAnchor="middle" fontSize="14" fontWeight="600" fill="#000000">
-              {fmt(hLeftCalc)}
-            </text>
-            <foreignObject x={xMid - 43} y={yChain - 36} width="86" height="24">
-              <input
-                type="number"
-                value={lCil}
-                onChange={(e) => patch({ lCil: Number(e.target.value) })}
-                style={editableDimStyle}
-                className="editable-dim"
-                title="Lunghezza sezione cilindrica (mm)"
-              />
-            </foreignObject>
-            <text x={(xR1 + xR0) / 2} y={yChain - 10} textAnchor="middle" fontSize="14" fontWeight="600" fill="#000000">
-              {fmt(hRightCalc)}
-            </text>
-          </g>
-
-          {/* QUOTA TOTALE (lunghezza interna lungo l'asse) */}
-          <DimLine y={yTotal} x1={xL0} x2={xR0} label={fmt(lTot)} />
+          {/* QUOTE (testi e campi dritti) */}
+          <text x={pLeftLab.x} y={pLeftLab.y} textAnchor="middle" fontSize="14" fontWeight="600" fill="#000000">
+            {fmt(hLeftCalc)}
+          </text>
+          <foreignObject x={pCil.x - 43} y={pCil.y - 12} width="86" height="24">
+            <input
+              type="number"
+              value={lCil}
+              onChange={(e) => patch({ lCil: Number(e.target.value) })}
+              style={editableDimStyle}
+              className="editable-dim"
+              title="Lunghezza sezione cilindrica (mm)"
+            />
+          </foreignObject>
+          <text x={pRightLab.x} y={pRightLab.y} textAnchor="middle" fontSize="14" fontWeight="600" fill="#000000">
+            {fmt(hRightCalc)}
+          </text>
+          <text x={pTotLab.x} y={pTotLab.y} textAnchor="middle" fontSize="13" fontWeight="700" fill="#000000">
+            {fmt(lTot)}
+          </text>
 
           <text x={drawW - 8} y={drawH - 8} textAnchor="end" fontSize="13" fill="#000000">
             Tutte le misure in mm (interne)

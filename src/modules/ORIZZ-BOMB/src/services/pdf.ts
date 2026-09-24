@@ -598,6 +598,7 @@ export async function generateCalibrationPDF(
     const grpCon = lang === 'en' ? 'dished bottom' : lang === 'es' ? 'fondo bombeado' : lang === 'de' ? 'Gewölbter Boden' : 'fondo bombato';
     const grpAll = lang === 'en' ? 'Top + cylindrical part + bottom' : lang === 'es' ? 'Cúpula + parte cilíndrica + fondo' : lang === 'de' ? 'Deckel + Zylinderteil + Boden' : 'Coperchio + parte cilindrica + fondo';
 
+    const lblIncl = lang === 'en' ? 'Tank tilt (axis)' : lang === 'es' ? 'Inclinación del tanque (eje)' : lang === 'de' ? 'Neigung des Tanks (Achse)' : 'Inclinazione serbatoio (asse)';
     const lblRoggio = lang === 'en' ? 'Dish Radius (R_custom) (mm)' : lang === 'es' ? 'Radio Bombeo (R_custom) (mm)' : lang === 'de' ? 'Wölbradius (R_custom) (mm)' : 'Raggio Bombatura (R_custom) (mm)';
     const lblToro = lang === 'en' ? 'Knuckle Radius (r_custom) (mm)' : lang === 'es' ? 'Radio Toro Raccordo (r_custom) (mm)' : lang === 'de' ? 'Krempenradius (r_custom) (mm)' : 'Raggio Toro Raccordo (r_custom) (mm)';
     const lblColletto = lang === 'en' ? 'Collar Height (h_colletto)' : lang === 'es' ? 'Altura Collarín (h_colletto)' : lang === 'de' ? 'Kragenhöhe (h_colletto)' : 'Altezza Colletto (h_colletto)';
@@ -636,6 +637,7 @@ export async function generateCalibrationPDF(
       [grpCon, labels[lang].sheetWeight.replace(':',''), `${formatNumPDF(result.pesoLamieraFondo, 1)} kg`],
       // coperchio + virole + fondo
       [grpAll, labels[lang].totalHeight.replace(':',''), `${result.L_tot} mm`],
+      [grpAll, lblIncl, `${formatNumPDF(result.inclinazione, 1)}°`],
       [grpAll, labels[lang].density.replace(':',''), `${formatNumPDF(result.input.rho, 3)} kg/dm³`],
       [grpAll, labels[lang].totalVolume.replace(':',''), `${formatNumPDF(result.volumeTotale, 2)} l`],
       [grpAll, lblPesoTotLam, `${formatNumPDF(pesoTotLamiera, 1)} kg`],

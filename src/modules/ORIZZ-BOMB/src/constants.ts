@@ -8,3 +8,6 @@ export const TANK_TYPE = "ORIZZ-BOMB";
  * Vale per schema geometrico, sagoma nel simulatore e nel report stampato.
  */
 export const COPERCHIO_A_SINISTRA = false;
+
+/** Inclinazione massima ammessa dell'asse del serbatoio (gradi, in valore assoluto). */
+export const INCLINAZIONE_MAX = 20;

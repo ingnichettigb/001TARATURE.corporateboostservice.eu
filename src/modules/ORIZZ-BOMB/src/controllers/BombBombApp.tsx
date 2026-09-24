@@ -7,7 +7,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useReportHeader } from '@/common/report-header/useReportHeader';
 import { TankInput, CalculationResult, CompilerInfo } from '../models/types';
-import { calculateTank } from '../services/logic';
+import { calculateTank, buildSilhouette } from '../services/logic';
 import GeometrySchema from './components/GeometrySchema';
 import ResultsDashboard from './components/ResultsDashboard';
 import CalibrationTable from './components/CalibrationTable';
@@ -107,6 +107,7 @@ export default function App() {
     lCil: 5200,      // 5.2 meters cylindrical shell
     rho: 0.85,       // Gazole/diesel density
     spVirola: 6,     // spessore lamiera virola (mm)
+    inclinazione: 0, // inclinazione asse (gradi, + = coperchio più alto)
     fondo: {
       type: 'pseudoellittico',
       sp: 8,
@@ -406,27 +407,16 @@ export default function App() {
     });
   };
 
-  // Sagoma ORIZZONTALE statica per la vista di stampa (asse x = lunghezza, y = livello)
-  const printGeom = useMemo(() => {
-    const dInt = result.input.dInt;
-    const lTot = Math.max(1, result.L_tot);
-    const X0 = 20, X1 = 380, YC = 140, HALF = 60;
-    const sx = (X1 - X0) / lTot;
-    const xOf = (xa: number) => (COPERCHIO_A_SINISTRA ? X1 - xa * sx : X0 + xa * sx);
-    const yOfLevel = (h: number) => YC + HALF - (h / (dInt > 0 ? dInt : 1)) * 2 * HALF;
-    const steps = 120;
-    const samples: { x: number; rPx: number }[] = [];
-    for (let i = 0; i <= steps; i++) {
-      const xa = Math.round((i / steps) * lTot);
-      const rSample = result.raggioProfile[xa] || 0;
-      samples.push({ x: xOf(xa), rPx: dInt > 0 ? (rSample / (dInt / 2)) * HALF : 0 });
-    }
-    samples.sort((a, b) => a.x - b.x);
-    const path =
-      `M ${samples.map((s) => `${s.x},${YC - s.rPx}`).join(' L ')} L ` +
-      `${[...samples].reverse().map((s) => `${s.x},${YC + s.rPx}`).join(' L ')} Z`;
-    return { path, xOf, yOfLevel, X0, X1, YC, HALF };
-  }, [result]);
+  // Sagoma statica per la vista di stampa (serbatoio orizzontale, eventualmente inclinato)
+  const printGeom = useMemo(
+    () =>
+      buildSilhouette(
+        result,
+        { x0: 20, x1: 380, yTop: 78, yBottom: 205, mirror: COPERCHIO_A_SINISTRA },
+        120
+      ),
+    [result]
+  );
 
   if (appClosed) {
     return (
@@ -1128,11 +1118,11 @@ export default function App() {
                     </linearGradient>
                   </defs>
 
-                  {/* Livello minimo / massimo (diametro) */}
-                  <line x1="4" y1={printGeom.yOfLevel(0)} x2="396" y2={printGeom.yOfLevel(0)} stroke="#a3a3a3" strokeWidth="0.75" strokeDasharray="2,2" />
-                  <text x="6" y={printGeom.yOfLevel(0) + 9} className="font-mono text-[8px] font-bold fill-black">0 mm</text>
-                  <line x1="4" y1={printGeom.yOfLevel(result.H_tot)} x2="396" y2={printGeom.yOfLevel(result.H_tot)} stroke="#a3a3a3" strokeWidth="0.75" strokeDasharray="2,2" />
-                  <text x="6" y={printGeom.yOfLevel(result.H_tot) - 3} className="font-mono text-[8px] font-bold fill-black">{result.H_tot} mm (Ø)</text>
+                  {/* Livello minimo / massimo (punto interno più basso → più alto) */}
+                  <line x1="4" y1={printGeom.levelY(0)} x2="396" y2={printGeom.levelY(0)} stroke="#a3a3a3" strokeWidth="0.75" strokeDasharray="2,2" />
+                  <text x="6" y={printGeom.levelY(0) + 9} className="font-mono text-[8px] font-bold fill-black">0 mm</text>
+                  <line x1="4" y1={printGeom.levelY(result.H_tot)} x2="396" y2={printGeom.levelY(result.H_tot)} stroke="#a3a3a3" strokeWidth="0.75" strokeDasharray="2,2" />
+                  <text x="6" y={printGeom.levelY(result.H_tot) - 3} className="font-mono text-[8px] font-bold fill-black">{result.H_tot} mm (max)</text>
 
                   {/* Profile shape */}
                   <path
@@ -1142,7 +1132,20 @@ export default function App() {
                     strokeWidth="1.2"
                   />
 
-                  {/* Separators with thin double lines in shiny olive green (posizioni lungo l'asse) */}
+                  {/* Asse (evidenzia l'inclinazione) */}
+                  {Math.abs(result.inclinazione) > 0.001 && (
+                    <line
+                      x1={printGeom.pt(0, 0).x}
+                      y1={printGeom.pt(0, 0).y}
+                      x2={printGeom.pt(result.L_tot, 0).x}
+                      y2={printGeom.pt(result.L_tot, 0).y}
+                      stroke="#0f766e"
+                      strokeWidth="0.7"
+                      strokeDasharray="4,3"
+                    />
+                  )}
+
+                  {/* Separators with thin double lines in shiny olive green (perpendicolari all'asse) */}
                   {[
                     { label: 'Z1/Z2', val: result.z1 },
                     { label: 'Z2/Z3', val: result.z2 },
@@ -1151,14 +1154,21 @@ export default function App() {
                     { label: 'Z5/Z6', val: result.z5 },
                     { label: 'Z6/Z7', val: result.z6 },
                   ].map((zone, idx) => {
-                    const x = printGeom.xOf(zone.val);
-                    const rowY = 50 - (idx % 3) * 10;
-                    const yEnd = printGeom.YC + printGeom.HALF + 8;
+                    const k = printGeom.k;
+                    const rE = result.input.dInt / 2;
+                    const row = idx % 3;
+                    const top = rE + (8 + row * 10) / k;
+                    const bot = rE + 8 / k;
+                    const a1 = printGeom.pt(zone.val - 0.35 / k, top);
+                    const a2 = printGeom.pt(zone.val - 0.35 / k, -bot);
+                    const b1 = printGeom.pt(zone.val + 0.35 / k, top);
+                    const b2 = printGeom.pt(zone.val + 0.35 / k, -bot);
+                    const lab = printGeom.pt(zone.val, top + 3 / k);
                     return (
                       <g key={idx}>
-                        <line x1={x - 1} y1={rowY + 3} x2={x - 1} y2={yEnd} stroke="#708238" strokeWidth="0.7" opacity="0.95" />
-                        <line x1={x + 1} y1={rowY + 3} x2={x + 1} y2={yEnd} stroke="#708238" strokeWidth="0.7" opacity="0.95" />
-                        <text x={x} y={rowY} textAnchor="middle" className="font-mono text-[8.5px] font-black fill-black">
+                        <line x1={a1.x} y1={a1.y} x2={a2.x} y2={a2.y} stroke="#708238" strokeWidth="0.7" opacity="0.95" />
+                        <line x1={b1.x} y1={b1.y} x2={b2.x} y2={b2.y} stroke="#708238" strokeWidth="0.7" opacity="0.95" />
+                        <text x={lab.x} y={lab.y} textAnchor="middle" className="font-mono text-[8.5px] font-black fill-black">
                           {zone.label}
                         </text>
                       </g>
@@ -1168,20 +1178,19 @@ export default function App() {
                   {/* Progressive numbers inside the 7 zones */}
                   {[
                     { num: 1, min: 0, max: result.z1, dy: 0 },
-                    { num: 2, min: result.z1, max: result.z2, dy: -22 },
-                    { num: 3, min: result.z2, max: result.z3, dy: 22 },
+                    { num: 2, min: result.z1, max: result.z2, dy: 22 },
+                    { num: 3, min: result.z2, max: result.z3, dy: -22 },
                     { num: 4, min: result.z3, max: result.z4, dy: 0 },
-                    { num: 5, min: result.z4, max: result.z5, dy: 22 },
-                    { num: 6, min: result.z5, max: result.z6, dy: -22 },
+                    { num: 5, min: result.z4, max: result.z5, dy: -22 },
+                    { num: 6, min: result.z5, max: result.z6, dy: 22 },
                     { num: 7, min: result.z6, max: result.L_tot, dy: 0 },
                   ].map((zone) => {
                     if (zone.max - zone.min <= 0) return null;
-                    const xCenter = printGeom.xOf((zone.min + zone.max) / 2);
-                    const yCenter = printGeom.YC + zone.dy;
+                    const p = printGeom.pt((zone.min + zone.max) / 2, zone.dy / printGeom.k);
                     return (
                       <g key={zone.num}>
-                        <circle cx={xCenter} cy={yCenter} r="5.5" fill="#fbfdf7" stroke="#708238" strokeWidth="0.9" />
-                        <text x={xCenter} y={yCenter + 2} textAnchor="middle" className="font-sans text-[6.5px] font-black fill-[#3a471c]">
+                        <circle cx={p.x} cy={p.y} r="5.5" fill="#fbfdf7" stroke="#708238" strokeWidth="0.9" />
+                        <text x={p.x} y={p.y + 2} textAnchor="middle" className="font-sans text-[6.5px] font-black fill-[#3a471c]">
                           {zone.num}
                         </text>
                       </g>
@@ -1189,25 +1198,21 @@ export default function App() {
                   })}
 
                   {/* Etichette estremità: fondo / coperchio */}
-                  <text
-                    x={printGeom.X0}
-                    y={printGeom.YC + printGeom.HALF + 22}
-                    className="font-mono text-[8px] font-bold fill-black"
-                  >
+                  <text x="20" y="230" className="font-mono text-[8px] font-bold fill-black">
                     {COPERCHIO_A_SINISTRA
                       ? (lang === 'en' ? 'Cover' : lang === 'es' ? 'Tapa' : lang === 'de' ? 'Deckel' : 'Coperchio')
                       : (lang === 'en' ? 'Bottom' : lang === 'es' ? 'Fondo' : lang === 'de' ? 'Boden' : 'Fondo')}
                   </text>
-                  <text
-                    x={printGeom.X1}
-                    y={printGeom.YC + printGeom.HALF + 22}
-                    textAnchor="end"
-                    className="font-mono text-[8px] font-bold fill-black"
-                  >
+                  <text x="380" y="230" textAnchor="end" className="font-mono text-[8px] font-bold fill-black">
                     {COPERCHIO_A_SINISTRA
                       ? (lang === 'en' ? 'Bottom' : lang === 'es' ? 'Fondo' : lang === 'de' ? 'Boden' : 'Fondo')
                       : (lang === 'en' ? 'Cover' : lang === 'es' ? 'Tapa' : lang === 'de' ? 'Deckel' : 'Coperchio')}
                   </text>
+                  {Math.abs(result.inclinazione) > 0.001 && (
+                    <text x="200" y="244" textAnchor="middle" className="font-mono text-[9px] font-black fill-[#0f766e]">
+                      {lang === 'en' ? 'Tilt' : lang === 'es' ? 'Inclinación' : lang === 'de' ? 'Neigung' : 'Inclinazione'}: {result.inclinazione > 0 ? '+' : ''}{formatNum(result.inclinazione, 1)}°
+                    </text>
+                  )}
                 </svg>
 
                 {/* Legend for the 7 zones */}
@@ -1242,6 +1247,10 @@ export default function App() {
                     <div className="flex justify-between border-b border-neutral-100 py-0.5">
                       <span className="text-neutral-500">{t.lCil}:</span>
                       <span className="font-bold">{result.input.lCil} mm</span>
+                    </div>
+                    <div className="flex justify-between border-b border-neutral-100 py-0.5">
+                      <span className="text-neutral-500">{lang === 'en' ? 'Tilt' : lang === 'es' ? 'Inclinación' : lang === 'de' ? 'Neigung' : 'Inclinazione'}:</span>
+                      <span className="font-bold">{formatNum(result.inclinazione, 1)}°</span>
                     </div>
                     <div className="flex justify-between border-b border-neutral-100 py-0.5">
                       <span className="text-neutral-500">{t.cylinderCapacity}:</span>

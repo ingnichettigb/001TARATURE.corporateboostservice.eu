@@ -4,6 +4,7 @@
  */
 
 import { TankInput, HeadConfig, HeadCalculated, CalculationResult } from '../models/types';
+import { INCLINAZIONE_MAX } from '../constants';
 
 /**
  * Calculates geometry and volumes for a single head (coperchio or fondo)
@@ -225,8 +226,6 @@ export function calculateTank(input: TankInput): CalculationResult {
   // Lunghezza interna totale LUNGO L'ASSE (serbatoio orizzontale): è la vecchia
   // "altezza totale" del serbatoio verticale. Indice di raggioProfile.
   const L_tot = Math.round(z7);
-  // Livello massimo del liquido = diametro interno (serbatoio disteso).
-  const H_tot = Math.max(1, Math.round(dInt));
 
   // Precalcolo costanti zona 2 fondo bombato
   const raggio_fine_zona1 = isConicFondo ? fondo.Y : Math.sqrt(H3_fondo * (2 * fondo.R - H3_fondo));
@@ -237,9 +236,6 @@ export function calculateTank(input: TankInput): CalculationResult {
 
   // raggioProfile[x] = raggio della sezione a distanza x (mm) dal fondo, lungo l'asse.
   const raggioProfile = new Array<number>(L_tot + 1).fill(0);
-  // litriCumulativi[h] = litri contenuti con il liquido al livello h (mm) misurato
-  // dal punto più basso del cilindro interno (calcolato dopo il profilo).
-  const litriCumulativi = new Array<number>(H_tot + 1).fill(0);
 
   for (let h = 1; h <= L_tot; h++) {
     let rVal = 0;
@@ -298,34 +294,85 @@ export function calculateTank(input: TankInput): CalculationResult {
     raggioProfile[h] = rVal;
   }
 
-  // === TARATURA ORIZZONTALE ===
-  // Ogni fetta di 1 mm lungo l'asse è un cerchio di raggio ρ = raggioProfile[x],
-  // centrato sull'asse a quota dInt/2. Con il liquido a livello h, l'area bagnata
-  // è il segmento circolare sotto la corda a distanza u = dInt/2 - h dal centro:
-  //   A = ρ²·acos(u/ρ) − u·√(ρ² − u²)     (0 se u ≥ ρ, πρ² se u ≤ −ρ)
-  // Il volume al livello h è la somma delle aree di tutte le fette.
+  // === TARATURA ORIZZONTALE (con eventuale inclinazione dell'asse) ===
+  // Riferimento: asse del serbatoio nel piano verticale, origine sulla punta del fondo (s = 0).
+  // Con inclinazione θ (positivo = coperchio più alto) il centro della fetta a distanza s
+  // dal fondo sta a quota zc(s) = s·sinθ. Ogni fetta (perpendicolare all'asse, spessore 1 mm)
+  // è un cerchio di raggio ρ(s) = raggioProfile[s]. Con la superficie libera a quota habs,
+  // l'area bagnata è il segmento circolare sotto la corda alla distanza (misurata nel piano
+  // della fetta)  u = (zc(s) − habs)/cosθ  dal centro:
+  //   A(u) = ρ²·acos(u/ρ) − u·√(ρ² − u²)     (0 se u ≥ ρ, πρ² se u ≤ −ρ)
+  // Il livello h è misurato in VERTICALE dal punto interno più basso (zBasso).
+  // Con θ = 0 coincide col serbatoio orizzontale: h = 0 … diametro.
   const c = dInt / 2;
+  const inclRaw = Number.isFinite(input.inclinazione as number) ? (input.inclinazione as number) : 0;
+  const inclinazione = Math.max(-INCLINAZIONE_MAX, Math.min(INCLINAZIONE_MAX, inclRaw));
+  const tilted = Math.abs(inclinazione) > 1e-9;
+  const thetaRad = (inclinazione * Math.PI) / 180;
+  const sinT = Math.sin(thetaRad);
+  const cosT = Math.cos(thetaRad);
+  const tanT = Math.tan(thetaRad);
+
+  let zBasso = -c;
+  let zAlto = c;
+  if (tilted) {
+    zBasso = Infinity;
+    zAlto = -Infinity;
+    for (let sIdx = 0; sIdx <= L_tot; sIdx++) {
+      const rr = raggioProfile[sIdx];
+      const zc = sIdx * sinT;
+      zBasso = Math.min(zBasso, zc - rr * cosT);
+      zAlto = Math.max(zAlto, zc + rr * cosT);
+    }
+  }
+
+  // Livello massimo del liquido = escursione verticale interna del serbatoio
+  const H_tot = Math.max(1, Math.round(zAlto - zBasso));
+  // litriCumulativi[h] = litri con il liquido al livello h (mm) sopra il punto più basso
+  const litriCumulativi = new Array<number>(H_tot + 1).fill(0);
+
   const segmentArea = (rho: number, u: number): number => {
     if (rho <= 0 || u >= rho) return 0;
     if (u <= -rho) return Math.PI * rho * rho;
     return rho * rho * Math.acos(u / rho) - u * Math.sqrt(rho * rho - u * u);
   };
+  // Primitiva di A(u) rispetto a u (serve a sommare in forma chiusa le fette del cilindro)
+  const segmentAreaIntegral = (rho: number, u: number): number => {
+    if (u >= rho) return 0;
+    if (u <= -rho) return Math.PI * rho * rho * u;
+    const a = rho * rho * Math.acos(u / rho) - u * Math.sqrt(rho * rho - u * u);
+    return u * a - (2 / 3) * Math.pow(rho * rho - u * u, 1.5);
+  };
 
   // Raggruppo le fette consecutive con lo stesso raggio (cilindro e colletti = 1 gruppo)
-  const runs: { rho: number; n: number }[] = [];
+  const runs: { rho: number; start: number; n: number }[] = [];
   for (let x = 1; x <= L_tot; x++) {
     const rr = raggioProfile[x];
     const last = runs[runs.length - 1];
     if (last && last.rho === rr) last.n += 1;
-    else runs.push({ rho: rr, n: 1 });
+    else runs.push({ rho: rr, start: x, n: 1 });
   }
 
   for (let h = 1; h <= H_tot; h++) {
-    // all'ultima riga il livello coincide col diametro esatto (serbatoio pieno)
-    const hEval = h === H_tot ? dInt : h;
-    const u = c - hEval;
+    // all'ultima riga il livello coincide col punto più alto (serbatoio pieno)
+    const habs = h === H_tot ? zAlto : zBasso + h;
     let acc = 0;
-    for (const run of runs) acc += segmentArea(run.rho, u) * run.n;
+    if (!tilted) {
+      const u = -habs; // zc = 0 per ogni fetta
+      for (const run of runs) acc += segmentArea(run.rho, u) * run.n;
+    } else {
+      const uOf = (sPos: number) => (sPos * sinT - habs) / cosT;
+      for (const run of runs) {
+        if (run.n < 8 || Math.abs(tanT) < 1e-6) {
+          for (let k = 0; k < run.n; k++) acc += segmentArea(run.rho, uOf(run.start + k));
+        } else {
+          // u varia linearmente lungo il tratto: integrale in forma chiusa
+          const uLo = uOf(run.start - 0.5);
+          const uHi = uOf(run.start + run.n - 0.5);
+          acc += (segmentAreaIntegral(run.rho, uHi) - segmentAreaIntegral(run.rho, uLo)) / tanT;
+        }
+      }
+    }
     litriCumulativi[h] = acc / 1e6;
   }
 
@@ -361,6 +408,9 @@ export function calculateTank(input: TankInput): CalculationResult {
     z7,
     H_tot,
     L_tot,
+    inclinazione,
+    zBasso,
+    zAlto,
     volumeFondo,
     volumeCoperchio,
     volumeCilindro,
@@ -375,4 +425,69 @@ export function calculateTank(input: TankInput): CalculationResult {
     litriCumulativi,
     raggioProfile,
   };
+}
+
+
+/* ------------------------------------------------------------------ */
+/* Sagoma del serbatoio (vista laterale, eventualmente inclinato)      */
+/* ------------------------------------------------------------------ */
+
+export interface SilhouetteBox {
+  x0: number;
+  x1: number;
+  yTop: number;
+  yBottom: number;
+  /** true = coperchio a sinistra (specchia il disegno) */
+  mirror?: boolean;
+}
+
+/**
+ * Costruisce la sagoma in coordinate di disegno, a scala UNIFORME, dentro `box`.
+ * pt(s, off): punto a distanza assiale s (mm dal fondo) e scostamento radiale `off` (mm,
+ * positivo = lato alto). levelY(h): ordinata del livello h (mm sopra il punto più basso).
+ */
+export function buildSilhouette(result: CalculationResult, box: SilhouetteBox, steps = 160) {
+  const L = Math.max(1, result.L_tot);
+  const th = (result.inclinazione * Math.PI) / 180;
+  const sin = Math.sin(th);
+  const cos = Math.cos(th);
+  const wx = (s: number, off: number) => s * cos - off * sin;
+  const wz = (s: number, off: number) => s * sin + off * cos;
+
+  const samples: { s: number; r: number }[] = [];
+  for (let i = 0; i <= steps; i++) {
+    const s = Math.round((i / steps) * L);
+    samples.push({ s, r: result.raggioProfile[s] || 0 });
+  }
+  let xmin = Infinity;
+  let xmax = -Infinity;
+  for (const p of samples) {
+    for (const off of [p.r, -p.r]) {
+      const x = wx(p.s, off);
+      xmin = Math.min(xmin, x);
+      xmax = Math.max(xmax, x);
+    }
+  }
+  const zmin = result.zBasso;
+  const zmax = result.zAlto;
+  const boxW = box.x1 - box.x0;
+  const boxH = box.yBottom - box.yTop;
+  const k = Math.min(boxW / Math.max(1, xmax - xmin), boxH / Math.max(1, zmax - zmin));
+  const offX = (boxW - (xmax - xmin) * k) / 2;
+  const yBase = box.yBottom - (boxH - (zmax - zmin) * k) / 2;
+
+  const X = (x: number) =>
+    box.mirror ? box.x1 - offX - (x - xmin) * k : box.x0 + offX + (x - xmin) * k;
+  const Y = (z: number) => yBase - (z - zmin) * k;
+
+  const pt = (s: number, off: number) => ({ x: X(wx(s, off)), y: Y(wz(s, off)) });
+  const levelY = (h: number) => Y(zmin + h);
+
+  const upper = samples.map((p) => pt(p.s, p.r));
+  const lower = [...samples].reverse().map((p) => pt(p.s, -p.r));
+  const path =
+    'M ' + upper.map((q) => `${q.x},${q.y}`).join(' L ') +
+    ' L ' + lower.map((q) => `${q.x},${q.y}`).join(' L ') + ' Z';
+
+  return { path, pt, levelY, k, yBottom: yBase, yTop: yBase - (zmax - zmin) * k };
 }

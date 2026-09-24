@@ -8,6 +8,7 @@ import { CalculationResult } from '../../models/types';
 import { Language, translations } from '../../utils/translations';
 import { Layers, Activity, Scale, Info, ChevronRight, HelpCircle, ChevronUp, ChevronDown } from 'lucide-react';
 import { COPERCHIO_A_SINISTRA } from '../../constants';
+import { buildSilhouette } from '../../services/logic';
 
 interface ResultsDashboardProps {
   result: CalculationResult;
@@ -98,50 +99,24 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
     });
   };
 
-  // === SAGOMA ORIZZONTALE ===
-  // Asse x = lunghezza del serbatoio (L_tot, dal fondo al coperchio); asse y = livello.
-  // Il raggio è in scala vera rispetto al livello; la lunghezza è adattata al disegno.
+  // === SAGOMA (vista laterale, eventualmente inclinata) ===
+  // Scala uniforme: il serbatoio è disegnato con la sua vera inclinazione.
   const dInt = result.input.dInt;
-  const lTot = Math.max(1, result.L_tot);
   const hTot = result.H_tot;
-
+  const incl = result.inclinazione;
   const SVG_X0 = 40;
   const SVG_X1 = 480;
-  const SVG_YC = 200;
-  const SVG_HALF = 90;
-  const sx = (SVG_X1 - SVG_X0) / lTot;
-
-  // posizione assiale (mm dal fondo) -> x del disegno (rispetta l'orientamento scelto)
-  const xOf = (xa: number) =>
-    COPERCHIO_A_SINISTRA ? SVG_X1 - xa * sx : SVG_X0 + xa * sx;
-  // livello (mm) -> y del disegno (0 = punto più basso, dInt = più alto)
-  const mapHToY = (h: number) => SVG_YC + SVG_HALF - (h / (dInt > 0 ? dInt : 1)) * 2 * SVG_HALF;
-
-  const steps = 160;
-  const samples: { x: number; rPx: number }[] = [];
-  for (let i = 0; i <= steps; i++) {
-    const xa = Math.round((i / steps) * lTot);
-    const rSample = result.raggioProfile[xa] || 0;
-    const rPx = dInt > 0 ? (rSample / (dInt / 2)) * SVG_HALF : 0;
-    samples.push({ x: xOf(xa), rPx });
-  }
-  samples.sort((a, b) => a.x - b.x);
-
-  // contorno serbatoio: bordo superiore (sx→dx) e inferiore (dx→sx)
-  const tankPathData =
-    `M ${samples.map((s) => `${s.x},${SVG_YC - s.rPx}`).join(' L ')} L ` +
-    `${[...samples].reverse().map((s) => `${s.x},${SVG_YC + s.rPx}`).join(' L ')} Z`;
-
-  // liquido: sotto la linea di livello, dentro la sagoma
-  const yLevel = mapHToY(clampedFillHeight);
-  const liquidTop = samples.map((s) => {
-    const yb = SVG_YC + s.rPx;
-    const yt = SVG_YC - s.rPx;
-    return `${s.x},${Math.min(yb, Math.max(yLevel, yt))}`;
+  const sil = buildSilhouette(result, {
+    x0: SVG_X0,
+    x1: SVG_X1,
+    yTop: 90,
+    yBottom: 320,
+    mirror: COPERCHIO_A_SINISTRA,
   });
-  const liquidBottom = [...samples].reverse().map((s) => `${s.x},${SVG_YC + s.rPx}`);
-  const liquidPathData =
-    clampedFillHeight > 0 ? `M ${liquidTop.join(' L ')} L ${liquidBottom.join(' L ')} Z` : '';
+  const mapHToY = (h: number) => sil.levelY(h);
+  const yLevel = mapHToY(clampedFillHeight);
+  const tankPathData = sil.path;
+  const rEdge = dInt / 2;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -207,7 +182,7 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
             </div>
 
             {/* Column 2: SVG Plot (serbatoio orizzontale) */}
-            <svg viewBox="0 45 520 285" className="w-full h-[360px] select-none">
+            <svg viewBox="0 20 520 320" className="w-full h-[360px] select-none">
               <defs>
                 <linearGradient id="tankGrad" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#f5f5f5" />
@@ -218,9 +193,12 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                   <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.7" />
                   <stop offset="100%" stopColor="#0284c7" stopOpacity="0.9" />
                 </linearGradient>
+                <clipPath id="tankClipOrizz">
+                  <path d={tankPathData} />
+                </clipPath>
               </defs>
 
-              {/* Livello minimo e massimo (0 = punto più basso, massimo = diametro) */}
+              {/* Livello minimo e massimo (0 = punto interno più basso) */}
               <line x1="4" y1={mapHToY(0)} x2="516" y2={mapHToY(0)} stroke="#737373" strokeWidth="1.25" strokeDasharray="3,3" />
               <text x="6" y={mapHToY(0) + 12} className="font-mono text-[10px] font-black fill-black">0 mm</text>
               <line x1="4" y1={mapHToY(hTot)} x2="516" y2={mapHToY(hTot)} stroke="#737373" strokeWidth="1.25" strokeDasharray="3,3" />
@@ -235,19 +213,33 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                 strokeLinejoin="round"
               />
 
-              {/* Liquid Fill */}
+              {/* Liquid Fill: tutto ciò che sta sotto la linea di livello, dentro la sagoma */}
               {clampedFillHeight > 0 && (
-                <path
-                  d={liquidPathData}
+                <rect
+                  x="0"
+                  y={yLevel}
+                  width="520"
+                  height={Math.max(0, 340 - yLevel)}
                   fill="url(#liquidGrad)"
-                  stroke="#0284c7"
-                  strokeWidth="1"
-                  strokeLinejoin="round"
+                  clipPath="url(#tankClipOrizz)"
                   className="transition-all duration-100 ease-out"
                 />
               )}
 
-              {/* Separatori delle 7 zone (doppia riga verde oliva) — posizioni lungo l'asse */}
+              {/* Asse del serbatoio (evidenzia l'inclinazione) */}
+              {Math.abs(incl) > 0.001 && (
+                <line
+                  x1={sil.pt(0, 0).x}
+                  y1={sil.pt(0, 0).y}
+                  x2={sil.pt(result.L_tot, 0).x}
+                  y2={sil.pt(result.L_tot, 0).y}
+                  stroke="#0f766e"
+                  strokeWidth="1"
+                  strokeDasharray="6,4"
+                />
+              )}
+
+              {/* Separatori delle 7 zone (doppia riga verde oliva), perpendicolari all'asse */}
               {[
                 { label: 'Z1/Z2', val: result.z1 },
                 { label: 'Z2/Z3', val: result.z2 },
@@ -256,15 +248,21 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                 { label: 'Z5/Z6', val: result.z5 },
                 { label: 'Z6/Z7', val: result.z6 },
               ].map((zone, idx) => {
-                const x = xOf(zone.val);
-                const rowY = 88 - (idx % 3) * 12; // etichette su 3 file per non sovrapporsi
+                const row = idx % 3; // etichette su 3 file per non sovrapporsi
+                const lineTop = rEdge + (10 + row * 12) / sil.k;
+                const lineBot = rEdge + 12 / sil.k;
+                const a1 = sil.pt(zone.val - 0.4 / sil.k, lineTop);
+                const a2 = sil.pt(zone.val - 0.4 / sil.k, -lineBot);
+                const b1 = sil.pt(zone.val + 0.4 / sil.k, lineTop);
+                const b2 = sil.pt(zone.val + 0.4 / sil.k, -lineBot);
+                const lab = sil.pt(zone.val, lineTop + 4 / sil.k);
                 return (
                   <g key={idx}>
-                    <line x1={x - 1} y1={rowY + 3} x2={x - 1} y2={SVG_YC + SVG_HALF + 12} stroke="#708238" strokeWidth="0.8" opacity="0.9" />
-                    <line x1={x + 1} y1={rowY + 3} x2={x + 1} y2={SVG_YC + SVG_HALF + 12} stroke="#708238" strokeWidth="0.8" opacity="0.9" />
+                    <line x1={a1.x} y1={a1.y} x2={a2.x} y2={a2.y} stroke="#708238" strokeWidth="0.8" opacity="0.9" />
+                    <line x1={b1.x} y1={b1.y} x2={b2.x} y2={b2.y} stroke="#708238" strokeWidth="0.8" opacity="0.9" />
                     <text
-                      x={x}
-                      y={rowY}
+                      x={lab.x}
+                      y={lab.y}
                       textAnchor="middle"
                       className="font-mono text-[9.5px] font-black fill-black select-none"
                     >
@@ -277,22 +275,21 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
               {/* Numerazione progressiva delle 7 zone (1…7) dentro il serbatoio */}
               {[
                 { num: 1, min: 0, max: result.z1, dy: 0 },
-                { num: 2, min: result.z1, max: result.z2, dy: -26 },
-                { num: 3, min: result.z2, max: result.z3, dy: 26 },
+                { num: 2, min: result.z1, max: result.z2, dy: 26 },
+                { num: 3, min: result.z2, max: result.z3, dy: -26 },
                 { num: 4, min: result.z3, max: result.z4, dy: 0 },
-                { num: 5, min: result.z4, max: result.z5, dy: 26 },
-                { num: 6, min: result.z5, max: result.z6, dy: -26 },
+                { num: 5, min: result.z4, max: result.z5, dy: -26 },
+                { num: 6, min: result.z5, max: result.z6, dy: 26 },
                 { num: 7, min: result.z6, max: result.L_tot, dy: 0 },
               ].map((zone) => {
                 if (zone.max - zone.min <= 0) return null;
-                const xCenter = xOf((zone.min + zone.max) / 2);
-                const yCenter = SVG_YC + zone.dy;
+                const p = sil.pt((zone.min + zone.max) / 2, zone.dy / sil.k);
                 return (
                   <g key={zone.num} className="opacity-95">
-                    <circle cx={xCenter} cy={yCenter} r="6.5" fill="#fbfdf7" stroke="#708238" strokeWidth="1.2" />
+                    <circle cx={p.x} cy={p.y} r="6.5" fill="#fbfdf7" stroke="#708238" strokeWidth="1.2" />
                     <text
-                      x={xCenter}
-                      y={yCenter + 2.5}
+                      x={p.x}
+                      y={p.y + 2.5}
                       textAnchor="middle"
                       className="font-sans text-[7.5px] font-black fill-[#3a471c] select-none"
                     >
@@ -302,7 +299,7 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                 );
               })}
 
-              {/* Indicatore linea di livello */}
+              {/* Indicatore linea di livello (sempre orizzontale) */}
               {clampedFillHeight > 0 && clampedFillHeight < result.H_tot && (
                 <g className="transition-all duration-100 ease-out">
                   <line
@@ -318,6 +315,13 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                     fill="#0284c7"
                   />
                 </g>
+              )}
+
+              {/* Indicazione inclinazione */}
+              {Math.abs(incl) > 0.001 && (
+                <text x="516" y="34" textAnchor="end" className="font-mono text-[11px] font-black fill-[#0f766e]">
+                  {(lang === 'en' ? 'Tilt' : lang === 'es' ? 'Inclinación' : lang === 'de' ? 'Neigung' : 'Inclinazione')}: {incl > 0 ? '+' : ''}{formatNum(incl, 1)}°
+                </text>
               )}
             </svg>
 
@@ -483,6 +487,12 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                       {lang === 'en' ? 'Total Internal Length (L_tot):' : lang === 'es' ? 'Longitud Interna Total (L_tot):' : lang === 'de' ? 'Innere Gesamtlänge (L_tot):' : 'Lunghezza Interna Totale (L_tot):'}
                     </span>
                     <span className="font-mono font-extrabold text-neutral-950">{result.L_tot} mm</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-neutral-200">
+                    <span className="font-bold text-neutral-900">
+                      {lang === 'en' ? 'Tank tilt (axis):' : lang === 'es' ? 'Inclinación (eje):' : lang === 'de' ? 'Neigung (Achse):' : 'Inclinazione serbatoio (asse):'}
+                    </span>
+                    <span className="font-mono font-extrabold text-neutral-950">{formatNum(result.inclinazione, 1)}°</span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-neutral-200">
                     <span className="font-bold text-neutral-900">

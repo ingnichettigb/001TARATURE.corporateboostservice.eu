@@ -39,6 +39,12 @@ export interface TankInput {
   dInt: number;       // diametro interno serbatoio (mm)
   lCil: number;       // lunghezza parte cilindrica (mm)
   spVirola: number;   // spessore lamiera virola (mm)
+  /**
+   * Inclinazione dell'asse del serbatoio rispetto all'orizzontale (gradi).
+   * Positivo = lato COPERCHIO più alto (fondo più basso); negativo = il contrario.
+   * Assente/0 = serbatoio perfettamente orizzontale. Limitato a ±INCLINAZIONE_MAX.
+   */
+  inclinazione?: number;
   rho: number;        // peso specifico contenuto (kg/dm3)
   fondo: HeadConfig;
   coperchio: HeadConfig;
@@ -82,10 +88,15 @@ export interface CalculationResult {
   z5: number;
   z6: number;
   z7: number;         // = lunghezza interna totale lungo l'asse
-  /** Livello massimo del liquido (mm) = diametro interno (serbatoio orizzontale). */
+  /** Livello massimo del liquido (mm) = escursione verticale interna (= diametro se non inclinato). */
   H_tot: number;
   /** Lunghezza interna totale lungo l'asse (mm), fondo + colletti + mantello + coperchio. */
   L_tot: number;
+  /** Inclinazione effettivamente usata nel calcolo (gradi, già limitata a ±INCLINAZIONE_MAX). */
+  inclinazione: number;
+  /** Quota (mm) del punto interno più basso / più alto, con origine sulla punta del fondo (asse). */
+  zBasso: number;
+  zAlto: number;
   volumeFondo: number;
   volumeCoperchio: number;
   volumeCilindro: number;
@@ -97,7 +108,7 @@ export interface CalculationResult {
   sviluppoCoperchioMq: number;
   pesoContenutoTotale: number;
   pesoContenutoPerCmCilindro: number;
-  litriCumulativi: number[]; // index = livello h in mm (0 … H_tot = diametro)
+  litriCumulativi: number[]; // index = livello h in mm, misurato in verticale dal punto interno più basso (0 … H_tot)
   raggioProfile: number[];   // index = posizione x in mm lungo l'asse (0 … L_tot), 0 = estremità fondo
 }
 
