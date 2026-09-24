@@ -50,6 +50,15 @@ export interface TankInput {
   fondo: HeadConfig;
   coperchio: HeadConfig;
   report: ReportMeta;
+  /**
+   * CON-TRONCOCON-BOCC: bocchello cilindrico applicato sotto il fondo
+   * (tronchetto di scarico/attacco), aggiunto come ulteriore zona di taratura
+   * al di sotto della base minore del tronco di cono.
+   * Ø interno del bocchello (mm). 0 / assente = nessun bocchello.
+   */
+  dBocchello?: number;
+  /** Altezza del bocchello (mm). 0 / assente = nessun bocchello. */
+  hBocchello?: number;
 }
 
 export interface HeadCalculated {
@@ -94,9 +103,13 @@ export interface CalculationResult {
   z6: number;
   z7: number;
   H_tot: number;
+  /** Quota di fine bocchello (mm). 0 se il bocchello non è presente. */
+  z0: number;
   volumeFondo: number;
   volumeCoperchio: number;
   volumeCilindro: number;
+  /** Volume del bocchello cilindrico di fondo (litri). 0 se assente. */
+  volumeBocchello: number;
   volumeTotale: number;
   pesoLamieraFondo: number;
   pesoLamieraCoperchio: number;
