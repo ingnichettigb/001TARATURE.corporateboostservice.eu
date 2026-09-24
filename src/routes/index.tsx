@@ -7,7 +7,11 @@ import LanguageSwitcher from "@/common/ui/LanguageSwitcher";
 import HomeInfoModal from "@/common/ui/HomeInfoModal";
 import { loadLanguage, saveLanguage, type AppLanguage } from "@/common/language/storage";
 
-const definitions = moduleDefinitions;
+// Carte ordinate alfabeticamente per codice: la griglia scorre da sinistra a
+// destra e dall'alto verso il basso, con numerazione progressiva da 1.
+const definitions = [...moduleDefinitions].sort((a, b) =>
+  a.title.localeCompare(b.title, "it", { numeric: true, sensitivity: "base" }),
+);
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -108,8 +112,8 @@ function Home() {
         </h2>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {definitions.map((m) => (
-            <ModuleCard key={m.id} module={m} />
+          {definitions.map((m, index) => (
+            <ModuleCard key={m.id} module={m} position={index + 1} />
           ))}
         </div>
         <p className="mt-8 text-xs text-muted-foreground">
