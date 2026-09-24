@@ -14,12 +14,13 @@ export interface HeadConfig {
   hColletto: number;  // altezza colletto (mm)
   R_custom?: number;  // raggio bombatura custom (mm)
   r_custom?: number;  // raggio raccordo custom (mm)
-  hCono?: number;     // altezza totale (tronco di cono + raccordo + colletto) (mm) — solo per type='conico'
+  hCono?: number;     // altezza totale (cono/tronco di cono + raccordo + colletto) (mm) — solo per type='conico'
   rRaccordo?: number; // raggio raccordo cono/colletto (mm) — solo per type='conico'
   /**
-   * BOMB-TRONCOCON-BOCC: diametro INTERNO della base minore del tronco di cono (mm),
+   * CON-TRONCOCON-BOCC: diametro INTERNO della base minore del tronco di cono (mm),
    * cioè del fondo piano che chiude il cono in basso. Solo per type='conico'.
-   * 0 / assente = cono a punta (comportamento identico a BOMB-CON).
+   * 0 / assente = cono a punta (comportamento identico a CON-CON).
+   * Il coperchio conico lavora sempre con dMin = 0.
    */
   dMin?: number;
 }
@@ -50,7 +51,7 @@ export interface TankInput {
   coperchio: HeadConfig;
   report: ReportMeta;
   /**
-   * BOMB-TRONCOCON-BOCC: bocchello cilindrico applicato sotto il fondo
+   * CON-TRONCOCON-BOCC: bocchello cilindrico applicato sotto il fondo
    * (tronchetto di scarico/attacco), aggiunto come ulteriore zona di taratura
    * al di sotto della base minore del tronco di cono.
    * Ø interno del bocchello (mm). 0 / assente = nessun bocchello.
