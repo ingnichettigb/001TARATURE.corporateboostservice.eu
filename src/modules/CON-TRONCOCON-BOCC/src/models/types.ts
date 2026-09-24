@@ -17,7 +17,7 @@ export interface HeadConfig {
   hCono?: number;     // altezza totale (cono/tronco di cono + raccordo + colletto) (mm) — solo per type='conico'
   rRaccordo?: number; // raggio raccordo cono/colletto (mm) — solo per type='conico'
   /**
-   * CON-TRONCOCON: diametro INTERNO della base minore del tronco di cono (mm),
+   * CON-TRONCOCON-BOCC: diametro INTERNO della base minore del tronco di cono (mm),
    * cioè del fondo piano che chiude il cono in basso. Solo per type='conico'.
    * 0 / assente = cono a punta (comportamento identico a CON-CON).
    * Il coperchio conico lavora sempre con dMin = 0.

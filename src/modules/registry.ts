@@ -18,6 +18,8 @@ import runConPiano from "./CON-PIANO";
 import runBombConBocc from "./BOMB-CON-BOCC";
 import runConConBocc from "./CON-CON-BOCC";
 import runPianoConBocc from "./PIANO-CON-BOCC";
+import runConTronconBocc from "./CON-TRONCOCON-BOCC";
+import runPianoTronconBocc from "./PIANO-TRONCOCON-BOCC";
 import type { ModuleEntry } from "@/common/module-types";
 
 /**
@@ -46,6 +48,8 @@ const runners = [
   runBombConBocc,
   runConConBocc,
   runPianoConBocc,
+  runConTronconBocc,
+  runPianoTronconBocc,
 ];
 
 export const moduleEntries: ModuleEntry[] = runners.map((run) => run());

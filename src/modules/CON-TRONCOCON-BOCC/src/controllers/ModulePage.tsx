@@ -3,7 +3,7 @@ import { ArrowLeft, FileSignature } from "lucide-react";
 import ConTronconApp from "./ConTronconApp";
 
 /**
- * Pagina principale del modulo CON-TRONCOCON.
+ * Pagina principale del modulo CON-TRONCOCON-BOCC.
  * L'applicazione importata contiene già le sezioni standard:
  * Input (TankInputForm) → Calcolo (core/logic.ts) → Output (ResultsDashboard,
  * CalibrationTable) → PDF (core/pdf.ts).

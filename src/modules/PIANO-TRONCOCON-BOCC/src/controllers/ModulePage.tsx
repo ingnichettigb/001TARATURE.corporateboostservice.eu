@@ -3,7 +3,7 @@ import { ArrowLeft, FileSignature } from "lucide-react";
 import PianoTronconApp from "./PianoTronconApp";
 
 /**
- * Pagina principale del modulo PIANO-TRONCOCON.
+ * Pagina principale del modulo PIANO-TRONCOCON-BOCC.
  * L'applicazione importata contiene già le sezioni standard:
  * Input (TankInputForm) → Calcolo (core/logic.ts) → Output (ResultsDashboard,
  * CalibrationTable) → PDF (core/pdf.ts).

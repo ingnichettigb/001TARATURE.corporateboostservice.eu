@@ -10,7 +10,7 @@ import { TankInput, HeadConfig, HeadCalculated, CalculationResult } from '../mod
  */
 export function calculateHead(dInt: number, config: HeadConfig): HeadCalculated {
   // === Testata PIANA (disco piano di lamiera, con raccordo toroidale opzionale) ===
-  // PIANO-TRONCOCON: il COPERCHIO è un disco piano di raggio X = R_base - r, raccordato
+  // PIANO-TRONCOCON-BOCC: il COPERCHIO è un disco piano di raggio X = R_base - r, raccordato
   // alla parete con un arco a quarto di toro di raggio r (config.r_custom), poi colletto.
   // r = 0 → disco piano puro (nessun raccordo).
   if (config.type === 'piano') {
@@ -64,7 +64,7 @@ export function calculateHead(dInt: number, config: HeadConfig): HeadCalculated 
   }
 
   // === Testa conica / TRONCOCONICA (con raccordo cono/colletto) ===
-  // PIANO-TRONCOCON: il FONDO è un TRONCO di cono, cioè non termina a punta ma con
+  // PIANO-TRONCOCON-BOCC: il FONDO è un TRONCO di cono, cioè non termina a punta ma con
   // una base minore piana di diametro dMin. Con dMin = 0 il calcolo coincide con
   // quello del cono puro.
   if (config.type === 'conico') {
