@@ -30,14 +30,20 @@ function ModuleIcon({ module }: { module: ModuleDefinition }) {
   );
 }
 
-export function ModuleCard({ module }: { module: ModuleDefinition }) {
+export function ModuleCard({
+  module,
+  position,
+}: {
+  module: ModuleDefinition;
+  position?: number;
+}) {
   const isActive = module.status === "active";
 
   return (
     <Link
       to="/moduli/$moduleId"
       params={{ moduleId: module.id }}
-      className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"
+      className="group relative flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"
     >
       <div className="flex items-start justify-between gap-3">
         <ModuleIcon module={module} />
@@ -62,6 +68,11 @@ export function ModuleCard({ module }: { module: ModuleDefinition }) {
         Apri modulo
         <Icons.ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
       </span>
+      {typeof position === "number" && (
+        <span className="absolute bottom-3 right-3 flex h-7 min-w-7 items-center justify-center rounded-full border border-border bg-muted px-2 text-xs font-bold tabular-nums text-muted-foreground">
+          {position}
+        </span>
+      )}
     </Link>
   );
 }
