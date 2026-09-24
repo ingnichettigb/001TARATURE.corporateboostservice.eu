@@ -9,9 +9,11 @@ import { TankInput, HeadConfig, HeadCalculated, CalculationResult } from '../mod
  * Calculates geometry and volumes for a single head (coperchio or fondo)
  */
 export function calculateHead(dInt: number, config: HeadConfig): HeadCalculated {
-  // === Testa conica (fondo TRONCOCONICO con raccordo cono/colletto) ===
-  // BOMB-TRONCOCON-BOCC: il cono non termina a punta ma con una base minore piana,
-  // di diametro dMin. Con dMin = 0 il calcolo coincide con quello del BOMB-CON.
+  // === Testa conica / TRONCOCONICA (con raccordo cono/colletto) ===
+  // CON-TRONCOCON-BOCC: il fondo è un TRONCO di cono, cioè non termina a punta ma con
+  // una base minore piana di diametro dMin. Con dMin = 0 il calcolo coincide con
+  // quello del cono puro (CON-CON): per questo la stessa funzione serve anche il
+  // COPERCHIO CONICO, che lavora sempre con dMin = 0.
   if (config.type === 'conico') {
     const R_base = dInt / 2;
     const r_racc = Math.max(0, config.rRaccordo ?? 30);
@@ -216,6 +218,7 @@ export function calculateTank(input: TankInput): CalculationResult {
   const coperchio = calculateHead(dInt, input.coperchio);
 
   const isConicFondo = input.fondo.type === 'conico';
+  const isConicCoperchio = input.coperchio.type === 'conico';
 
   // Bocchello cilindrico di fondo (tronchetto sotto la base minore del fondo).
   // Zona aggiuntiva, indipendente dal tipo di fondo: un cilindro pieno di
@@ -226,21 +229,21 @@ export function calculateTank(input: TankInput): CalculationResult {
 
   // Altezze zone
   const H3_fondo = fondo.H3; // per troncoconico = altezza del tronco di cono puro (sotto il raccordo)
-  const H2_fondo = isConicFondo ? fondo.H2 : fondo.H2; // per conico = H_racc (raccordo)
+  const H2_fondo = fondo.H2; // per (tronco)conico = H_racc (raccordo)
   const h_colletto_fondo = input.fondo.hColletto;
   const H3_coperchio = coperchio.H3;
   const H2_coperchio = coperchio.H2;
   const h_colletto_coperchio = input.coperchio.hColletto;
 
   // Altezze cumulative (quote, in mm, misurate dalla base del bocchello = 0;
-  // senza bocchello z0 = 0 e si ricade nel comportamento di BOMB-TRONCOCON).
+  // senza bocchello z0 = 0 e si ricade nel comportamento precedente).
   const z0 = hBocchello;                     // fine bocchello (inizio fondo vero e proprio)
   const z1 = z0 + H3_fondo;                  // fine cono puro (o calotta) fondo
   const z2 = z1 + H2_fondo;                  // fine raccordo (toroidale o cono/colletto)
   const z3 = z2 + h_colletto_fondo;          // fine colletto fondo
   const z4 = z3 + lCil;                      // fine mantello cilindrico
   const z5 = z4 + h_colletto_coperchio;      // fine colletto coperchio
-  const z6 = z5 + H2_coperchio;              // fine raccordo toroidale coperchio
+  const z6 = z5 + H2_coperchio;              // fine raccordo (colletto/cono) coperchio
   const z7 = z6 + H3_coperchio;              // H_tot
 
   const H_tot = Math.round(z7);
@@ -296,20 +299,41 @@ export function calculateTank(input: TankInput): CalculationResult {
       // Zone 3, 4, 5 — colletti e parte cilindrica
       rVal = dInt / 2;
     } else if (h <= z6) {
-      // Zona 6 — raccordo toroidale coperchio
-      const h_zona = h - z5;
-      const BL = coperchio.r - h_zona + 1;
-      let term = BL * (2 * coperchio.r - BL);
-      if (term < 0) term = 0;
-      const BM = Math.sqrt(term);
-      rVal = (dInt / 2 - coperchio.r) + BM;
+      if (isConicCoperchio) {
+        // Zona 6 conica — raccordo colletto/cono (arco tangente, speculare al fondo conico)
+        const r_racc = coperchio.r;
+        const R_base = dInt / 2;
+        const dh = h - z5; // 0 in basso, H_racc in cima
+        let sinPhi = r_racc > 0 ? dh / r_racc : 0;
+        if (sinPhi > 1) sinPhi = 1;
+        if (sinPhi < 0) sinPhi = 0;
+        const phi = Math.asin(sinPhi);
+        rVal = R_base - r_racc * (1 - Math.cos(phi));
+      } else {
+        // Zona 6 — raccordo toroidale coperchio
+        const h_zona = h - z5;
+        const BL = coperchio.r - h_zona + 1;
+        let term = BL * (2 * coperchio.r - BL);
+        if (term < 0) term = 0;
+        const BM = Math.sqrt(term);
+        rVal = (dInt / 2 - coperchio.r) + BM;
+      }
     } else {
-      // Zona 7 — calotta sferica coperchio
-      const h_zona = h - z6;
-      const BN = H3_coperchio - h_zona;
-      let term = BN * (2 * coperchio.R - BN);
-      if (term < 0) term = 0;
-      rVal = Math.sqrt(term);
+      if (isConicCoperchio) {
+        // Zona 7 — cono retto puro (coperchio): raggio lineare da Y (a z6) fino a
+        // rMin all'apice (rMin = 0 per il cono a punta).
+        rVal = H3_coperchio > 0
+          ? coperchio.Y - (coperchio.Y - coperchio.rMin) * ((h - z6) / H3_coperchio)
+          : coperchio.rMin;
+        if (rVal < 0) rVal = 0;
+      } else {
+        // Zona 7 — calotta sferica coperchio
+        const h_zona = h - z6;
+        const BN = H3_coperchio - h_zona;
+        let term = BN * (2 * coperchio.R - BN);
+        if (term < 0) term = 0;
+        rVal = Math.sqrt(term);
+      }
     }
 
     raggioProfile[h] = rVal;
