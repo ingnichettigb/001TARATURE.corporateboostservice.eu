@@ -1,2 +1,2 @@
 /** Identificatore univoco della tipologia serbatoio (= nome cartella modulo). */
-export const TANK_TYPE = "CON-TRONCOCON";
+export const TANK_TYPE = "CON-TRONCOCON-BOCC";

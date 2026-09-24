@@ -330,7 +330,7 @@ export default function App() {
   const handleLoadTank = (loadedInput: TankInput, loadedCompilerInfo?: CompilerInfo, tankId?: string) => {
     // Retrocompatibilità: i file salvati prima dell'introduzione di spVirola
     // ereditano lo spessore del fondo.
-    // PIANO-TRONCOCON: il fondo è per definizione TRONCOCONICO e il coperchio PIANO
+    // PIANO-TRONCOCON-BOCC: il fondo è per definizione TRONCOCONICO e il coperchio PIANO
     // (con raccordo). Se il file proviene da un'altra tipologia (import "carica
     // comunque" / file legacy) le due testate vengono ricondotte a queste forme.
     const loadedFondo = loadedInput.fondo;
@@ -459,7 +459,7 @@ export default function App() {
     return (
       <div className="min-h-dvh bg-[#ebf2ee] text-neutral-900 font-sans antialiased flex items-center justify-center p-6">
         <div className="bg-white border-4 border-double border-emerald-800 rounded-xl p-8 max-w-md w-full text-center space-y-4 shadow-xs">
-          <h1 className="text-xl font-black uppercase text-emerald-950">PIANO-TRONCOCON TARATURA</h1>
+          <h1 className="text-xl font-black uppercase text-emerald-950">PIANO-TRONCOCON-BOCC TARATURA</h1>
           <p className="text-sm font-semibold text-emerald-900">
             {lang === 'en' ? 'Application closed. You can safely close this browser tab.' :
              lang === 'es' ? 'Aplicación cerrada. Puede cerrar esta pestaña del navegador.' :
@@ -1594,10 +1594,10 @@ export default function App() {
           {/* Small Footer metadata for pages */}
           <div className="pt-4 flex justify-between items-center text-[8px] font-mono text-neutral-400">
             <span>
-              {lang === 'en' ? 'Generated via PIANO-TRONCOCON TARATURA v1.2' :
-               lang === 'es' ? 'Generado mediante PIANO-TRONCOCON TARATURA v1.2' :
-               lang === 'de' ? 'Generiert über PIANO-TRONCOCON TARATURA v1.2' :
-               'Generato tramite PIANO-TRONCOCON TARATURA v1.2'}
+              {lang === 'en' ? 'Generated via PIANO-TRONCOCON-BOCC TARATURA v1.2' :
+               lang === 'es' ? 'Generado mediante PIANO-TRONCOCON-BOCC TARATURA v1.2' :
+               lang === 'de' ? 'Generiert über PIANO-TRONCOCON-BOCC TARATURA v1.2' :
+               'Generato tramite PIANO-TRONCOCON-BOCC TARATURA v1.2'}
             </span>
             <span>
               {lang === 'en' ? `Report: ${reportNumber} • Page 2 of 2` :

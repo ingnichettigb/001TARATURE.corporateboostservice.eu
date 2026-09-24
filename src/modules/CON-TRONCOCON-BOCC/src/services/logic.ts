@@ -10,7 +10,7 @@ import { TankInput, HeadConfig, HeadCalculated, CalculationResult } from '../mod
  */
 export function calculateHead(dInt: number, config: HeadConfig): HeadCalculated {
   // === Testa conica / TRONCOCONICA (con raccordo cono/colletto) ===
-  // CON-TRONCOCON: il fondo è un TRONCO di cono, cioè non termina a punta ma con
+  // CON-TRONCOCON-BOCC: il fondo è un TRONCO di cono, cioè non termina a punta ma con
   // una base minore piana di diametro dMin. Con dMin = 0 il calcolo coincide con
   // quello del cono puro (CON-CON): per questo la stessa funzione serve anche il
   // COPERCHIO CONICO, che lavora sempre con dMin = 0.
