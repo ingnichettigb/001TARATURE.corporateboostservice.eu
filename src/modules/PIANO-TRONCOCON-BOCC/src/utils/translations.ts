@@ -43,6 +43,13 @@ export interface TranslationDict {
   rhoSub: string;
   rhoLabel: string;
 
+  // Bocchello di fondo (PIANO-TRONCOCON-BOCC)
+  bocchelloTitle: string;
+  bocchelloHint: string;
+  bocchelloDiametro: string;
+  bocchelloAltezza: string;
+  bocchelloVolume: string;
+
   // Head types / Fondo and Coperchio
   headType: string;
   headTypeStandardKlopper: string;
@@ -178,6 +185,11 @@ export const translations: Record<Language, TranslationDict> = {
     rho: "Densità del Prodotto (ρ)",
     rhoSub: "(kg/dm³ o kg/L)",
     rhoLabel: "Densità liquido (default acqua: 1.0)",
+    bocchelloTitle: "Bocchello di fondo",
+    bocchelloHint: "Tronchetto cilindrico applicato sotto il fondo troncoconico (Ø e altezza). Lascia Ø = 0 per un fondo senza bocchello.",
+    bocchelloDiametro: "Ø bocchello (mm)",
+    bocchelloAltezza: "Altezza bocchello (mm)",
+    bocchelloVolume: "Volume bocchello",
 
     headType: "Tipo di Testata",
     headTypeStandardKlopper: "Bombato Standard Klopper (r=D, R=0.1D)",
@@ -307,6 +319,11 @@ export const translations: Record<Language, TranslationDict> = {
     rho: "Product Density (ρ)",
     rhoSub: "(kg/dm³ or kg/L)",
     rhoLabel: "Liquid density (default water: 1.0)",
+    bocchelloTitle: "Bottom nozzle (bocchello)",
+    bocchelloHint: "Cylindrical stub fitted below the truncated-cone bottom (Ø and height). Leave Ø = 0 for a bottom with no nozzle.",
+    bocchelloDiametro: "Nozzle Ø (mm)",
+    bocchelloAltezza: "Nozzle height (mm)",
+    bocchelloVolume: "Nozzle volume",
 
     headType: "Head Type",
     headTypeStandardKlopper: "Klopper Standard Head (r=D, R=0.1D)",
@@ -436,6 +453,11 @@ export const translations: Record<Language, TranslationDict> = {
     rho: "Densidad del Producto (ρ)",
     rhoSub: "(kg/dm³ o kg/L)",
     rhoLabel: "Densidad del líquido (agua por defecto: 1.0)",
+    bocchelloTitle: "Boquilla de fondo",
+    bocchelloHint: "Tronco cilíndrico instalado debajo del fondo troncocónico (Ø y altura). Deja Ø = 0 para un fondo sin boquilla.",
+    bocchelloDiametro: "Ø boquilla (mm)",
+    bocchelloAltezza: "Altura boquilla (mm)",
+    bocchelloVolume: "Volumen boquilla",
 
     headType: "Tipo de Cabezal",
     headTypeStandardKlopper: "Cabezal Estándar Klopper (r=D, R=0.1D)",
@@ -565,6 +587,11 @@ export const translations: Record<Language, TranslationDict> = {
     rho: "Dichte des Produkts (ρ)",
     rhoSub: "(kg/dm³ oder kg/L)",
     rhoLabel: "Dichte der Flüssigkeit (Standardwasser: 1.0)",
+    bocchelloTitle: "Bodenstutzen",
+    bocchelloHint: "Zylindrischer Stutzen unterhalb des Kegelstumpfbodens (Ø und Höhe). Ø = 0 lassen für einen Boden ohne Stutzen.",
+    bocchelloDiametro: "Ø Stutzen (mm)",
+    bocchelloAltezza: "Höhe Stutzen (mm)",
+    bocchelloVolume: "Stutzenvolumen",
 
     headType: "Bodenform",
     headTypeStandardKlopper: "Standard-Klöpperboden (r=D, R=0.1D)",
