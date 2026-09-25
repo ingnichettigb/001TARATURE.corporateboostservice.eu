@@ -436,6 +436,11 @@ export async function generateCalibrationPDF(
     // Bottom truncated cone (troncoconico): due triangoli = trapezio pieno
     doc.triangle(x_c, y_c + h_c, x_c + w_c, y_c + h_c, xMinR, coneApexY, 'F');
     doc.triangle(x_c, y_c + h_c, xMinR, coneApexY, xMinL, coneApexY, 'F');
+    // Bocchello di fondo (tronchetto cilindrico)
+    if (hasBocc) {
+      doc.rect(xBoccL, coneApexY, Math.max(0.6, xBoccR - xBoccL), Math.max(0.8, boccApexY - coneApexY), 'F');
+    }
+
 
     // 2. Draw tank outlines
     doc.setDrawColor(6, 78, 59);
