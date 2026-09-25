@@ -400,6 +400,13 @@ export async function generateCalibrationPDF(
       : 0;
     const xMinL = x_c + w_c / 2 - (dMinRatio * w_c) / 2;
     const xMinR = x_c + w_c / 2 + (dMinRatio * w_c) / 2;
+    // Bocchello cilindrico sotto la base minore (Ø bocchello <= Ø base minore)
+    const dBoccPdf = Math.min(result.input.fondo.dMin ?? 0, Math.max(0, result.input.dBocchello ?? 0));
+    const hasBocc = dBoccPdf > 0 && (result.input.hBocchello ?? 0) > 0;
+    const dBoccRatio = result.input.dInt > 0 ? Math.min(dMinRatio, dBoccPdf / result.input.dInt) : 0;
+    const xBoccL = x_c + w_c / 2 - (dBoccRatio * w_c) / 2;
+    const xBoccR = x_c + w_c / 2 + (dBoccRatio * w_c) / 2;
+    const boccApexY = coneApexY + (hasBocc ? 1.6 : 0); // piccola estensione grafica fissa
     doc.setFillColor(240, 253, 244);
     doc.rect(x_c, y_c, w_c, h_c, 'F');
     // Top flat plate (piano) — angoli superiori raccordati se il coperchio ha raggio di raccordo r > 0
@@ -429,6 +436,11 @@ export async function generateCalibrationPDF(
     // Bottom truncated cone (troncoconico): due triangoli = trapezio pieno
     doc.triangle(x_c, y_c + h_c, x_c + w_c, y_c + h_c, xMinR, coneApexY, 'F');
     doc.triangle(x_c, y_c + h_c, xMinR, coneApexY, xMinL, coneApexY, 'F');
+    // Bocchello di fondo (tronchetto cilindrico)
+    if (hasBocc) {
+      doc.rect(xBoccL, coneApexY, Math.max(0.6, xBoccR - xBoccL), Math.max(0.8, boccApexY - coneApexY), 'F');
+    }
+
 
     // 2. Draw tank outlines
     doc.setDrawColor(6, 78, 59);
@@ -442,7 +454,16 @@ export async function generateCalibrationPDF(
     // Bottom truncated cone outlines (two slanted sides + flat minor base)
     doc.line(x_c, y_c + h_c, xMinL, coneApexY);
     doc.line(x_c + w_c, y_c + h_c, xMinR, coneApexY);
-    doc.line(xMinL, coneApexY, xMinR, coneApexY);
+    if (hasBocc) {
+      // base minore aperta sul bocchello: due tratti laterali + pareti e fondo del tronchetto
+      doc.line(xMinL, coneApexY, xBoccL, coneApexY);
+      doc.line(xBoccR, coneApexY, xMinR, coneApexY);
+      doc.line(xBoccL, coneApexY, xBoccL, boccApexY);
+      doc.line(xBoccR, coneApexY, xBoccR, boccApexY);
+      doc.line(xBoccL, boccApexY, xBoccR, boccApexY);
+    } else {
+      doc.line(xMinL, coneApexY, xMinR, coneApexY);
+    }
     void drawSemiEllipse;
 
     // 3. Draw horizontal weld junctions (seams)
@@ -659,6 +680,9 @@ export async function generateCalibrationPDF(
     const lblAreaDisco = lang === 'en' ? 'Raw Disc Area (m²)' : lang === 'es' ? 'Área Disco Bruto (m²)' : lang === 'de' ? 'Fläche Rohzuschnitt (m²)' : 'Area Disco Grezzo (m²)';
     const lblPesoTotLam = lang === 'en' ? 'Total Sheet Metal Weight' : lang === 'es' ? 'Peso Total Chapa' : lang === 'de' ? 'Gesamtes Blechgewicht' : 'Peso totale lamiera';
     const lblPesoPieno = lang === 'en' ? 'Weight with Full Content' : lang === 'es' ? 'Peso con Contenido Lleno' : lang === 'de' ? 'Gewicht bei Vollfüllung' : 'Peso con Contenuto Pieno';
+    const lblDBocc = lang === 'en' ? 'Nozzle Diameter (d_bocchello) (mm)' : lang === 'es' ? 'Diámetro Boquilla (d_bocchello) (mm)' : lang === 'de' ? 'Stutzendurchmesser (d_bocchello) (mm)' : 'Diametro Bocchello (d_bocchello) (mm)';
+    const lblHBocc = lang === 'en' ? 'Nozzle Height (h_bocchello) (mm)' : lang === 'es' ? 'Altura Boquilla (h_bocchello) (mm)' : lang === 'de' ? 'Stutzenhöhe (h_bocchello) (mm)' : 'Altezza Bocchello (h_bocchello) (mm)';
+    const lblVolBocc = lang === 'en' ? 'Nozzle Volume' : lang === 'es' ? 'Volumen Boquilla' : lang === 'de' ? 'Stutzenvolumen' : 'Volume Bocchello';
 
     const cop = result.input.coperchio;
     const fon = result.input.fondo;
@@ -690,6 +714,12 @@ export async function generateCalibrationPDF(
       [grpCon, labels[lang].thickness.replace(':',''), `${fon.sp} mm`],
       [grpCon, labels[lang].bottomVolume.replace(':',''), `${formatNumPDF(result.volumeFondo, 2)} l`],
       [grpCon, labels[lang].sheetWeight.replace(':',''), `${formatNumPDF(result.pesoLamieraFondo, 1)} kg`],
+      // bocchello di fondo (solo se presente)
+      ...((result.input.dBocchello ?? 0) > 0 ? [
+        [grpCon, lblDBocc, `${formatNumPDF(result.input.dBocchello ?? 0, 1)} mm`],
+        [grpCon, lblHBocc, `${formatNumPDF(result.input.hBocchello ?? 0, 1)} mm`],
+        [grpCon, lblVolBocc, `${formatNumPDF(result.volumeBocchello, 2)} l`],
+      ] : []),
       // coperchio + virole + fondo
       [grpAll, labels[lang].totalHeight.replace(':',''), `${result.H_tot} mm`],
       [grpAll, labels[lang].density.replace(':',''), `${formatNumPDF(result.input.rho, 3)} kg/dm³`],
