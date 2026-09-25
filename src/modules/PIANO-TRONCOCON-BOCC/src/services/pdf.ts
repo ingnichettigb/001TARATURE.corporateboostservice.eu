@@ -714,6 +714,12 @@ export async function generateCalibrationPDF(
       [grpCon, labels[lang].thickness.replace(':',''), `${fon.sp} mm`],
       [grpCon, labels[lang].bottomVolume.replace(':',''), `${formatNumPDF(result.volumeFondo, 2)} l`],
       [grpCon, labels[lang].sheetWeight.replace(':',''), `${formatNumPDF(result.pesoLamieraFondo, 1)} kg`],
+      // bocchello di fondo (solo se presente)
+      ...((result.input.dBocchello ?? 0) > 0 ? [
+        [grpCon, lblDBocc, `${formatNumPDF(result.input.dBocchello ?? 0, 1)} mm`],
+        [grpCon, lblHBocc, `${formatNumPDF(result.input.hBocchello ?? 0, 1)} mm`],
+        [grpCon, lblVolBocc, `${formatNumPDF(result.volumeBocchello, 2)} l`],
+      ] : []),
       // coperchio + virole + fondo
       [grpAll, labels[lang].totalHeight.replace(':',''), `${result.H_tot} mm`],
       [grpAll, labels[lang].density.replace(':',''), `${formatNumPDF(result.input.rho, 3)} kg/dm³`],
