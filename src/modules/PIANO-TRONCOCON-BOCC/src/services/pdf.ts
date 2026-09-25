@@ -400,6 +400,13 @@ export async function generateCalibrationPDF(
       : 0;
     const xMinL = x_c + w_c / 2 - (dMinRatio * w_c) / 2;
     const xMinR = x_c + w_c / 2 + (dMinRatio * w_c) / 2;
+    // Bocchello cilindrico sotto la base minore (Ø bocchello <= Ø base minore)
+    const dBoccPdf = Math.min(result.input.fondo.dMin ?? 0, Math.max(0, result.input.dBocchello ?? 0));
+    const hasBocc = dBoccPdf > 0 && (result.input.hBocchello ?? 0) > 0;
+    const dBoccRatio = result.input.dInt > 0 ? Math.min(dMinRatio, dBoccPdf / result.input.dInt) : 0;
+    const xBoccL = x_c + w_c / 2 - (dBoccRatio * w_c) / 2;
+    const xBoccR = x_c + w_c / 2 + (dBoccRatio * w_c) / 2;
+    const boccApexY = coneApexY + (hasBocc ? 1.6 : 0); // piccola estensione grafica fissa
     doc.setFillColor(240, 253, 244);
     doc.rect(x_c, y_c, w_c, h_c, 'F');
     // Top flat plate (piano) — angoli superiori raccordati se il coperchio ha raggio di raccordo r > 0
