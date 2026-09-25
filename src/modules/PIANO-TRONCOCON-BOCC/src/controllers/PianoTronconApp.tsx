@@ -115,6 +115,8 @@ export default function App() {
       rRaccordo: 30, // raccordo cono/colletto (mm)
       dMin: 300, // diametro interno della base minore del tronco di cono (mm)
     },
+    dBocchello: 150, // Ø bocchello cilindrico di fondo (mm) — 0 = nessun bocchello
+    hBocchello: 200, // altezza bocchello (mm)
     coperchio: {
       type: 'piano',
       sp: 8,
@@ -446,7 +448,8 @@ export default function App() {
       const hSample = Math.round((i / steps) * hTot);
       const y = mapHToYPrint(hSample);
       // a h = 0 il profilo parte dal raggio della base minore (fondo piano del tronco di cono)
-      const rSample = hSample === 0 ? result.fondo.rMin : (result.raggioProfile[hSample] || 0);
+      const rBocchelloSample = (result.input.dBocchello ?? 0) > 0 ? (result.input.dBocchello ?? 0) / 2 : result.fondo.rMin;
+      const rSample = hSample === 0 ? rBocchelloSample : (result.raggioProfile[hSample] || 0);
       const rScale = dInt > 0 ? (rSample / (dInt / 2)) * 60 : 0;
       leftPoints.push(`${160 - rScale},${y}`);
       rightPoints.unshift(`${160 + rScale},${y}`);
@@ -1015,7 +1018,55 @@ export default function App() {
 
             {/* STEP 3 - Configurazione geometrica */}
             {step === 3 && (
-              <GeometrySchema key={formKey} input={input} onChange={setInput} />
+              <>
+                <GeometrySchema key={formKey} input={input} onChange={setInput} />
+
+                {/* BOCCHELLO DI FONDO — tronchetto cilindrico sotto il fondo troncoconico */}
+                <div className="bg-white border-4 border-double border-emerald-800 rounded-xl p-4 shadow-xs space-y-3 mt-4 print:hidden">
+                  <h4 className="text-xs font-black uppercase text-emerald-950 flex items-center gap-1.5 border-b border-emerald-100 pb-2">
+                    <Cylinder className="w-4 h-4 text-emerald-800" />
+                    {t.bocchelloTitle}
+                  </h4>
+                  <p className="text-[11px] text-neutral-600 font-medium">{t.bocchelloHint}</p>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <label className="block text-[10px] font-extrabold uppercase text-neutral-800 mb-1">
+                        {t.bocchelloDiametro}
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={input.dBocchello ?? 0}
+                        onChange={(e) => setInput(prev => ({
+                          ...prev,
+                          dBocchello: Math.max(0, Number(e.target.value)),
+                        }))}
+                        className="w-full text-xs bg-emerald-50/20 border border-emerald-300 rounded-lg px-2.5 py-1.5 font-bold text-neutral-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-800"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-extrabold uppercase text-neutral-800 mb-1">
+                        {t.bocchelloAltezza}
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={input.hBocchello ?? 0}
+                        onChange={(e) => setInput(prev => ({
+                          ...prev,
+                          hBocchello: Math.max(0, Number(e.target.value)),
+                        }))}
+                        className="w-full text-xs bg-emerald-50/20 border border-emerald-300 rounded-lg px-2.5 py-1.5 font-bold text-neutral-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-800"
+                      />
+                    </div>
+                  </div>
+                  {(input.dBocchello ?? 0) > 0 && (
+                    <div className="text-[11px] font-bold text-emerald-800">
+                      {t.bocchelloVolume}: {result.volumeBocchello.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} L
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </section>
 
