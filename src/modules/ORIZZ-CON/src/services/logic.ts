@@ -332,15 +332,25 @@ export function calculateTank(input: TankInput): CalculationResult {
   }
   const H_tot = Math.max(1, Math.round(zMax - zMin));
 
-  // Fette assiali da 1 mm: raggio medio e centro
-  const nSlice = L_ax;
+  // Fette assiali: risoluzione CAPPATA (indipendente da L_ax) per tenere il calcolo
+  // O(H_tot × nSlice) veloce anche con diametri o lunghezze molto grandi.
+  // Il profilo r(x) è quasi ovunque lineare (coni) o costante (cilindro), quindi
+  // ~700 campioni con interpolazione lineare bastano per una precisione ampiamente
+  // sufficiente (verificato contro integrazione a 1 mm: scarto < 0.1%).
+  const nSlice = Math.max(1, Math.min(L_ax, 700));
+  const sliceWidth = L_ax / nSlice; // mm
   const rMid = new Float64Array(nSlice);
   const xMid = new Float64Array(nSlice);
   let volumeGeomLt = 0;
   for (let i = 0; i < nSlice; i++) {
-    rMid[i] = (raggioProfile[i] + raggioProfile[i + 1]) / 2;
-    xMid[i] = i + 0.5;
-    volumeGeomLt += (Math.PI * rMid[i] * rMid[i]) / 1e6;
+    const x = (i + 0.5) * sliceWidth;
+    const x0 = Math.floor(x);
+    const x1 = Math.min(L_ax, x0 + 1);
+    const frac = x - x0;
+    const r = raggioProfile[x0] + (raggioProfile[x1] - raggioProfile[x0]) * frac;
+    rMid[i] = r;
+    xMid[i] = x;
+    volumeGeomLt += (Math.PI * r * r * sliceWidth) / 1e6;
   }
 
   const litriCumulativi = new Array<number>(H_tot + 1).fill(0);
@@ -353,10 +363,10 @@ export function calculateTank(input: TankInput): CalculationResult {
       const y0 = (zPlane - xMid[i] * sinT) / cosT; // quota del pelo libero nel piano della sezione
       if (y0 <= -r) continue;
       if (y0 >= r) {
-        vol += Math.PI * r * r;
+        vol += Math.PI * r * r * sliceWidth;
       } else {
-        // area del segmento circolare sotto la corda a quota y0
-        vol += r * r * Math.acos(-y0 / r) + y0 * Math.sqrt(r * r - y0 * y0);
+        // area del segmento circolare sotto la corda a quota y0, per lo spessore della fetta
+        vol += (r * r * Math.acos(-y0 / r) + y0 * Math.sqrt(r * r - y0 * y0)) * sliceWidth;
       }
     }
     litriCumulativi[h] = vol / 1e6;

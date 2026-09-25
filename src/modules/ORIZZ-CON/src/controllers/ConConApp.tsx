@@ -976,7 +976,7 @@ export default function App() {
 
             {/* STEP 3 - Configurazione geometrica */}
             {step === 3 && (
-              <GeometrySchema key={formKey} input={input} onChange={setInput} />
+              <GeometrySchema key={formKey} input={input} onChange={setInput} result={result} />
             )}
           </section>
 

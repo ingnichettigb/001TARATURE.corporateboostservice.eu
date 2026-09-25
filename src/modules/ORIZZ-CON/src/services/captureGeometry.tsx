@@ -4,6 +4,7 @@
  */
 import { createRoot } from 'react-dom/client';
 import GeometrySchema from '../controllers/components/GeometrySchema';
+import { calculateTank } from './logic';
 import type { TankInput } from '../models/types';
 
 export interface GeometryImage {
@@ -106,7 +107,13 @@ export async function captureGeometryImage(input: TankInput): Promise<GeometryIm
   document.body.appendChild(host);
   const root = createRoot(host);
   try {
-    root.render(<GeometrySchema input={input} onChange={() => {}} />);
+    let result = null;
+    try {
+      result = calculateTank(input);
+    } catch {
+      result = null;
+    }
+    root.render(<GeometrySchema input={input} onChange={() => {}} result={result} />);
     await new Promise((r) => setTimeout(r, 150));
     // Il primo <svg> è l'icona di avviso: scelgo quello con il viewBox più grande.
     const svgs = Array.from(host.querySelectorAll('svg')) as SVGSVGElement[];
