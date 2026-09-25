@@ -8,7 +8,6 @@ import autoTable from 'jspdf-autotable';
 import { Language, translations } from '../utils/translations';
 import { CalculationResult, CompilerInfo } from '../models/types';
 import { getSelectedExtendedEntries, formatExtendedEntry, isMultiPrint } from './extended-validity';
-import { COPERCHIO_A_SINISTRA } from '../constants';
 
 export async function generateCalibrationPDF(
   result: CalculationResult,
@@ -420,11 +419,9 @@ export async function generateCalibrationPDF(
     drawDashedLine(x_c - dome_w - 2, y_c + h_c / 2, x_c + w_c + dome_w + 2, y_c + h_c / 2);
 
     // 5. Text labels under the tank (fondo / mantello / coperchio)
-    const labelCop = lang === 'en' ? 'Top Head' : lang === 'es' ? 'Cúpula Tapa' : lang === 'de' ? 'Deckel' : 'Coperchio';
+    const labelLeft = lang === 'en' ? 'Left Head' : lang === 'es' ? 'Testera Izq.' : lang === 'de' ? 'Kopf Links' : 'Testata Sinistra';
     const labelMid = lang === 'en' ? 'Cylinder' : lang === 'es' ? 'Cuerpo Cil.' : lang === 'de' ? 'Zylinder' : 'Mantello';
-    const labelBot = lang === 'en' ? 'Dished Bottom' : lang === 'es' ? 'Fondo Bombeado' : lang === 'de' ? 'Gewölbter Boden' : 'Fondo Bombato';
-    const labelLeft = COPERCHIO_A_SINISTRA ? labelCop : labelBot;
-    const labelRight = COPERCHIO_A_SINISTRA ? labelBot : labelCop;
+    const labelRight = lang === 'en' ? 'Right Head' : lang === 'es' ? 'Testera Der.' : lang === 'de' ? 'Kopf Rechts' : 'Testata Destra';
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6);
