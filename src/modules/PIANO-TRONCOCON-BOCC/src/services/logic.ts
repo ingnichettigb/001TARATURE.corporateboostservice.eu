@@ -313,13 +313,16 @@ export function calculateTank(input: TankInput): CalculationResult {
   for (let h = 1; h <= H_tot; h++) {
     let rVal = 0;
 
-    if (h <= z1) {
+    if (h <= z0) {
+      // Zona 0 — bocchello cilindrico di fondo (tronchetto), raggio costante
+      rVal = rBocchello;
+    } else if (h <= z1) {
+      const h_zona = h - z0; // quota relativa all'inizio del fondo vero e proprio
       if (isConicFondo) {
-        // Tronco di cono retto: raggio lineare da r_min (base minore, a h=0) fino a Y (a h=H_cono)
-        rVal = H3_fondo > 0 ? fondo.rMin + (fondo.Y - fondo.rMin) * (h / H3_fondo) : fondo.rMin;
+        // Tronco di cono retto: raggio lineare da r_min (base minore) fino a Y (a h_zona=H_cono)
+        rVal = H3_fondo > 0 ? fondo.rMin + (fondo.Y - fondo.rMin) * (h_zona / H3_fondo) : fondo.rMin;
       } else {
         // Zona 1 — calotta sferica fondo bombato
-        const h_zona = h;
         let term = h_zona * (2 * fondo.R - h_zona);
         if (term < 0) term = 0;
         rVal = Math.sqrt(term);
