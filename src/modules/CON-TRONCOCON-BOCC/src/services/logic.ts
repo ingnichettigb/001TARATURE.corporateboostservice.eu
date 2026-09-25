@@ -347,6 +347,7 @@ export function calculateTank(input: TankInput): CalculationResult {
   const volumeFondo = fondo.V_testata_LT;
   const volumeCoperchio = coperchio.V_testata_LT;
   const volumeCilindro = Math.PI * Math.pow(dInt / 2, 2) * lCil / 1e6;
+  const volumeBocchello = Math.PI * rBocchello * rBocchello * hBocchello / 1e6;
   const volumeTotale = litriCumulativi[H_tot];
 
   // Weights and surfaces
