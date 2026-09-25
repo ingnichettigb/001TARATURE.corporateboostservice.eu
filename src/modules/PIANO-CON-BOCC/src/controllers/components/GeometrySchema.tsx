@@ -207,6 +207,8 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
     onChange({ ...input, fondo: { ...input.fondo, ...p } });
   const patchCoperchio = (p: Partial<TankInput['coperchio']>) =>
     onChange({ ...input, coperchio: { ...input.coperchio, ...p } });
+  const patchBocchello = (p: { dBocchello?: number; hBocchello?: number }) =>
+    onChange({ ...input, ...p });
 
   const setDInt = (v: number) => {
     if (!(v > 0)) return;
@@ -258,12 +260,23 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const maxConoPx = Math.max(40, availH - hCoperchio_px - lCil_px);
   const hCono_px = Math.min(hConoIdeal, maxConoPx);
 
+  // 3.4 bocchello di fondo: raggio scalato realisticamente come il cono (coerente con Ø),
+  // altezza grafica rappresentativa fissa (come coperchio/virola, non scalata in mm veri)
+  const dBocchelloVal = input.dBocchello ?? 0;
+  const hBocchelloValMm = input.hBocchello ?? 0;
+  const hasBocchello = dBocchelloVal > 0;
+  const rBocchello_px = hasBocchello
+    ? Math.max(5, Math.min(halfW * 0.85, (dBocchelloVal / 2) * scaleBase))
+    : 0;
+  const hBocchello_px = hasBocchello ? 34 : 0;
+
   const totalDrawn = hCoperchio_px + lCil_px + hCono_px;
   // 4.1 spazio in eccesso: disegno centrato verticalmente
   const yDomeTop = zoneY0 + Math.max(0, (availH - totalDrawn) / 2);
   const yCilTop = yDomeTop + hCoperchio_px;
   const yCilBot = yCilTop + lCil_px;
-  const yApex = yCilBot + hCono_px;
+  const yApex = yCilBot + hCono_px; // punta del tronco di cono (o punta vera se non c'è bocchello)
+  const yNozzleBot = yApex + hBocchello_px; // estremità inferiore del bocchello
 
 
   const leftX = cx - halfW;
@@ -286,12 +299,23 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
     L ${rightX - cornerPx} ${yDomeTop}
     ${cornerPx > 0 ? `A ${cornerPx} ${cornerPx} 0 0 1 ${rightX} ${yDomeTop + cornerPx}` : ''}
     L ${rightX} ${yCilBot}
-    L ${cx} ${yApex}
+    L ${cx + rBocchello_px} ${yApex}
+    L ${cx - rBocchello_px} ${yApex}
     L ${leftX} ${yCilBot}
     L ${leftX} ${yDomeTop + cornerPx}
     ${cornerPx > 0 ? `A ${cornerPx} ${cornerPx} 0 0 1 ${leftX + cornerPx} ${yDomeTop}` : ''}
     Z
   `;
+  // Bocchello: tronchetto cilindrico che sporge sotto la punta troncata del cono
+  const nozzlePathData = hasBocchello
+    ? `
+      M ${cx - rBocchello_px} ${yApex}
+      L ${cx + rBocchello_px} ${yApex}
+      L ${cx + rBocchello_px} ${yNozzleBot}
+      L ${cx - rBocchello_px} ${yNozzleBot}
+      Z
+    `
+    : '';
   void domeRise;
 
   // callout 1 — ancoraggio percentuale sull'altezza disegnata del coperchio
@@ -371,7 +395,7 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             x1={cx}
             y1={yDomeTop - 20}
             x2={cx}
-            y2={yApex + 20}
+            y2={yNozzleBot + 20}
             stroke="#94a3b8"
             strokeWidth="1"
             strokeDasharray="6,4"
@@ -513,6 +537,11 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
           <line x1={leftX} y1={yCilTop} x2={rightX} y2={yCilTop} stroke="#1e293b" strokeWidth="1" />
           <line x1={leftX} y1={yCilBot} x2={rightX} y2={yCilBot} stroke="#1e293b" strokeWidth="1" />
 
+          {/* BOCCHELLO DI FONDO — tronchetto cilindrico sotto la punta troncata del cono */}
+          {hasBocchello && (
+            <path d={nozzlePathData} fill="#f8fafc" stroke="#1e293b" strokeWidth="1.6" />
+          )}
+
           {/* CALLOUTS */}
           <g>
             <circle cx={callout1X} cy={callout1Y} r="13" fill="#ffffff" stroke="#0f766e" strokeWidth="1.4" />
@@ -545,10 +574,10 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
             </foreignObject>
           </g>
 
-          {/* CATENA DI QUOTE: coperchio + virola + fondo conico */}
+          {/* CATENA DI QUOTE: coperchio + virola + fondo conico (+ bocchello) */}
           <g>
-            <line x1={chainX} y1={yDomeTop} x2={chainX} y2={yApex} stroke="#334155" strokeWidth="1" />
-            {[yDomeTop, yCilTop, yCilBot, yApex].map((yy, i) => (
+            <line x1={chainX} y1={yDomeTop} x2={chainX} y2={yNozzleBot} stroke="#334155" strokeWidth="1" />
+            {[yDomeTop, yCilTop, yCilBot, yApex, ...(hasBocchello ? [yNozzleBot] : [])].map((yy, i) => (
               <line key={i} x1={chainX - 7} y1={yy} x2={chainX + 7} y2={yy} stroke="#334155" strokeWidth="1" />
             ))}
             <text x={chainX + 10} y={(yDomeTop + yCilTop) / 2 + 5} fontSize="14" fontWeight="600" fill="#000000">
@@ -574,10 +603,15 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
                 title="Altezza fondo conico, colletto incluso (mm)"
               />
             </foreignObject>
+            {hasBocchello && (
+              <text x={chainX + 10} y={(yApex + yNozzleBot) / 2 + 4} fontSize="11" fontWeight="700" fill="#000000">
+                {fmt(hBocchelloValMm)}
+              </text>
+            )}
           </g>
 
           {/* QUOTA TOTALE */}
-          <DimLine x={dim4X} y1={yDomeTop} y2={yApex} label={fmt(hTot)} />
+          <DimLine x={dim4X} y1={yDomeTop} y2={yNozzleBot} label={fmt(hTot)} />
 
           {/* CAPACITÀ TOTALE */}
           <g>
@@ -589,6 +623,56 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
               {result ? fmtL0(result.volumeTotale) : '—'}
             </text>
           </g>
+
+          {/* BOCCHELLO DI FONDO — riquadro nella fascia inferiore fissa (a sinistra di "Inclin. cono") */}
+          {(() => {
+            const bocBoxW = 130;
+            const bocBoxH = hasBocchello ? 86 : 62;
+            const bocBoxX = Math.max(zoneX0, cx - bocBoxW - 26);
+            const bocBoxY = drawH - BOTTOM_BAND + 14;
+            const anchorX = cx;
+            const anchorY = hasBocchello ? yNozzleBot : yApex;
+            return (
+              <g>
+                <line
+                  x1={bocBoxX + bocBoxW / 2}
+                  y1={bocBoxY}
+                  x2={anchorX}
+                  y2={anchorY}
+                  stroke="#0f766e"
+                  strokeWidth="1"
+                  strokeDasharray="4,3"
+                />
+                <rect x={bocBoxX} y={bocBoxY} width={bocBoxW} height={bocBoxH} rx="5" fill="#ffffff" stroke="#0f766e" strokeWidth="1.2" />
+                <text x={bocBoxX + 7} y={bocBoxY + 14} fontSize="10" fontWeight="700" fill="#000000">
+                  Bocchello
+                </text>
+                <foreignObject x={bocBoxX + 5} y={bocBoxY + 18} width={bocBoxW - 10} height="22">
+                  <MiniField
+                    label="Ø"
+                    value={dBocchelloVal}
+                    onChange={(v) => patchBocchello({ dBocchello: Math.max(0, v) })}
+                    labelWidth="14px"
+                    width="86px"
+                  />
+                </foreignObject>
+                <foreignObject x={bocBoxX + 5} y={bocBoxY + 40} width={bocBoxW - 10} height="22">
+                  <MiniField
+                    label="H"
+                    value={hBocchelloValMm}
+                    onChange={(v) => patchBocchello({ hBocchello: Math.max(0, v) })}
+                    labelWidth="14px"
+                    width="86px"
+                  />
+                </foreignObject>
+                {hasBocchello && (
+                  <text x={bocBoxX + bocBoxW / 2} y={bocBoxY + 78} textAnchor="middle" fontSize="11" fontWeight="700" fill="#0f766e">
+                    {result ? `${fmtL(result.volumeBocchello)} l` : '—'}
+                  </text>
+                )}
+              </g>
+            );
+          })()}
 
           {/* INCLINAZIONE CONO — riquadro nella fascia inferiore fissa */}
           {(() => {
@@ -696,6 +780,12 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
           </h4>
         </div>
         <div className="grid grid-cols-2 gap-y-1 text-xs font-bold text-neutral-800">
+          {hasBocchello && (
+            <>
+              <span>Bocchello di fondo</span>
+              <span className="text-right font-mono">{fmt(hBocchelloValMm)} mm</span>
+            </>
+          )}
           <span>Fondo conico (colletto incluso)</span>
           <span className="text-right font-mono">{fmt(hCono_calc)} mm</span>
           <span>Sezione cilindrica (virola)</span>
@@ -704,19 +794,19 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
           <span className="text-right font-mono">{fmt(hCoperchio_calc)} mm</span>
           <span className="border-t border-emerald-300 pt-1">Somma</span>
           <span className="text-right font-mono border-t border-emerald-300 pt-1">
-            {fmt(hCono_calc + lCil + hCoperchio_calc)} mm
+            {fmt(hBocchelloValMm + hCono_calc + lCil + hCoperchio_calc)} mm
           </span>
           <span className="font-black">Altezza totale interna (H_tot)</span>
           <span className="text-right font-mono font-black">{fmt(hTot)} mm</span>
         </div>
         <p
           className={`mt-2 text-xs font-black ${
-            Math.abs(hCono_calc + lCil + hCoperchio_calc - hTot) <= 1.5
+            Math.abs(hBocchelloValMm + hCono_calc + lCil + hCoperchio_calc - hTot) <= 1.5
               ? 'text-emerald-800'
               : 'text-rose-800'
           }`}
         >
-          {Math.abs(hCono_calc + lCil + hCoperchio_calc - hTot) <= 1.5
+          {Math.abs(hBocchelloValMm + hCono_calc + lCil + hCoperchio_calc - hTot) <= 1.5
             ? '✓ Altezze coerenti (scarto ≤ 1,5 mm per arrotondamento)'
             : '⚠ Scarto rilevato: verifica i parametri geometrici'}
         </p>
