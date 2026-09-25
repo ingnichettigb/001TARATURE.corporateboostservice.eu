@@ -454,7 +454,16 @@ export async function generateCalibrationPDF(
     // Bottom truncated cone outlines (two slanted sides + flat minor base)
     doc.line(x_c, y_c + h_c, xMinL, coneApexY);
     doc.line(x_c + w_c, y_c + h_c, xMinR, coneApexY);
-    doc.line(xMinL, coneApexY, xMinR, coneApexY);
+    if (hasBocc) {
+      // base minore aperta sul bocchello: due tratti laterali + pareti e fondo del tronchetto
+      doc.line(xMinL, coneApexY, xBoccL, coneApexY);
+      doc.line(xBoccR, coneApexY, xMinR, coneApexY);
+      doc.line(xBoccL, coneApexY, xBoccL, boccApexY);
+      doc.line(xBoccR, coneApexY, xBoccR, boccApexY);
+      doc.line(xBoccL, boccApexY, xBoccR, boccApexY);
+    } else {
+      doc.line(xMinL, coneApexY, xMinR, coneApexY);
+    }
     void drawSemiEllipse;
 
     // 3. Draw horizontal weld junctions (seams)
