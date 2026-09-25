@@ -232,12 +232,12 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
 
   /* ---------- layout disegno: 5 fasce fisse indipendenti ---------- */
   const drawW = 800;
-  const drawH = 660;
+  const drawH = 696; // +36 rispetto all'originale: margine extra in fondo per il riquadro "Bocchello"
 
   const LEFT_W = 220;   // 1.1 colonna riquadri dati
   const RIGHT_W = 110;  // 1.2 colonna quote
   const TOP_BAND = 28;  // 1.3 fascia superiore incomprimibile
-  const BOTTOM_BAND = 84; // 1.4 fascia riquadro "Inclin. cono"
+  const BOTTOM_BAND = 120; // 1.4 fascia riquadri "Bocchello" + "Inclin. cono" (86px box + margine)
   const SAFE = 24;      // 1.5 margine di sicurezza
 
   const zoneX0 = LEFT_W + SAFE;
