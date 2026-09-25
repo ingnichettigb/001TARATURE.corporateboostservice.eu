@@ -272,6 +272,13 @@ export function calculateTank(input: TankInput): CalculationResult {
 
   const isConicFondo = input.fondo.type === 'conico';
 
+  // Bocchello cilindrico di fondo (tronchetto sotto la base minore del fondo).
+  // Zona aggiuntiva: un cilindro pieno di diametro dBocchello e altezza
+  // hBocchello, che diventa la nuova quota 0 della taratura.
+  const dBocchello = Math.max(0, input.dBocchello ?? 0);
+  const rBocchello = dBocchello / 2;
+  const hBocchello = dBocchello > 0 ? Math.max(0, input.hBocchello ?? 0) : 0;
+
   // Altezze zone
   const H3_fondo = fondo.H3; // per troncoconico = altezza del tronco di cono puro (sotto il raccordo)
   const H2_fondo = fondo.H2; // per (tronco)conico = H_racc (raccordo)
@@ -280,8 +287,10 @@ export function calculateTank(input: TankInput): CalculationResult {
   const H2_coperchio = coperchio.H2;
   const h_colletto_coperchio = input.coperchio.hColletto;
 
-  // Altezze cumulative (quote, in mm, misurate dal fondo = 0)
-  const z1 = H3_fondo;                       // fine cono puro (o calotta) fondo
+  // Altezze cumulative (quote, in mm, misurate dalla base del bocchello = 0;
+  // senza bocchello z0 = 0 e si ricade nel comportamento precedente).
+  const z0 = hBocchello;                     // fine bocchello (inizio fondo vero e proprio)
+  const z1 = z0 + H3_fondo;                  // fine cono puro (o calotta) fondo
   const z2 = z1 + H2_fondo;                  // fine raccordo (toroidale o cono/colletto)
   const z3 = z2 + h_colletto_fondo;          // fine colletto fondo
   const z4 = z3 + lCil;                      // fine mantello cilindrico
