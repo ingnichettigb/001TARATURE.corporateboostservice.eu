@@ -680,6 +680,9 @@ export async function generateCalibrationPDF(
     const lblAreaDisco = lang === 'en' ? 'Raw Disc Area (m²)' : lang === 'es' ? 'Área Disco Bruto (m²)' : lang === 'de' ? 'Fläche Rohzuschnitt (m²)' : 'Area Disco Grezzo (m²)';
     const lblPesoTotLam = lang === 'en' ? 'Total Sheet Metal Weight' : lang === 'es' ? 'Peso Total Chapa' : lang === 'de' ? 'Gesamtes Blechgewicht' : 'Peso totale lamiera';
     const lblPesoPieno = lang === 'en' ? 'Weight with Full Content' : lang === 'es' ? 'Peso con Contenido Lleno' : lang === 'de' ? 'Gewicht bei Vollfüllung' : 'Peso con Contenuto Pieno';
+    const lblDBocc = lang === 'en' ? 'Nozzle Diameter (d_bocchello) (mm)' : lang === 'es' ? 'Diámetro Boquilla (d_bocchello) (mm)' : lang === 'de' ? 'Stutzendurchmesser (d_bocchello) (mm)' : 'Diametro Bocchello (d_bocchello) (mm)';
+    const lblHBocc = lang === 'en' ? 'Nozzle Height (h_bocchello) (mm)' : lang === 'es' ? 'Altura Boquilla (h_bocchello) (mm)' : lang === 'de' ? 'Stutzenhöhe (h_bocchello) (mm)' : 'Altezza Bocchello (h_bocchello) (mm)';
+    const lblVolBocc = lang === 'en' ? 'Nozzle Volume' : lang === 'es' ? 'Volumen Boquilla' : lang === 'de' ? 'Stutzenvolumen' : 'Volume Bocchello';
 
     const cop = result.input.coperchio;
     const fon = result.input.fondo;
