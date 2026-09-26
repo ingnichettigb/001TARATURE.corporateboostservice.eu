@@ -448,7 +448,9 @@ export default function App() {
       const hSample = Math.round((i / steps) * hTot);
       const y = mapHToYPrint(hSample);
       // a h = 0 il profilo parte dal raggio della base minore (fondo piano del tronco di cono)
-      const rSample = hSample === 0 ? result.fondo.rMin : (result.raggioProfile[hSample] || 0);
+      // a h = 0 il profilo parte dal bocchello se presente, altrimenti dalla base minore
+      const rBocchelloSample = (result.input.dBocchello ?? 0) > 0 ? (result.input.dBocchello ?? 0) / 2 : result.fondo.rMin;
+      const rSample = hSample === 0 ? rBocchelloSample : (result.raggioProfile[hSample] || 0);
       const rScale = dInt > 0 ? (rSample / (dInt / 2)) * 60 : 0;
       leftPoints.push(`${160 - rScale},${y}`);
       rightPoints.unshift(`${160 + rScale},${y}`);
