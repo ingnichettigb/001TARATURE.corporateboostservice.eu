@@ -244,6 +244,8 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const patch = (p: Partial<TankInput>) => onChange({ ...input, ...p });
   const patchFondo = (p: Partial<TankInput['fondo']>) =>
     onChange({ ...input, fondo: { ...input.fondo, ...p } });
+  const patchDBocc = (v: number) => patch({ dBocchello: Math.max(0, v) });
+  const patchHBocc = (v: number) => patch({ hBocchello: Math.max(0, v) });
   const patchCoperchio = (p: Partial<TankInput['coperchio']>) =>
     onChange({ ...input, coperchio: { ...input.coperchio, ...p } });
   // il bocchello non può essere più largo della base minore del cono
