@@ -107,6 +107,8 @@ export default function App() {
     lCil: 5200,      // 5.2 meters cylindrical shell
     rho: 0.85,       // Gazole/diesel density
     spVirola: 6,     // spessore lamiera virola (mm)
+    dBocchello: 100, // Ø interno del bocchello di fondo (mm); 0 = nessun bocchello
+    hBocchello: 100, // altezza del bocchello di fondo (mm)
     fondo: {
       type: 'conico',
       sp: 8,
