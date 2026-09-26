@@ -188,13 +188,6 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const hConoFondo =
     input.fondo.hCono ?? Math.round(Math.max(0, dInt / 2 - rMin) + hCollettoFondo);
 
-  // BOCCHELLO DI FONDO (tronchetto cilindrico sotto la base minore)
-  const dBocc = Math.max(0, input.dBocchello ?? 0);
-  const rBocc = dBocc / 2;
-  const hBocc = Math.max(0, input.hBocchello ?? 0);
-  const hasBocc = dBocc > 0 && hBocc > 0;
-  const boccError = dBocc > 0 && dMin > 0 && dBocc > dMin;
-
   // COPERCHIO PIANO (in alto): disco piano + raccordo toroidale r_custom + colletto
   const hCollettoCoperchio = input.coperchio.hColletto;
   const rCoperchio = input.coperchio.r_custom ?? 0;
@@ -244,8 +237,6 @@ export default function GeometrySchema({ input, onChange }: GeometrySchemaProps)
   const patch = (p: Partial<TankInput>) => onChange({ ...input, ...p });
   const patchFondo = (p: Partial<TankInput['fondo']>) =>
     onChange({ ...input, fondo: { ...input.fondo, ...p } });
-  const patchDBocc = (v: number) => patch({ dBocchello: Math.max(0, v) });
-  const patchHBocc = (v: number) => patch({ hBocchello: Math.max(0, v) });
   const patchCoperchio = (p: Partial<TankInput['coperchio']>) =>
     onChange({ ...input, coperchio: { ...input.coperchio, ...p } });
   // il bocchello non può essere più largo della base minore del cono
