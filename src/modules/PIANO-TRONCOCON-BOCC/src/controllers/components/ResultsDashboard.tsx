@@ -493,6 +493,14 @@ export default function ResultsDashboard({ result, lang = 'it', section = 'all' 
                     </span>
                     <span className="font-mono font-extrabold text-neutral-950">{formatNum(result.volumeCoperchio, 2)} {lang === 'en' ? 'liters' : lang === 'es' ? 'litros' : lang === 'de' ? 'Liter' : 'litri'}</span>
                   </div>
+                  {(result.input.dBocchello ?? 0) > 0 && (
+                    <div className="flex justify-between py-1 border-b border-neutral-200">
+                      <span className="font-bold text-neutral-900">
+                        {lang === 'en' ? 'Bottom Nozzle Volume:' : lang === 'es' ? 'Volumen de la Boquilla:' : lang === 'de' ? 'Volumen des Bodenstutzens:' : 'Volume Bocchello di Fondo:'}
+                      </span>
+                      <span className="font-mono font-extrabold text-neutral-950">{formatNum(result.volumeBocchello, 2)} {lang === 'en' ? 'liters' : lang === 'es' ? 'litros' : lang === 'de' ? 'Liter' : 'litri'}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between pt-2 text-emerald-950 font-black text-sm">
                     <span>
                       {lang === 'en' ? 'TOTAL NOMINAL VOLUME:' : lang === 'es' ? 'VOLUMEN NOMINAL TOTAL:' : lang === 'de' ? 'GESAMTES NENNFÜLLVOLUMEN:' : 'VOLUME TOTALE NOMINALE:'}
