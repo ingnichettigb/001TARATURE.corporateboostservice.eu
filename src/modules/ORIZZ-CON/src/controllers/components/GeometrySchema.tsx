@@ -5,14 +5,12 @@
 
 import React, { useMemo } from 'react';
 import { TankInput } from '../../models/types';
+import { calculateTank } from '../../services/logic';
 import { AlertTriangle, Info } from 'lucide-react';
-
-import { CalculationResult } from '../../models/types';
 
 interface GeometrySchemaProps {
   input: TankInput;
   onChange: (input: TankInput) => void;
-  result: CalculationResult | null;
 }
 
 /* ---------- helpers geometria testata conica (stessa convenzione del motore) ---------- */
@@ -158,7 +156,7 @@ function HDimLine({
 
 /* ---------- main ---------- */
 
-export default function GeometrySchema({ input, onChange, result }: GeometrySchemaProps) {
+export default function GeometrySchema({ input, onChange }: GeometrySchemaProps) {
   const dInt = input.dInt;
   const lCil = input.lCil;
 
@@ -182,6 +180,13 @@ export default function GeometrySchema({ input, onChange, result }: GeometrySche
     return a != null ? Math.round(a * 10) / 10 : null;
   }, [hConoCoperchio, dInt, rRaccCoperchio, hCollettoCoperchio]);
 
+  const result = useMemo(() => {
+    try {
+      return calculateTank(input);
+    } catch {
+      return null;
+    }
+  }, [input]);
 
   const hConoFondo_calc = hConoFondo;
   const hConoCoperchio_calc = hConoCoperchio;
@@ -386,6 +391,8 @@ export default function GeometrySchema({ input, onChange, result }: GeometrySche
 
       <div className="bg-white border-4 border-double border-emerald-800 rounded-xl p-2 overflow-x-auto">
         <svg viewBox={`0 0 ${drawW} ${drawH}`} className="w-full h-auto min-w-[680px]" xmlns="http://www.w3.org/2000/svg">
+          {/* asse del serbatoio */}
+          <line x1={xApexL - 20} y1={cy} x2={xApexR + 20} y2={cy} stroke="#94a3b8" strokeWidth="1" strokeDasharray="6,4" />
 
           {/* RIQUADRI TESTE + CILINDRO */}
           {headBox(boxLX, 'Testa sinistra conica', input.fondo, rRaccFondo, hCollettoFondo, patchFondo, result ? result.volumeFondo : null)}
@@ -416,34 +423,6 @@ export default function GeometrySchema({ input, onChange, result }: GeometrySche
           <path d={pathData} fill="#f8fafc" stroke="#1e293b" strokeWidth="1.6" />
           <line x1={xCilL} y1={yTop} x2={xCilL} y2={yBot} stroke="#1e293b" strokeWidth="1" />
           <line x1={xCilR} y1={yTop} x2={xCilR} y2={yBot} stroke="#1e293b" strokeWidth="1" />
-
-          {/* LINEA DI CENTRO ORIZZONTALE (asse di riferimento, sopra il profilo) */}
-          <line x1={xApexL - 28} y1={cy} x2={xApexR + 28} y2={cy} stroke="#475569" strokeWidth="1" strokeDasharray="14,3,2,3" />
-
-          {/* LINEA INCLINATA: mostra l'inclinazione del serbatoio (solo se angolo ≠ 0) */}
-          {angoloTank !== 0 && (() => {
-            const th = (clampTilt(angoloTank) * Math.PI) / 180;
-            const sT = Math.sin(th);
-            const cT = Math.cos(th);
-            const halfSpan = (xApexR - xApexL) / 2 + 28;
-            const Ln = Math.min(halfSpan, Math.abs(sT) > 1e-6 ? 120 / Math.abs(sT) : halfSpan);
-            const x1 = xMid - Ln * cT;
-            const y1 = cy + Ln * sT;
-            const x2 = xMid + Ln * cT;
-            const y2 = cy - Ln * sT; // angolo positivo = testa destra sollevata
-            const ex = xMid + Ln; // punto sulla linea orizzontale, stesso raggio
-            const arcSweep = th > 0 ? 0 : 1;
-            return (
-              <g>
-                <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#b45309" strokeWidth="1.6" strokeDasharray="10,3,2,3" />
-                <circle cx={xMid} cy={cy} r="2.6" fill="#b45309" />
-                <path d={`M ${ex} ${cy} A ${Ln} ${Ln} 0 0 ${arcSweep} ${x2} ${y2}`} fill="none" stroke="#b45309" strokeWidth="1.2" />
-                <text x={ex - 6} y={cy - (Ln * sT) / 2 + 4} textAnchor="end" fontSize="12" fontWeight="700" fill="#b45309" stroke="#ffffff" strokeWidth="3" paintOrder="stroke">
-                  {`${angoloTank.toFixed(1)}°`}
-                </text>
-              </g>
-            );
-          })()}
 
           {/* ARCHI INCLINAZIONE CONI */}
           {angleArc(xCilL, yTop, xApexL, 'L', angoloFondo)}
