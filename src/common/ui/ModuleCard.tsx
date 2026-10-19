@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import * as Icons from "lucide-react";
 import type { ModuleDefinition } from "@/common/module-types";
+import type { AppLanguage } from "@/common/language/storage";
+import { tr, translateModuleText } from "@/common/language/ui-i18n";
 
 type IconComponent = (props: { className?: string }) => React.ReactNode;
 
@@ -9,13 +11,13 @@ function resolveIcon(name: string): IconComponent {
   return registry[name] ?? (Icons.Box as unknown as IconComponent);
 }
 
-function ModuleIcon({ module }: { module: ModuleDefinition }) {
+function ModuleIcon({ module, lang }: { module: ModuleDefinition; lang: AppLanguage }) {
   if (module.image) {
     return (
       <span className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-lg">
         <img
           src={module.image}
-          alt={`Icona ${module.title}`}
+          alt={`${tr("iconOf", lang)} ${module.title}`}
           className="h-full w-full object-contain"
         />
       </span>
@@ -33,9 +35,11 @@ function ModuleIcon({ module }: { module: ModuleDefinition }) {
 export function ModuleCard({
   module,
   position,
+  lang = "it",
 }: {
   module: ModuleDefinition;
   position?: number;
+  lang?: AppLanguage;
 }) {
   const isActive = module.status === "active";
 
@@ -46,7 +50,7 @@ export function ModuleCard({
       className="group relative flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"
     >
       <div className="flex items-start justify-between gap-3">
-        <ModuleIcon module={module} />
+        <ModuleIcon module={module} lang={lang} />
         <span
           className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${
             isActive
@@ -54,18 +58,18 @@ export function ModuleCard({
               : "bg-muted text-muted-foreground"
           }`}
         >
-          {isActive ? "Attivo" : "In preparazione"}
+          {isActive ? tr("active", lang) : tr("draft", lang)}
         </span>
       </div>
       <div>
         <h2 className="text-lg font-semibold tracking-tight text-card-foreground">
           {module.title}
         </h2>
-        <p className="text-sm font-medium text-muted-foreground">{module.subtitle}</p>
+        <p className="text-sm font-medium text-muted-foreground">{translateModuleText(module.subtitle, lang, "subtitle")}</p>
       </div>
-      <p className="text-sm text-muted-foreground">{module.description}</p>
+      <p className="text-sm text-muted-foreground">{translateModuleText(module.description, lang, "description")}</p>
       <span className="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-primary">
-        Apri modulo
+        {tr("openModule", lang)}
         <Icons.ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
       </span>
       {typeof position === "number" && (

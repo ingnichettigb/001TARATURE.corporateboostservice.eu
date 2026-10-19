@@ -17,6 +17,8 @@ import { LogOut } from "lucide-react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { checkLicenseStatus } from "@/lib/license.functions";
+import { useAppLanguage } from "@/common/language/useAppLanguage";
+import { tr } from "@/common/language/ui-i18n";
 import {
   VERIFIED_EMAIL_KEY,
   ACTIVATED_KEY,
@@ -60,7 +62,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
   useEffect(() => {
     if (error instanceof Error) {
-      reportLovableError(error, { boundary: "tanstack_root_error_component" });
+      reportLovableError(error instanceof Error ? error : new Error(String(error)), { boundary: "tanstack_root_error_component" });
     } else {
       reportLovableError(new Error(String(error)), { boundary: "tanstack_root_error_component" });
     }
@@ -113,6 +115,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "google", content: "notranslate" },
     ],
     links: [
       {
@@ -130,7 +133,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="it" translate="no" className="notranslate">
       <head>
         <HeadContent />
       </head>
@@ -159,6 +162,7 @@ function AuthGate({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const statusFn = useServerFn(checkLicenseStatus);
+  const lang = useAppLanguage();
   const [checked, setChecked] = useState(false);
   const [allowed, setAllowed] = useState(false);
 
@@ -248,9 +252,7 @@ function AuthGate({ children }: { children: ReactNode }) {
           type="button"
           onClick={() => {
             if (
-              window.confirm(
-                "Uscendo dovrai reinserire email, licenza e PUK per accedere di nuovo. Continuare?"
-              )
+window.confirm(tr("changeLicenseConfirm", lang))
             ) {
               clearGateKeys();
               navigate({ to: "/auth", replace: true });
@@ -259,7 +261,7 @@ function AuthGate({ children }: { children: ReactNode }) {
           className="fixed right-3 top-3 z-50 flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-800 shadow-sm backdrop-blur hover:bg-amber-100"
         >
           <LogOut className="h-3.5 w-3.5" />
-          Cambia licenza
+          {tr("changeLicense", lang)}
         </button>
       )}
       {children}
