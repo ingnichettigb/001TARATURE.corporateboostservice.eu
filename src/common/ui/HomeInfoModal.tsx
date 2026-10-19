@@ -119,4 +119,53 @@ const CONTENT: Record<
         title: "3. Sprachauswahl",
         desc: "Die Sprachschaltfläche oben rechts ist dauerhaft: Die hier gewählte Sprache wird beim Öffnen eines Moduls übernommen, und wenn Sie sie in einem Modul ändern, bleibt sie auch hier im Menü erhalten.",
       },
+      {
+        title: "4. App-Verwaltung und Deinstallation",
+        desc: "Das installierte Symbol kann Behälterkalibrierung, 001tarature, 001-tarature oder Smart Launcher heißen.\n\n• Google Chrome (Computer): chrome://apps eingeben und Enter drücken, Rechtsklick auf das Symbol > \"Aus Chrome entfernen\" / \"Deinstallieren\". Oder: App öffnen, 3-Punkte-Menü > \"Deinstallieren\".\n• Microsoft Edge (Computer): edge://apps eingeben, auf die 3 Punkte neben der App klicken > \"Deinstallieren\". Oder: Menü ... > Apps > Apps verwalten.\n• Brave: brave://apps eingeben, Rechtsklick auf das Symbol > \"Aus Brave entfernen\".\n• Opera / Vivaldi: opera://apps oder vivaldi://apps eingeben und das Symbol per Rechtsklick entfernen.\n• Safari (Mac, macOS Sonoma oder neuer): Finder > Programme, Symbol in den Papierkorb ziehen.\n• Mozilla Firefox: installiert keine Apps; Lesezeichen oder Verknüpfungen per Rechtsklick > \"Löschen\" entfernen.\n• Windows (jeder Browser): Einstellungen > Apps > Installierte Apps, App suchen > \"Deinstallieren\".\n• Android (Chrome / Samsung Internet): Symbol gedrückt halten > \"Deinstallieren\" (oder Einstellungen > Apps).\n• iPhone / iPad (Safari): Symbol gedrückt halten > \"App entfernen\" > \"Vom Home-Bildschirm entfernen\".\n\nHinweis: Die Deinstallation entfernt nur das Symbol. Die Lizenz bleibt gültig und kann mit E-Mail und PUK reaktiviert werden; im Browser gespeicherte Daten (Berichtskopf und Behälter) können gelöscht werden: vorher als JSON exportieren.",
+      },
     ],
+    closeBtn: "Verstanden, schließen",
+  },
+};
+
+export default function HomeInfoModal({ open, onOpenChange, lang }: HomeInfoModalProps) {
+  const t = CONTENT[lang] ?? CONTENT.it;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[calc(100vh-4rem)] overflow-y-auto sm:max-w-lg">
+        <DialogHeader>
+          <div className="flex items-center gap-2">
+            <Info className="h-5 w-5 text-primary" />
+            <DialogTitle>{t.title}</DialogTitle>
+          </div>
+          <DialogDescription>{t.subtitle}</DialogDescription>
+        </DialogHeader>
+
+        <p className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-foreground">
+          {t.intro}
+        </p>
+
+        <div className="space-y-3">
+          {t.sections.map((s) => (
+            <div key={s.title} className="rounded-xl border border-border bg-card p-4">
+              <h4 className="mb-1 text-sm font-semibold text-foreground">{s.title}</h4>
+              <p className="whitespace-pre-line text-sm text-muted-foreground">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              {t.closeBtn}
+            </button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
