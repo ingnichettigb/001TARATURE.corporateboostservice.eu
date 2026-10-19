@@ -94,6 +94,7 @@ export function tr(key: keyof typeof UI, lang: AppLanguage): string {
 // --- Traduzione testi delle carte (sottotitoli/descrizioni definiti in italiano) ---
 
 const PHRASES: [string, Omit<Dict, "it">][] = [
+  ["Serbatoio Orizzontale", { en: "Horizontal tank", es: "Tanque horizontal", de: "Liegender Behälter" }],
   ["Serbatoio orizzontale", { en: "Horizontal tank", es: "Tanque horizontal", de: "Liegender Behälter" }],
   ["Fondo e Coperchio Bombati", { en: "Dished Bottom and Head", es: "Fondo y Tapa Abombados", de: "Gewölbter Boden und Deckel" }],
   ["Fondo e Coperchio Conico", { en: "Conical Bottom and Head", es: "Fondo y Tapa Cónicos", de: "Konischer Boden und Deckel" }],

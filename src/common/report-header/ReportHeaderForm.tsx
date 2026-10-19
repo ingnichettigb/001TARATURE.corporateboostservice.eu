@@ -14,6 +14,8 @@ import {
   X,
 } from "lucide-react";
 import type { ReportHeader } from "./types";
+import { useAppLanguage } from "@/common/language/useAppLanguage";
+import { tr } from "@/common/language/ui-i18n";
 
 interface ReportHeaderFormProps {
   info: ReportHeader;
@@ -30,7 +32,10 @@ const labelClass =
 /**
  * Form riusabile dei dati comuni di intestazione report.
  */
-export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }: ReportHeaderFormProps) {
+export function ReportHeaderForm({ info, onSave, onCancel, saveLabel }: ReportHeaderFormProps) {
+  const lang = useAppLanguage();
+  const T = (k: Parameters<typeof tr>[0]) => tr(k, lang);
+  const ex = T("example");
   const [form, setForm] = useState<ReportHeader>(info);
   const [saved, setSaved] = useState(false);
 
@@ -42,12 +47,12 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
   };
 
   const logoOptions = [
-    { id: "custom" as const, label: "Logo personalizzato", icon: ImageIcon },
-    { id: "standard" as const, label: "Standard", icon: Compass },
-    { id: "building" as const, label: "Azienda", icon: Building2 },
-    { id: "gauge" as const, label: "Strumento", icon: Gauge },
-    { id: "shield" as const, label: "Certificazione", icon: ShieldCheck },
-    { id: "none" as const, label: "Nessuno", icon: X },
+    { id: "custom" as const, label: T("logoCustom"), icon: ImageIcon },
+    { id: "standard" as const, label: T("logoStandard"), icon: Compass },
+    { id: "building" as const, label: T("logoBuilding"), icon: Building2 },
+    { id: "gauge" as const, label: T("logoGauge"), icon: Gauge },
+    { id: "shield" as const, label: T("logoShield"), icon: ShieldCheck },
+    { id: "none" as const, label: T("logoNone"), icon: X },
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -60,7 +65,7 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <span className="block text-xs font-bold text-emerald-950 mb-1.5 uppercase tracking-wide">
-          Logo del report
+          {T("reportLogo")}
         </span>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {logoOptions.map((opt) => {
@@ -81,7 +86,7 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
                   <img
                     src={form.customLogoData}
                     className="w-4 h-4 object-contain rounded-xs"
-                    alt="Anteprima logo"
+                    alt={T("logoPreview")}
                     referrerPolicy="no-referrer"
                   />
                 ) : (
@@ -97,7 +102,7 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
       {form.logoType === "custom" && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-2">
           <span className="block text-[11px] font-bold text-emerald-950 uppercase tracking-wide">
-            Carica e importa il tuo logo (.png, .jpg, .svg)
+            {T("uploadLogo")}
           </span>
           <div className="flex items-center gap-4">
             {form.customLogoData ? (
@@ -105,14 +110,14 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
                 <img
                   src={form.customLogoData}
                   className="w-full h-full object-contain p-1"
-                  alt="Anteprima logo"
+                  alt={T("logoPreview")}
                   referrerPolicy="no-referrer"
                 />
                 <button
                   type="button"
                   onClick={() => set("customLogoData", "")}
                   className="absolute top-0.5 right-0.5 bg-red-600 text-white p-0.5 rounded-full hover:bg-red-700 transition-colors cursor-pointer"
-                  title="Rimuovi"
+                  title={T("remove")}
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -125,7 +130,7 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
             <div className="flex-1">
               <label className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-emerald-600 text-emerald-900 bg-white hover:bg-emerald-50 rounded-lg text-xs font-bold cursor-pointer transition-colors shadow-xs">
                 <Upload className="w-3.5 h-3.5" />
-                Sfoglia file...
+                {T("browse")}
                 <input
                   type="file"
                   accept="image/*"
@@ -142,8 +147,7 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
                 />
               </label>
               <p className="text-[10px] text-emerald-700/80 mt-1.5 leading-tight">
-                L'immagine viene salvata localmente nel browser e stampata in alta risoluzione sul
-                certificato.
+                {T("logoNote")}
               </p>
             </div>
           </div>
@@ -152,12 +156,12 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
 
       <div>
         <label className={labelClass}>
-          <Building2 className="w-3 h-3" /> Ragione sociale
+          <Building2 className="w-3 h-3" /> {T("company")}
         </label>
         <input
           type="text"
           required
-          placeholder="es. TecnoCalibrazioni S.r.l."
+          placeholder={`${ex} TecnoCalibrazioni S.r.l.`}
           value={form.ditta}
           onChange={(e) => set("ditta", e.target.value)}
           className={inputClass}
@@ -166,12 +170,12 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
 
       <div>
         <label className={labelClass}>
-          <FileText className="w-3 h-3" /> Partita IVA
+          <FileText className="w-3 h-3" /> {T("vat")}
         </label>
         <input
           type="text"
           required
-          placeholder="es. IT01234567890"
+          placeholder={`${ex} IT01234567890`}
           value={form.partitaIva}
           onChange={(e) => set("partitaIva", e.target.value)}
           className={`${inputClass} font-mono`}
@@ -181,11 +185,11 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className={labelClass}>
-            <Phone className="w-3 h-3" /> Telefono
+            <Phone className="w-3 h-3" /> {T("phone")}
           </label>
           <input
             type="text"
-            placeholder="es. +39 02 9876543"
+            placeholder={`${ex} +39 02 9876543`}
             value={form.telefono}
             onChange={(e) => set("telefono", e.target.value)}
             className={inputClass}
@@ -193,11 +197,11 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
         </div>
         <div>
           <label className={labelClass}>
-            <Mail className="w-3 h-3" /> Email
+            <Mail className="w-3 h-3" /> {T("email")}
           </label>
           <input
             type="email"
-            placeholder="es. info@tecnocalibrazioni.it"
+            placeholder={`${ex} info@tecnocalibrazioni.it`}
             value={form.email}
             onChange={(e) => set("email", e.target.value)}
             className={inputClass}
@@ -208,11 +212,11 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className={labelClass}>
-            <Mail className="w-3 h-3" /> PEC
+            <Mail className="w-3 h-3" /> {T("pec")}
           </label>
           <input
             type="email"
-            placeholder="es. pec@tecnocalibrazioni.it"
+            placeholder={`${ex} pec@tecnocalibrazioni.it`}
             value={form.emailPec ?? ""}
             onChange={(e) => set("emailPec", e.target.value)}
             className={inputClass}
@@ -220,11 +224,11 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
         </div>
         <div>
           <label className={labelClass}>
-            <FileText className="w-3 h-3" /> Iscrizione Registro / Albo
+            <FileText className="w-3 h-3" /> {T("registry")}
           </label>
           <input
             type="text"
-            placeholder="es. Ordine Ingegneri n. 123"
+            placeholder={`${ex} Ordine Ingegneri n. 123`}
             value={form.iscrizioneRegistro ?? ""}
             onChange={(e) => set("iscrizioneRegistro", e.target.value)}
             className={inputClass}
@@ -234,11 +238,11 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
 
       <div>
         <label className={labelClass}>
-          <MapPin className="w-3 h-3" /> Indirizzo
+          <MapPin className="w-3 h-3" /> {T("address")}
         </label>
         <input
           type="text"
-          placeholder="es. Via dell'Artigianato 15, Milano (MI)"
+          placeholder={`${ex} Via dell'Artigianato 15, Milano (MI)`}
           value={form.indirizzo}
           onChange={(e) => set("indirizzo", e.target.value)}
           className={inputClass}
@@ -247,10 +251,10 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
 
       <div>
         <label className={labelClass}>
-          <FileText className="w-3 h-3" /> Informazioni aggiuntive
+          <FileText className="w-3 h-3" /> {T("extraInfo")}
         </label>
         <textarea
-          placeholder="es. Iscr. Albo Ingegneri Milano n. 12345 • Cap. Soc. €10.000 i.v."
+          placeholder={`${ex} Iscr. Albo Ingegneri Milano n. 12345 • Cap. Soc. €10.000 i.v.`}
           value={form.customNote}
           onChange={(e) => set("customNote", e.target.value)}
           className={`${inputClass} h-16 resize-none`}
@@ -259,7 +263,7 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
 
       <div className="flex items-center justify-end gap-2 pt-2">
         {saved ? (
-          <span className="text-xs font-bold text-emerald-700">Dati comuni salvati</span>
+          <span className="text-xs font-bold text-emerald-700">{T("saved")}</span>
         ) : null}
         {onCancel ? (
           <button
@@ -267,7 +271,7 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
             onClick={onCancel}
             className="bg-white border-2 border-emerald-200 hover:bg-emerald-50 text-emerald-900 font-bold text-xs px-4 py-2 rounded-lg transition-all cursor-pointer"
           >
-            Annulla
+            {T("cancel")}
           </button>
         ) : null}
         <button
@@ -275,7 +279,7 @@ export function ReportHeaderForm({ info, onSave, onCancel, saveLabel = "Salva" }
           className="bg-emerald-900 hover:bg-emerald-950 text-white font-bold text-xs px-5 py-2 rounded-lg transition-all cursor-pointer shadow-md flex items-center gap-1"
         >
           <Check className="w-4 h-4" />
-          {saveLabel}
+          {saveLabel ?? T("save")}
         </button>
       </div>
     </form>

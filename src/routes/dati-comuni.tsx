@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, FileSignature } from "lucide-react";
 import ReportHeaderForm from "@/common/report-header/ReportHeaderForm";
 import { useReportHeader } from "@/common/report-header/useReportHeader";
+import { useAppLanguage } from "@/common/language/useAppLanguage";
+import { tr } from "@/common/language/ui-i18n";
 
 export const Route = createFileRoute("/dati-comuni")({
   head: () => ({
@@ -27,6 +29,7 @@ export const Route = createFileRoute("/dati-comuni")({
 
 function DatiComuniPage() {
   const { header, update } = useReportHeader();
+  const lang = useAppLanguage();
 
   return (
     <div className="min-h-screen bg-background">
@@ -37,26 +40,26 @@ function DatiComuniPage() {
             className="inline-flex items-center gap-1.5 rounded-md border border-emerald-700 bg-emerald-100 px-2.5 py-1.5 text-sm font-bold text-black transition-colors hover:bg-emerald-200"
           >
             <ArrowLeft className="h-4 w-4" />
-            Menu
+            {tr("menu", lang)}
           </Link>
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-lg font-semibold tracking-tight text-foreground">
-              Dati Comuni — Intestazione report
+              {tr("commonPageTitle", lang)}
             </h1>
             <p className="truncate text-sm text-muted-foreground">
-              Si compila una sola volta: vale per tutti i sottoprogrammi.
+              {tr("commonPageSub", lang)}
             </p>
           </div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-secondary-foreground">
             <FileSignature className="h-3.5 w-3.5" />
-            Comune
+            {tr("commonBadge", lang)}
           </span>
         </div>
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-6">
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-          <ReportHeaderForm info={header} onSave={update} saveLabel="Salva dati comuni" />
+          <ReportHeaderForm info={header} onSave={update} saveLabel={tr("saveCommon", lang)} />
         </div>
         <p className="mt-6 text-xs text-muted-foreground">
           I dati sono memorizzati localmente nel browser e vengono richiamati automaticamente dai

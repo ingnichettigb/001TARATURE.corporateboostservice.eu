@@ -6,6 +6,7 @@ import ModuleCard from "@/common/ui/ModuleCard";
 import LanguageSwitcher from "@/common/ui/LanguageSwitcher";
 import HomeInfoModal from "@/common/ui/HomeInfoModal";
 import { loadLanguage, saveLanguage, type AppLanguage } from "@/common/language/storage";
+import { tr } from "@/common/language/ui-i18n";
 
 // Carte ordinate alfabeticamente per codice: la griglia scorre da sinistra a
 // destra e dall'alto verso il basso, con numerazione progressiva da 1.
@@ -60,10 +61,10 @@ function Home() {
             </span>
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                TARATURA SERBATOI
+                {tr("appTitle", lang)}
               </h1>
               <p className="text-sm text-muted-foreground">
-                Seleziona un modulo di calcolo. Ogni modulo è autonomo, con il proprio cuore logico.
+                {tr("appSubtitle", lang)}
               </p>
             </div>
           </div>
@@ -71,7 +72,7 @@ function Home() {
             <LanguageSwitcher value={lang} onChange={handleLanguageChange} />
             <button
               type="button"
-              title="Informazioni su questa pagina"
+              title={tr("infoTitle", lang)}
               onClick={() => setIsInfoOpen(true)}
               className="flex items-center justify-center rounded-xl border border-border bg-card p-2 text-foreground transition-colors hover:bg-accent"
             >
@@ -86,7 +87,7 @@ function Home() {
       <main className="mx-auto max-w-6xl px-4 py-8">
         <section className="mb-8">
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Dati Comuni
+            {tr("commonData", lang)}
           </h2>
           <Link
             to="/dati-comuni"
@@ -97,28 +98,26 @@ function Home() {
             </span>
             <span>
               <span className="block text-base font-semibold text-foreground">
-                Intestazione Report
+                {tr("reportHeader", lang)}
               </span>
               <span className="block text-sm text-muted-foreground">
-                Ragione sociale, P.IVA, contatti, logo e note: si compilano una sola volta e valgono
-                per tutti i moduli.
+                {tr("reportHeaderDesc", lang)}
               </span>
             </span>
           </Link>
         </section>
 
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Moduli di calcolo
+          {tr("modules", lang)}
         </h2>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {definitions.map((m, index) => (
-            <ModuleCard key={m.id} module={m} position={index + 1} />
+            <ModuleCard key={m.id} module={m} position={index + 1} lang={lang} />
           ))}
         </div>
         <p className="mt-8 text-xs text-muted-foreground">
-          I moduli sono definiti in <code>src/modules/registry.ts</code>: aggiungendo una riga e la
-          cartella <code>src/modules/&lt;NOME&gt;/</code> compare automaticamente una nuova card.
+          {tr("registryNote", lang)}
         </p>
       </main>
     </div>
